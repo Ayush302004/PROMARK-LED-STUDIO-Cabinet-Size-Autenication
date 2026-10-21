@@ -1,0 +1,15 @@
+PROMARK LED STUDIO — Company actual pricing
+
+Quotation items:
+1. Video wall — existing automatic screen-area price
+2. Controller — supplied base rate × 130 × 2 × quantity, before GST
+3. Mounting Structure — blank manual Rate cell F12
+4. Installation — blank manual Rate cell F13
+5. UPS — blank manual Rate cell F14
+6. Cabling — blank manual Rate cell F15
+
+Items 3–6 use the description As per the company actual price. Their rates are not derived from screen area, and old structure/installation rates in saved designs are ignored.
+
+All Unit cells default to Nos. Enter company actual prices directly into the yellow Rate cells in Excel. Taxes and totals update once prices are entered. Enter 0 for an included/no-charge item. Blank prices keep the final total pending.
+
+Restart the application and download a new quotation. Previously downloaded workbooks are not modified.

@@ -1,0 +1,6 @@
+UDAII 1.2 -> PM1.2
+UDAII 1.5 -> PM1.5
+UDAII 1.8 -> PM1.8
+UDAII 2.5 -> PM2.5
+Existing COB/SMD suffixes retained. Stable IDs and specifications preserved.
+PM2 awaits identification of the existing model or new cabinet specifications.

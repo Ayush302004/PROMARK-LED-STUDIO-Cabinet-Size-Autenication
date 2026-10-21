@@ -1,0 +1,202 @@
+[
+  {
+    "id": "HD-KV410",
+    "name": "PROMARK PMC-100PRO",
+    "kind": "LED Wall Controller",
+    "max_pixels": 2600000,
+    "max_width": 3840,
+    "max_height": 2500,
+    "ethernet_outputs": 4,
+    "description": "Supply of LED Wall Controller PROMARK PMC-100PRO, supporting a maximum loading capacity of 2.6 million pixels, with maximum width of 3,840 pixels and maximum height of 2,500 pixels, subject to the total pixel capacity. It features 2 HDMI inputs, together with 4 Gigabit Ethernet outputs. USB media playback and HDMI audio are supported. The unit uses DC 12V, 1.5A power, consumes 14W and has a 1U Mini chassis. Its operating temperature range is -20°C to 55°C.",
+    "source": "HD-KV410 Specification v1.1.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-100PRO",
+    "legacy_names": [
+      "Promark KV 410",
+      "Huidu KV 410",
+      "Huidu HD-KV410",
+      "HD-KV410"
+    ],
+    "base_rate": 25000
+  },
+  {
+    "id": "HD-VP620A",
+    "name": "PROMARK PMC-2",
+    "kind": "LED Wall Controller",
+    "max_pixels": 3900000,
+    "max_width": 8192,
+    "max_height": 4000,
+    "ethernet_outputs": 6,
+    "description": "Supply of LED Wall Controller PROMARK PMC-2, supporting a maximum loading capacity of 3.9 million pixels, with maximum width of 8,192 pixels and maximum height of 4,000 pixels, subject to the total pixel capacity. It features 2 HDMI, 1 DP, 1 DVI and 1 VGA input, together with 6 Gigabit Ethernet outputs. Supports input up to 4096 × 2160 at 60Hz, two 4K windows, 16 scene presets and RS232 control. The unit uses AC 100-240V, 50/60Hz power, consumes 50W and has a 1U chassis. Its operating temperature range is -20°C to 55°C.",
+    "source": "HD-VP620A Specification v1.2.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-2",
+    "legacy_names": [
+      "Promark VP 620A",
+      "Huidu VP 620A",
+      "Huidu HD-VP620A",
+      "HD-VP620A"
+    ],
+    "base_rate": 30000
+  },
+  {
+    "id": "HD-VP820A",
+    "name": "PROMARK PMC-200PRO",
+    "kind": "LED Wall Controller",
+    "max_pixels": 5200000,
+    "max_width": 8192,
+    "max_height": 4000,
+    "ethernet_outputs": 8,
+    "description": "Supply of LED Wall Controller PROMARK PMC-200PRO, supporting a maximum loading capacity of 5.2 million pixels, with maximum width of 8,192 pixels and maximum height of 4,000 pixels, subject to the total pixel capacity. It features 2 HDMI, 1 DP, 1 DVI and 1 VGA input, together with 8 Gigabit Ethernet outputs. Supports input up to 4096 × 2160 at 60Hz, two 4K windows, 16 scene presets and RS232 control. The unit uses AC 100-240V, 50/60Hz power, consumes 50W and has a 1U chassis. Its operating temperature range is -20°C to 55°C.",
+    "source": "HD-VP820A Specification v1.2.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-200PRO",
+    "legacy_names": [
+      "Promark VP 820A",
+      "Huidu VP 820A",
+      "Huidu HD-VP820A",
+      "HD-VP820A"
+    ],
+    "base_rate": 40000
+  },
+  {
+    "id": "HD-VP8",
+    "name": "PROMARK PMC-250PRO",
+    "kind": "LED Wall Controller",
+    "max_pixels": 5200000,
+    "max_width": 16000,
+    "max_height": 8000,
+    "ethernet_outputs": 8,
+    "description": "Supply of LED Wall Controller PROMARK PMC-250PRO, supporting a maximum loading capacity of 5.2 million pixels, with maximum width of 16,000 pixels and maximum height of 8,000 pixels, subject to the total pixel capacity. It features 1 DP 1.2, 1 HDMI 2.0 and 1 HDMI 1.4 input; 3G-SDI input/loop is optional, together with 8 Gigabit Ethernet outputs. Supports 4096 × 2160 at 60Hz input, USB 3.0 media playback, two 4K windows, network port backup and an HDMI monitoring output. The unit uses AC 100-240V, 50/60Hz power, consumes 50W and has a 1U chassis. Its operating temperature range is -20°C to 55°C.",
+    "source": "HD-VP8 Specification V1.1.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-250PRO",
+    "legacy_names": [
+      "Promark VP 8",
+      "Huidu VP 8",
+      "Huidu HD-VP8",
+      "HD-VP8"
+    ],
+    "base_rate": 60000
+  },
+  {
+    "id": "HD-VP12",
+    "name": "PROMARK PMC-4K",
+    "kind": "LED Wall Controller",
+    "max_pixels": 7800000,
+    "max_width": 16000,
+    "max_height": 8000,
+    "ethernet_outputs": 12,
+    "description": "Supply of LED Wall Controller PROMARK PMC-4K, supporting a maximum loading capacity of 7.8 million pixels, with maximum width of 16,000 pixels and maximum height of 8,000 pixels, subject to the total pixel capacity. It features 1 DP 1.2, 1 HDMI 2.0 and 1 HDMI 1.4 input; 3G-SDI input/loop is optional, together with 12 Gigabit Ethernet outputs. Supports 4096 × 2160 at 60Hz input, USB 3.0 media playback, two 4K windows, network port backup and an HDMI monitoring output. The unit uses AC 100-240V, 50/60Hz power, consumes 50W and has a 1U chassis. Its operating temperature range is -20°C to 55°C.",
+    "source": "HD-VP12 Specification V1.0.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-4K",
+    "legacy_names": [
+      "Promark VP 12",
+      "Huidu VP 12",
+      "Huidu HD-VP12",
+      "HD-VP12"
+    ],
+    "base_rate": 100000
+  },
+  {
+    "id": "HD-VP1640A",
+    "name": "PROMARK PMC-5",
+    "kind": "LED Wall Controller",
+    "max_pixels": 10400000,
+    "max_width": 16000,
+    "max_height": 4000,
+    "ethernet_outputs": 16,
+    "description": "Supply of LED Wall Controller PROMARK PMC-5, supporting a maximum loading capacity of 10.4 million pixels, with maximum width of 16,000 pixels and maximum height of 4,000 pixels, subject to the total pixel capacity. It features 1 DP or 1 Type-C input (not simultaneous), 1 HDMI 2.0, 2 HDMI 1.4 and 2 DVI inputs, together with 16 Gigabit Ethernet outputs. Supports 4K at 60Hz input, four-window display, 8 scene presets and Wi-Fi mobile control. Optional projection and SDI configurations replace specified standard inputs. The unit uses AC 100-240V, 50/60Hz power, consumes 50W and has a 2U chassis. Its operating temperature range is -10°C to 60°C.",
+    "source": "HD-VP1640A Specification v1.2.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-5",
+    "legacy_names": [
+      "Promark VP 1640A",
+      "Huidu VP 1640A",
+      "Huidu HD-VP1640A",
+      "HD-VP1640A"
+    ],
+    "base_rate": 150000
+  },
+  {
+    "id": "HD-VP2430",
+    "name": "PROMARK PMC-500",
+    "kind": "LED Wall Controller",
+    "max_pixels": 15720000,
+    "max_width": 16384,
+    "max_height": 8192,
+    "ethernet_outputs": 24,
+    "description": "Supply of LED Wall Controller PROMARK PMC-500, supporting a maximum loading capacity of 15.72 million pixels, with maximum width of 16,384 pixels and maximum height of 8,192 pixels, subject to the total pixel capacity. It features 4 HDMI and 1 DP input, together with 24 Gigabit Ethernet outputs. Supports input up to 4096 × 2160 at 60Hz, three 4K windows and 3 optical fibre outputs. The unit uses AC 100-240V, 50/60Hz power, consumes 50W and has a 2U chassis. Its operating temperature range is -20°C to 55°C.",
+    "source": "HD-VP2430 Specification V1.0.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-500",
+    "legacy_names": [
+      "Promark VP 2430",
+      "Huidu VP 2430",
+      "Huidu HD-VP2430",
+      "HD-VP2430"
+    ],
+    "base_rate": 250000
+  },
+  {
+    "id": "HD-VP2060",
+    "name": "PROMARK PMC-6",
+    "kind": "LED Wall Controller",
+    "max_pixels": 13100000,
+    "max_width": 16384,
+    "max_height": 8192,
+    "ethernet_outputs": 20,
+    "description": "Supply of LED Wall Controller PROMARK PMC-6, supporting a maximum loading capacity of 13.1 million pixels, with maximum width of 16,384 pixels and maximum height of 8,192 pixels, subject to the total pixel capacity. It features 4 HDMI 1.3, 1 HDMI 2.0 and 1 DP 1.2 input, together with 20 Gigabit Ethernet outputs. Supports input up to 4096 × 2160 at 60Hz, six-window layouts and 16 scene presets. The unit uses AC 100-240V, 50/60Hz power, consumes 85W and has a 2U chassis. Its operating temperature range is -20°C to 50°C.",
+    "source": "HD-VP2060 Specification v1.1.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-6",
+    "legacy_names": [
+      "Promark VP 2060",
+      "Huidu VP 2060",
+      "Huidu HD-VP2060",
+      "HD-VP2060"
+    ],
+    "base_rate": 200000
+  },
+  {
+    "id": "HD-VP3060",
+    "name": "PROMARK PMC-600",
+    "kind": "LED Wall Controller",
+    "max_pixels": 19500000,
+    "max_width": 24576,
+    "max_height": 24576,
+    "ethernet_outputs": 30,
+    "description": "Supply of LED Wall Controller PROMARK PMC-600, supporting a maximum loading capacity of 19.5 million pixels, with maximum width of 24,576 pixels and maximum height of 24,576 pixels, subject to the total pixel capacity. It features 4 HDMI 1.3, 1 HDMI 2.0 and 1 DP 1.2 input, together with 30 Gigabit Ethernet outputs. Supports input up to 4096 × 2160 at 60Hz, six-window layouts and 16 scene presets. The unit uses AC 100-240V, 50/60Hz power, consumes 115W and has a 2U chassis. Its operating temperature range is -20°C to 50°C.",
+    "source": "HD-VP3060 Specification v1.1.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-600",
+    "legacy_names": [
+      "Promark VP 3060",
+      "Huidu VP 3060",
+      "Huidu HD-VP3060",
+      "HD-VP3060"
+    ],
+    "base_rate": 300000
+  },
+  {
+    "id": "HD-VP4060",
+    "name": "PROMARK PMC-9",
+    "kind": "LED Wall Controller",
+    "max_pixels": 26000000,
+    "max_width": 32768,
+    "max_height": 32768,
+    "ethernet_outputs": 40,
+    "description": "Supply of LED Wall Controller PROMARK PMC-9, supporting a maximum loading capacity of 26 million pixels, with maximum width of 32,768 pixels and maximum height of 32,768 pixels, subject to the total pixel capacity. It features 4 HDMI 1.3, 1 HDMI 2.0 and 1 DP 1.2 input, together with 40 Gigabit Ethernet outputs. Supports input up to 4096 × 2160 at 60Hz, six-window layouts and 16 scene presets. The unit uses AC 100-240V, 50/60Hz power, consumes 130W and has a 2U chassis. Its operating temperature range is -20°C to 50°C.",
+    "source": "HD-VP4060 Specification v1.1.pdf",
+    "brand": "PROMARK",
+    "model": "PMC-9",
+    "legacy_names": [
+      "Promark VP 4060",
+      "Huidu VP 4060",
+      "Huidu HD-VP4060",
+      "HD-VP4060"
+    ],
+    "base_rate": 350000
+  }
+]

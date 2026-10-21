@@ -1,0 +1,574 @@
+:root {
+    --navy: #172e3c;
+    --teal: #00877e;
+    --muted: #71808d;
+    --line: #e3e9ed;
+    --paper: #f4f7f9
+}
+
+body.light-studio {
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    background: #f4f7f9;
+    color: var(--navy)
+}
+
+.light-studio header {
+    height: 76px;
+    padding: 0 28px;
+    gap: 22px;
+    box-shadow: 0 1px 8px #142b3604
+}
+
+.light-studio .brand {
+    font-size: 21px
+}
+
+.light-studio .brand-mark {
+    width: 40px;
+    height: 40px
+}
+
+.light-studio .brand small {
+    font-size: 8px
+}
+
+.light-studio main {
+    max-width: 1920px;
+    padding: 26px 28px 0
+}
+
+.light-studio .heading {
+    margin-bottom: 22px
+}
+
+.light-studio h1 {
+    font-size: 27px;
+    letter-spacing: -.8px
+}
+
+.light-studio .sub {
+    font-size: 12px;
+    margin-top: 6px
+}
+
+.light-studio .eyebrow {
+    font-size: 9px;
+    letter-spacing: 1.7px
+}
+
+.light-studio .badge {
+    background: #eaf5f2;
+    border: 1px solid #d2e9e3;
+    color: #00877e;
+    font-size: 11px
+}
+
+.light-studio .workspace {
+    display: grid;
+    grid-template-columns: 290px minmax(0, 1fr) 270px;
+    gap: 18px;
+    align-items: start
+}
+
+.studio-settings,
+.studio-inspector {
+    min-width: 0
+}
+
+.light-studio .panel {
+    border: 1px solid #e1e8ec;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 3px 14px #193c5010
+}
+
+.light-studio .panel-title {
+    margin-bottom: 16px
+}
+
+.light-studio .panel-title h2 {
+    font-size: 14px
+}
+
+.light-studio .step {
+    background: #e8f5f1;
+    border-radius: 7px;
+    font-size: 10px
+}
+
+.light-studio .display-top {
+    margin: 0 0 14px
+}
+
+.light-studio .display-top-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.light-studio .display-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%
+}
+
+.light-studio .display-controls label {
+    width: 100%;
+    margin-bottom: 12px
+}
+
+.light-studio .display-controls .technology-field {
+    width: 100%
+}
+
+.light-studio .display-controls .switch {
+    margin-bottom: 12px
+}
+
+.light-studio #technology-hint {
+    display: none
+}
+
+.light-studio .product-figure {
+    display: none !important
+}
+
+.light-studio .display-controls #product-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    margin: 2px 0 12px
+}
+
+.light-studio .cabinet-stat {
+    border: 0;
+    background: #f3f7f8;
+    border-radius: 8px;
+    padding: 8px;
+    min-width: 0
+}
+
+.light-studio .cabinet-stat strong {
+    font-size: 10px
+}
+
+.light-studio .cabinet-stat:first-child {
+    grid-column: 1/-1
+}
+
+.light-studio label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #677986
+}
+
+.light-studio input:not([type=checkbox]),
+.light-studio select,
+.light-studio textarea {
+    font-family: inherit;
+    border: 1px solid #dce5e9;
+    border-radius: 7px;
+    background: #fbfcfd;
+    font-size: 12px;
+    min-height: 36px;
+    padding: 8px;
+    margin-top: 5px;
+    color: #263e4c;
+    width: 100%
+}
+
+.light-studio textarea {
+    resize: vertical
+}
+
+.light-studio input:focus,
+.light-studio select:focus,
+.light-studio textarea:focus {
+    outline: 2px solid #00877e25;
+    border-color: #00877e
+}
+
+.light-studio .pair {
+    gap: 8px
+}
+
+.light-studio .dimension-stepper {
+    grid-template-columns: 25px minmax(0, 1fr) 25px;
+    gap: 2px
+}
+
+.light-studio .dimension-stepper input {
+    padding: 5px;
+    font-size: 11px
+}
+
+.light-studio .dimension-stepper button {
+    min-height: 34px;
+    font-size: 16px
+}
+
+.light-studio .hint {
+    font-size: 10px
+}
+
+.light-studio .preview-panel {
+    border-radius: 16px;
+    border: 1px solid #dfe7eb;
+    box-shadow: 0 6px 24px #193c500a
+}
+
+.light-studio .preview-toolbar {
+    padding: 18px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px
+}
+
+.light-studio .preview-toolbar h2 {
+    font-size: 17px
+}
+
+.light-studio .preview-tools {
+    gap: 7px
+}
+
+.light-studio .preview-tools label {
+    font-size: 9px
+}
+
+.light-studio .preview-tools .preview-selector {
+    min-width: 140px
+}
+
+.light-studio .preview-selector select {
+    font-size: 10px;
+    min-height: 28px
+}
+
+.light-studio .preview-tools button {
+    min-height: 28px
+}
+
+.light-studio .preview-size-controls {
+    background: #f9fbfc
+}
+
+.light-studio .drawing {
+    background-color: #f2f6f8;
+    background-image: radial-gradient(#becdd64d .65px, transparent .65px);
+    background-size: 16px 16px;
+    min-height: 440px
+}
+
+.light-studio .drawing svg {
+    min-height: 440px
+}
+
+.light-studio .preview-footer {
+    font-size: 10px;
+    background: #fff;
+    padding: 12px 16px
+}
+
+.light-studio .metrics {
+    gap: 8px
+}
+
+.light-studio .metric {
+    border-radius: 12px;
+    padding: 13px 10px;
+    border-color: #e1e8ec;
+    box-shadow: 0 2px 8px #193c5005
+}
+
+.light-studio .metric strong {
+    font-size: 16px;
+    letter-spacing: -.4px
+}
+
+.light-studio .metric span {
+    font-size: 9px
+}
+
+.light-studio .metric small {
+    font-size: 9px
+}
+
+.light-studio .metric:first-child {
+    border-top: 3px solid #00877e
+}
+
+.light-studio .notice {
+    background: #fffbef;
+    border: 1px solid #efe4c6;
+    border-left: 3px solid #d8b462;
+    font-size: 10px;
+    border-radius: 9px
+}
+
+.light-studio .studio-controller {
+    display: block;
+    width: auto;
+    border-top: 3px solid #00877e
+}
+
+.studio-controller h2,
+.studio-estimate h2 {
+    font-size: 15px
+}
+
+.studio-controller>label {
+    margin-bottom: 12px
+}
+
+.studio-controller-details {
+    border-top: 1px solid #e3e9ed;
+    padding-top: 12px;
+    margin-top: 12px
+}
+
+.studio-controller-details summary,
+.studio-background summary {
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 650;
+    color: #294653;
+    padding: 3px 0 10px
+}
+
+.studio-controller-details label {
+    margin-top: 8px
+}
+
+.studio-background .upload {
+    background: #f6faf9
+}
+
+.studio-background .hint {
+    margin-bottom: 12px
+}
+
+.studio-estimate dl {
+    margin: 18px 0
+}
+
+.studio-estimate dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 11px 0;
+    font-size: 11px
+}
+
+.studio-estimate dt {
+    color: #71808d
+}
+
+.studio-estimate dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 600
+}
+
+.studio-total {
+    padding-top: 14px;
+    border-top: 1px solid #e3e9ed
+}
+
+.studio-total span {
+    font-size: 10px;
+    color: #71808d;
+    display: block
+}
+
+.studio-total strong {
+    font-size: 23px;
+    display: block;
+    margin-top: 4px;
+    letter-spacing: -.5px;
+    color: #00796f
+}
+
+.studio-estimate button {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 12px
+}
+
+.studio-note {
+    font-size: 10px;
+    color: #7b8b96;
+    padding: 8px
+}
+
+.light-studio .primary {
+    background: #00877e;
+    border-color: #00877e;
+    box-shadow: 0 3px 6px #00877e15
+}
+
+.light-studio .primary:hover {
+    background: #006e67
+}
+
+.light-studio .bottom-actions button {
+    font-size: 12px
+}
+
+.light-studio footer {
+    margin-top: 20px
+}
+
+.light-studio #results .panel {
+    padding: 22px
+}
+
+.light-studio #results .planning-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr))
+}
+
+@media(min-width:1400px) {
+
+    .studio-canvas,
+    .studio-inspector {
+        position: sticky;
+        top: 18px
+    }
+}
+
+@media(max-width:1250px) {
+    .light-studio .workspace {
+        grid-template-columns: 260px minmax(0, 1fr)
+    }
+
+    .studio-inspector {
+        grid-column: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px
+    }
+
+    .studio-note {
+        grid-column: 1/-1
+    }
+
+    .light-studio .header-actions {
+        gap: 6px
+    }
+
+    .light-studio header {
+        gap: 12px
+    }
+
+    .light-studio nav {
+        gap: 10px
+    }
+
+    .light-studio .metrics {
+        grid-template-columns: 1fr 1fr
+    }
+}
+
+@media(max-width:800px) {
+    .light-studio header {
+        height: auto;
+        padding: 16px;
+        flex-wrap: wrap
+    }
+
+    .light-studio nav {
+        order: 3;
+        width: 100%;
+        flex-basis: 100%;
+        height: 36px
+    }
+
+    .light-studio .brand {
+        font-size: 18px
+    }
+
+    .light-studio .header-actions {
+        margin-left: 0;
+        flex-wrap: wrap
+    }
+
+    .light-studio .header-actions button {
+        font-size: 10px;
+        padding: 7px 9px
+    }
+
+    .light-studio main {
+        padding: 20px 14px
+    }
+
+    .light-studio .heading {
+        display: block
+    }
+
+    .light-studio h1 {
+        font-size: 24px
+    }
+
+    .light-studio .badge {
+        display: inline-block;
+        margin-top: 12px
+    }
+
+    .light-studio .workspace {
+        display: flex;
+        flex-direction: column
+    }
+
+    .studio-settings,
+    .studio-canvas,
+    .studio-inspector {
+        width: 100%
+    }
+
+    .studio-inspector {
+        display: block
+    }
+
+    .light-studio .display-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 12px
+    }
+
+    .light-studio .display-controls #product-summary {
+        grid-column: 1/-1
+    }
+
+    .light-studio .drawing,
+    .light-studio .drawing svg {
+        min-height: 290px
+    }
+
+    .light-studio #results .planning-grid {
+        grid-template-columns: 1fr 1fr
+    }
+}
+
+@media print {
+
+    .light-studio header,
+    .studio-inspector {
+        display: none !important
+    }
+
+    .light-studio main {
+        padding: 0
+    }
+
+    .light-studio .panel {
+        box-shadow: none
+    }
+
+    .light-studio #results .panel {
+        padding: 10px
+    }
+}

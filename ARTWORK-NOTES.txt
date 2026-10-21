@@ -1,0 +1,8 @@
+Built-in image generation was used for the following project artwork. All assets are bundled locally.
+
+static/showroom-room.png — Frontal empty showroom with rough dark-grey concrete wall and polished floor, warm amber reflections. No screen, people or text. Based on the selected Dark Pro reference.
+static/showroom-person.png — Full-body man seen from behind in a slight three-quarter view, black business suit, relaxed pose, warm side light, transparent background.
+static/showroom-sunset.png — Wide photo of orange sunset over an alpine lake, blue/purple mountains, forest hills, pink clouds and lake reflections, matching the reference screen composition.
+static/showroom-cabinet.png — Transparent representative cabinet cutout based on the small black LED cabinet thumbnail in the reference, enlarged with no UI or text.
+
+These generated visuals are illustrative; they are not product datasheets. The supplied catalogue values and original quotation photographs remain authoritative.

@@ -1,0 +1,4 @@
+PM2.5 SMD Outdoor: configured cabinet dimensions 960 x 960 x 70 mm.
+Default size and cabinet increment steps updated accordingly.
+Existing 960 x 960 pixel setting retained. Supplied specification tables unchanged.
+Pictured PM1.5 SMD entry remains removed.

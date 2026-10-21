@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="UDA II 1.2 angled front view"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef3f2"/><stop offset="1" stop-color="#d5e0de"/></linearGradient><linearGradient id="art" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ff7a59"/><stop offset=".35" stop-color="#e83f8d"/><stop offset=".7" stop-color="#6a4de0"/><stop offset="1" stop-color="#17b8d6"/></linearGradient><linearGradient id="art2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".5" stop-color="#2bc48a"/><stop offset="1" stop-color="#1573d6"/></linearGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3f5"/><stop offset="1" stop-color="#f6efe0"/></linearGradient><linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a4a52"/><stop offset="1" stop-color="#1c2a31"/></linearGradient></defs><rect width="320" height="200" fill="url(#bg)"/><ellipse cx="165" cy="176" rx="100" ry="7" fill="#142b36" opacity=".18"/>
+<polygon points="228,44 262,58 262,152 228,142" fill="url(#metal)"/>
+<polygon points="62,50 228,44 228,142 62,148" fill="#10212a"/>
+<polygon points="68,56 222,50 222,137 68,142" fill="url(#art)"/>
+<polygon points="68,56 222,50 222,137 68,142" fill="#fff" opacity=".06"/>
+<g clip-path="url(#c1)"><clipPath id="c1"><polygon points="68,56 222,50 222,137 68,142"/></clipPath>
+<circle cx="170" cy="82" r="22" fill="#fff" opacity=".35"/><path d="M68 142 L110 98 L135 120 L180 78 L222 137 Z" fill="#142b36" opacity=".35"/></g>
+<path d="M68 56 L222 50 M68 142 L222 137" stroke="#fff" stroke-opacity=".0"/>
+<path d="M120 54V140M171 52V138M68 99L222 93" stroke="#000" stroke-opacity=".22" stroke-width=".8"/>
+<polygon points="62,50 228,44 262,58 96,64" fill="#52646c" opacity=".55"/></svg>

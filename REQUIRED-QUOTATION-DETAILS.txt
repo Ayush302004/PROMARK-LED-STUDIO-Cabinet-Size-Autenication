@@ -1,0 +1,1 @@
+Before downloading an Excel quotation, enter Client name, Sales person and Contact details (phone or email) in the Excel quotation section. All download buttons check these required fields. Missing details open the form and focus the first missing field. The server also rejects missing or blank details.

@@ -1,0 +1,12 @@
+Supplied controller base rates. Calculated unit price = base rate x 130 x 2. Total before GST = calculated unit price x quantity. GST is applied separately.
+
+PROMARK PMC-100PRO: base rate 25,000; calculated unit price INR 6,500,000
+PROMARK PMC-2: base rate 30,000; calculated unit price INR 7,800,000
+PROMARK PMC-200PRO: base rate 40,000; calculated unit price INR 10,400,000
+PROMARK PMC-250PRO: base rate 60,000; calculated unit price INR 15,600,000
+PROMARK PMC-4K: base rate 100,000; calculated unit price INR 26,000,000
+PROMARK PMC-5: base rate 150,000; calculated unit price INR 39,000,000
+PROMARK PMC-6: base rate 200,000; calculated unit price INR 52,000,000
+PROMARK PMC-500: base rate 250,000; calculated unit price INR 65,000,000
+PROMARK PMC-600: base rate 300,000; calculated unit price INR 78,000,000
+PROMARK PMC-9: base rate 350,000; calculated unit price INR 91,000,000

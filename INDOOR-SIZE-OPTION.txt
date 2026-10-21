@@ -1,0 +1,8 @@
+Indoor cabinet options updated 8 October 2026
+
+Only PM1.2 COB retains the 600 x 337.5 mm cabinet option.
+Confirmed technical-table dimensions: 600 x 337.5 x 38.1 mm.
+Resolution: 480 x 270 pixels. Weight: 3.6 kg.
+
+Removed all five additional 600 x 337.5 mm PM1.5 / PM1.8 / PM2.5 entries.
+Original-size cabinets and outdoor entries remain unchanged.

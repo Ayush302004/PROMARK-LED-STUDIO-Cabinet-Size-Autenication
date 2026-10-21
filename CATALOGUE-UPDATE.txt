@@ -1,0 +1,3 @@
+Removed Umate SF4 and the indoor PM2.5 SMD 800-nit cabinet.
+Retained the 600-nit indoor cabinet and renamed it PM2.5 SMD.
+Retained cabinet: 640 x 480 x 61.5 mm, P2.5, 4200 Hz, front maintenance.

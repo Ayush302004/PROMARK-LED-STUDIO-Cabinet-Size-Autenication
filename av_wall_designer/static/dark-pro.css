@@ -1,0 +1,336 @@
+/* Dark Pro: charcoal workspace and cyan accents from the selected concept. */
+:root {
+    color-scheme: dark;
+    --navy: #e9f0fa;
+    --teal: #22d3e5;
+    --muted: #a1b1c5;
+    --line: #263441;
+    --paper: #0b1722
+}
+
+body.light-studio {
+    background: #0b1722;
+    color: #e9f0fa
+}
+
+.light-studio header {
+    background: #080f15;
+    border-color: #1c2a36;
+    box-shadow: 0 4px 24px #0003
+}
+
+.light-studio .panel,
+.light-studio .preview-panel,
+.light-studio .metric,
+dialog {
+    background: linear-gradient(135deg, #111b25, #0d151d);
+    border-color: #24313d;
+    box-shadow: 0 6px 24px #0002;
+    color: #e9f0fa
+}
+
+.light-studio .display-top {
+    background: linear-gradient(135deg, #111b25, #0d151d)
+}
+
+.light-studio .badge,
+.light-studio .step {
+    background: #10313c;
+    border-color: #235967;
+    color: #59e7f4
+}
+
+.light-studio label,
+.light-studio .field-label,
+.light-studio .unit-line,
+.light-studio .unit,
+.light-studio .hint,
+.light-studio .sub,
+.light-studio .metric span,
+.light-studio .metric small,
+.studio-estimate dt,
+.studio-total span,
+.studio-note {
+    color: #a1b1c5
+}
+
+.light-studio h1,
+.light-studio h2,
+.light-studio .metric strong,
+.light-studio .cabinet-stat strong,
+.studio-estimate dd {
+    color: #edf3fc
+}
+
+.light-studio input:not([type=checkbox]),
+.light-studio select,
+.light-studio textarea {
+    background: #0b141d;
+    border-color: #344453;
+    color: #e9f0fa;
+    color-scheme: dark
+}
+
+.light-studio input:focus,
+.light-studio select:focus,
+.light-studio textarea:focus {
+    border-color: #29d9eb;
+    outline-color: #22d3e533
+}
+
+.light-studio input:disabled,
+.light-studio select:disabled {
+    background: #17212b;
+    color: #8c9cae
+}
+
+.light-studio button {
+    background: #101a24;
+    border-color: #344453;
+    color: #d6e4f5
+}
+
+.light-studio button:hover {
+    background: #1b3442;
+    border-color: #4a6a7b
+}
+
+.light-studio button:focus-visible {
+    outline: 2px solid #2de3f2;
+    outline-offset: 3px
+}
+
+.light-studio .primary {
+    background: linear-gradient(110deg, #17bdc9, #21cfe7);
+    border-color: #39dcea;
+    color: #031319;
+    box-shadow: 0 3px 16px #00cfe512;
+    font-weight: 700
+}
+
+.light-studio .primary:hover {
+    background: #4ce2ef;
+    border-color: #76eaf3
+}
+
+.light-studio nav button,
+.light-studio .quiet,
+.light-studio .link {
+    background: transparent
+}
+
+.light-studio nav button.active,
+.light-studio .link,
+.light-studio .eyebrow {
+    color: #32def0
+}
+
+.light-studio nav button.active {
+    border-bottom-color: #32def0
+}
+
+.light-studio .switch {
+    background: #0a121a;
+    border: 1px solid #2c3b48
+}
+
+.light-studio .switch button {
+    background: transparent;
+    border: 1px solid transparent
+}
+
+.light-studio .switch button.active,
+.light-studio .scene-list button.active {
+    background: #143644;
+    border: 1px solid #32deef;
+    color: #f1fcff;
+    box-shadow: inset 0 0 16px #26cce810
+}
+
+.light-studio .cabinet-stat,
+.light-studio .pixel-controls,
+.light-studio .controller-panel input[readonly] {
+    background: #14212c;
+    border-color: #2a3c49
+}
+
+.light-studio .cabinet-stat>span {
+    color: #a1b1c5
+}
+
+.light-studio .preview-toolbar,
+.light-studio .preview-footer,
+.light-studio .preview-size-controls {
+    background: #090f16;
+    border-color: #273440
+}
+
+.light-studio .drawing {
+    background-color: #101a24;
+    background-image: radial-gradient(#4c62733b .65px, transparent .65px)
+}
+
+.light-studio .preview-width-buttons,
+.light-studio .preview-height-buttons {
+    background: #142330;
+    border-color: #304958;
+    color: #bed2e2
+}
+
+.light-studio .preview-size-controls button {
+    background: transparent;
+    color: #d6f7fc
+}
+
+.light-studio .preview-size-controls button:hover {
+    background: #204451;
+    color: #55eafa
+}
+
+.light-studio .studio-controller,
+.light-studio .metric:first-child {
+    border-top-color: #28d4e5
+}
+
+.studio-total strong {
+    color: #42deed
+}
+
+.studio-total,
+.studio-controller-details {
+    border-color: #2a3844
+}
+
+.studio-controller-details summary,
+.studio-background summary {
+    color: #dce9f6
+}
+
+.light-studio .studio-background .upload {
+    background: #102530;
+    border-color: #2f6875;
+    color: #57ddea
+}
+
+.light-studio .notice,
+.light-studio .size-feedback,
+.light-studio .spec-note {
+    background: #29271e;
+    border-color: #756039;
+    color: #ead69d
+}
+
+.light-studio .size-feedback p {
+    color: #ead69d
+}
+
+.light-studio #status:not(:empty),
+.light-studio #quote-summary {
+    background: #10303a;
+    color: #82ebee
+}
+
+.light-studio #status.error {
+    background: #392027;
+    color: #ffb1b1
+}
+
+.light-studio .scene-bar,
+.light-studio .spec-sheet,
+.light-studio .material-meta,
+.light-studio #result-drawing {
+    background: #111d28;
+    color: #e9f0fa;
+    border-color: #2a3b49
+}
+
+.light-studio th,
+.light-studio .material-spec-heading {
+    background: #1c3343;
+    color: #ecf5ff
+}
+
+.light-studio td,
+.light-studio .spec-table td,
+.light-studio .spec-table th {
+    border-color: #2a3b49
+}
+
+.light-studio .spec-photo {
+    background: #182631
+}
+
+.light-studio dialog {
+    color-scheme: dark
+}
+
+.light-studio dialog::backdrop {
+    background: #02070cbd
+}
+
+.light-studio #wall-svg text[fill="#52666b"],
+.light-studio #wall-svg text[fill="#3d5750"] {
+    fill: #000;
+    stroke: none;
+    filter: none;
+    text-shadow: none;
+    font-weight: 600
+}
+
+.light-studio #wall-svg path[stroke="#82958f"],
+.light-studio #wall-svg path[stroke="#4f6f68"] {
+    stroke: #000;
+    stroke-width: 1.6px
+}
+
+@media print {
+    :root {
+        color-scheme: light;
+        --navy: #142b36;
+        --muted: #53676e;
+        --line: #dbe3e4
+    }
+
+    .light-studio,
+    .light-studio .panel,
+    .light-studio .spec-sheet,
+    .light-studio .material-meta,
+    .light-studio #result-drawing {
+        background: white;
+        color: #142b36;
+        box-shadow: none
+    }
+
+    .light-studio h2,
+    .light-studio td strong {
+        color: #142b36
+    }
+}
+
+/* Plain black dotted margins without shadows or halos. */
+.light-studio #wall-svg path[stroke="#4f6f68"] {
+    stroke: #000;
+    stroke-width: 2px;
+    stroke-dasharray: 2 4;
+    filter: none
+}
+
+/* Outside measurements sit on the dark workspace; inside labels sit on the wall. */
+.light-studio #wall-svg text.dimension-outside,
+.light-studio #wall-svg text[transform][fill="#3d5750"] {
+    fill: #fff;
+    stroke: none;
+    font-weight: 500
+}
+
+.light-studio #wall-svg text.dimension-inside {
+    fill: #000;
+    stroke: none;
+    filter: none;
+    text-shadow: none;
+    font-weight: 600
+}
+
+.light-studio #wall-svg path[stroke="#82958f"] {
+    stroke: #dce7f2
+}
