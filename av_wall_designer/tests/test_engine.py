@@ -77,6 +77,15 @@ class GeometryTests(unittest.TestCase):
         r = calculate(self.data)
         self.assertAlmostEqual(r["design"]["width_m"] / .3048, 12.6)
 
+    def test_snapped_cabinet_count_preserves_entered_dimensions(self):
+        self.data.update(unit="ft", screen_width="13.78", screen_height="5.536")
+        r = calculate(self.data)
+        self.assertEqual((r["columns"], r["rows"]), (7, 5))
+        self.assertAlmostEqual(r["design"]["width_m"], 13.78 * .3048)
+        self.assertAlmostEqual(r["design"]["height_m"], 5.536 * .3048)
+        self.assertAlmostEqual(r["size_difference_m"]["width"], 13.78 * .3048 - 4.2)
+        self.assertAlmostEqual(r["size_difference_m"]["height"], 5.536 * .3048 - 1.6875)
+
     def test_exact_design_fit_separate_from_cabinet_fit(self):
         self.data.update(screen_width=5, screen_height=3, policy="cover")
         r = calculate(self.data)

@@ -80,10 +80,6 @@ def calculate(data):
     size_difference = None
     cover_size = None
     if mode == "dimensions":
-        if snap_w is not None:
-            rw = snap_w * cw
-        if snap_h is not None:
-            rh = snap_h * ch
         size_difference = {"width": float(rw - sw), "height": float(rh - sh)}
         cover_size = {
             "width": float((rw / cw).to_integral_value(rounding=ROUND_CEILING) * cw),
