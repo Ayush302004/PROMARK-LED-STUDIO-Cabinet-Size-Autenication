@@ -1352,10 +1352,9 @@ body.reference-layout {
 }
 
 .controller-specs dd {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    display: block;
     line-clamp: 2;
+    max-height: 2.8em;
     overflow: hidden
 }
 
