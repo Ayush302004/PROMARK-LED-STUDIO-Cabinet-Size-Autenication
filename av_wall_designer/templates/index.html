@@ -1,37 +1,448 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>PROMARK LED STUDIO · LED Wall Designer</title><link href="{{ url_for('static', filename='favicon.png') }}" rel="icon" type="image/png"/><link href="{{ url_for('static', filename='style.css', v='31') }}" rel="stylesheet"/><link href="{{ url_for('static', filename='studio.css', v='51') }}" rel="stylesheet"/><link href="{{ url_for('static', filename='dark-pro.css') }}?v=56" rel="stylesheet"/>
-<link href="{{ url_for('static', filename='reference.css', v='62') }}" rel="stylesheet"/></head>
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width,initial-scale=1" name="viewport" />
+    <title>PROMARK LED STUDIO · LED Wall Designer</title>
+    <link href="{{ url_for('static', filename='favicon.png') }}" rel="icon" type="image/png" />
+    <link href="{{ url_for('static', filename='style.css', v='31') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='studio.css', v='51') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='dark-pro.css') }}?v=56" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='reference.css', v='63') }}" rel="stylesheet" />
+</head>
+
 <body class="light-studio dark-pro reference-layout">
-<header><a class="brand" href="/"><span class="brand-mark"><span class="brand-fallback">PM</span><img alt="Pro Mark logo" class="brand-logo" onerror="this.remove()" onload="this.parentNode.classList.add('has-logo')" src="{{ url_for('static', filename='logo.png') }}"/></span><span class="brand-text">PROMARK LED STUDIO</span></a><nav><button class="active" data-tab="designer">Designer</button><button id="header-catalogue" type="button">Catalogue</button><button id="header-projects" type="button">Projects</button></nav><div class="header-actions"><button class="quiet" id="projects-btn" title="Saved projects">Projects</button><button class="quiet" id="save-btn">Save</button><button class="primary" id="studio-download">↓  Download quotation</button></div></header><aside aria-label="Workspace navigation" class="tool-rail">
-<button class="active" data-workspace="design"><span>▦</span>Design</button>
-<button data-workspace="screens"><span>▣</span>Screens</button>
-<button data-workspace="content"><span>▧</span>Content</button>
-<button data-workspace="layouts"><span>⊞</span>Layouts</button>
-<button data-workspace="quotation"><span>▤</span>Quotation</button>
-<button data-workspace="settings"><span>⚙</span>Settings</button>
-</aside>
-<main>
-<div class="heading" hidden=""><div><p class="eyebrow">DARK PRO / LED WORKSPACE</p><h1>Design your next display.</h1><p class="sub">Configure, visualise and quote — all in one workspace.</p></div><span class="badge" id="studio-catalogue-count">Loading catalogue…</span></div>
-<div aria-live="polite" id="status" role="status"></div>
-<section id="designer">
-<div class="workspace">
-<aside class="studio-settings panel screen-settings"><section class="display-top"><div class="panel-title"><h2>Screen Settings</h2></div><div class="display-top-grid"><div class="display-controls"><label class="environment-field backing-control">Video wall type<select id="environment"><option value="indoor">Indoor video wall</option><option value="outdoor">Outdoor video wall</option></select></label><div class="environment-choice"><span class="field-label">Environment</span><div class="switch" id="environment-buttons"><button class="active" data-environment="indoor" type="button">Indoor</button><button data-environment="outdoor" type="button">Outdoor</button></div></div><div class="technology-field"><span class="field-label">LED technology</span><div aria-label="LED technology" class="switch" id="technology-buttons" role="group"><button class="technology-all" data-value="all" type="button">All</button><button data-value="SMD" type="button">SMD</button><button data-value="COB" type="button">COB</button></div><input id="technology" type="hidden" value="all"/></div><div class="model-choice"><label class="model-field">Cabinet model<select id="product"></select></label><figure class="product-figure cabinet-mini" hidden="" id="product-figure"><img alt="" id="product-image"/><figcaption hidden="" id="product-caption"></figcaption></figure></div><p class="hint" id="technology-hint">Choose a technology to filter models.</p><label class="cabinet-size-field">Cabinet size<select id="cabinet_size" aria-label="Cabinet size"></select></label><div class="product-summary reference-cabinet-size" id="product-summary"></div></div></div><details class="model-options"><summary>Model details &amp; installation</summary><label>Installation<select id="installation"><option>Wall mounted</option><option>Floor supported structure</option><option>Hanging</option><option>Custom</option></select></label><button class="link" id="product-details">Full specifications ↗</button><button class="link" id="catalogue-btn" type="button">Browse catalogue ↗</button></details></section><section class="dimensions-panel" id="dimensions-panel"><div class="unit-line"><span>Screen Dimensions</span><div class="switch compact" id="units"><button class="active" data-value="ft">ft</button><button data-value="m">m</button></div></div><div class="screen-dimension-fields"><label>Width <span class="unit">ft</span><span class="dimension-stepper"><input id="screen_width" min="0.001" step="any" type="number" value="2.0997"/><button aria-label="Decrease screen width" data-direction="-1" data-step-target="screen_width" type="button">−</button><button aria-label="Increase screen width" data-direction="1" data-step-target="screen_width" type="button">+</button></span></label><label>Height <span class="unit">ft</span><span class="dimension-stepper"><input id="screen_height" min="0.001" step="any" type="number" value="1.5748"/><button aria-label="Decrease screen height" data-direction="-1" data-step-target="screen_height" type="button">−</button><button aria-label="Increase screen height" data-direction="1" data-step-target="screen_height" type="button">+</button></span></label></div><details class="advanced-layout" id="advanced-layout"><summary>Wall size &amp; advanced layout</summary><label>Dimension button step<select id="dimension_step"><option value="unit">1 ft per click</option><option selected="" value="cabinet">Model default steps (screen only)</option></select></label><p class="hint" id="step-hint">Model defaults use cabinet steps; wall buttons change by 1 of the selected unit.</p><div class="pair"><label>Wall width <span class="unit">ft</span><span class="dimension-stepper"><button aria-label="Decrease wall width" data-direction="-1" data-step-target="wall_width" type="button">−</button><input id="wall_width" min="0.01" step="any" type="number" value="16.4000"/><button aria-label="Increase wall width" data-direction="1" data-step-target="wall_width" type="button">+</button></span></label><label>Wall height <span class="unit">ft</span><span class="dimension-stepper"><button aria-label="Decrease wall height" data-direction="-1" data-step-target="wall_height" type="button">−</button><input id="wall_height" min="0.01" step="any" type="number" value="9.8400"/><button aria-label="Increase wall height" data-direction="1" data-step-target="wall_height" type="button">+</button></span></label></div><div class="preset-control"><label>Starting dimensions<select id="size_preset"><option selected="" value="showroom">Dark Pro showroom · 14.698 × 7.874 ft screen</option><option value="model">Model defaults · one cabinet / 5 × 3 m wall</option><option value="standard">Standard · 16 × 10 ft wall / 12 × 7 ft screen</option><option value="compact">Compact · 12 × 8 ft wall / 8 × 4.5 ft screen</option><option value="large">Large · 24 × 14 ft wall / 20 × 11.25 ft screen</option></select></label><button class="quiet" id="reset-dimensions">Apply preset / reset dimensions</button></div><label>Size screen by<select id="mode"><option value="dimensions">Screen dimensions</option><option value="grid">Cabinet columns / rows</option><option value="resolution">Target resolution</option></select></label><div class="pixel-controls"><div class="pair"><label>Screen width <span class="pixel-unit">px</span><span class="dimension-stepper"><button aria-label="Decrease pixel width" data-direction="-1" data-pixel-axis="width" type="button">−</button><input aria-label="Calculated screen width pixels" id="screen_pixels_w" readonly="" type="number" value="416"/><button aria-label="Increase pixel width" data-direction="1" data-pixel-axis="width" type="button">+</button></span></label><label>Screen height <span class="pixel-unit">px</span><span class="dimension-stepper"><button aria-label="Decrease pixel height" data-direction="-1" data-pixel-axis="height" type="button">−</button><input aria-label="Calculated screen height pixels" id="screen_pixels_h" readonly="" type="number" value="312"/><button aria-label="Increase pixel height" data-direction="1" data-pixel-axis="height" type="button">+</button></span></label></div><p class="hint" id="pixel-hint">One click adds or removes one cabinet's pixels.</p></div><div id="dimension-fields"><label>Sizing policy<select id="policy"><option value="within">Fit within requested size</option><option selected="" value="nearest">Nearest achievable size</option><option value="cover">Meet or exceed requested size</option></select></label></div><div hidden="" id="grid-fields"><div class="pair"><label>Columns<input id="columns" min="1" step="1" type="number" value="1"/></label><label>Rows<input id="rows" min="1" step="1" type="number" value="1"/></label></div></div><div hidden="" id="resolution-fields"><label>Resolution target<select id="resolution"><option value="1920,1080">FHD · 1920 × 1080</option><option value="3840,2160">UHD · 3840 × 2160</option><option value="7680,4320">8K · 7680 × 4320</option><option value="custom">Custom</option></select></label><div class="pair"><label>Pixel width<input id="target_pixels_w" min="1" step="1" type="number" value="1920"/></label><label>Pixel height<input id="target_pixels_h" min="1" step="1" type="number" value="1080"/></label></div><p class="hint">Targets round up to whole cabinets. Actual resolution is shown in results.</p></div><label>Screen position<select id="position"><option value="centre">Centred on wall</option><option value="custom">Custom offsets</option></select></label><div class="pair" hidden="" id="position-fields"><label>From left <span class="unit">ft</span><input id="left" min="0" step="0.01" type="number" value="0.100"/></label><label>From floor <span class="unit">ft</span><input id="bottom" min="0" step="0.01" type="number" value="0.150"/></label></div></details></section>
-<section class="finish-settings"><span class="field-label">Background Wall Finish</span><div class="finish-swatches" id="finish-swatches">
-<button class="active" data-finish="concrete" type="button"><i class="finish-concrete"></i><span>Concrete</span></button>
-<button data-finish="wood" type="button"><i class="finish-wood"></i><span>Wood</span></button>
-<button data-finish="dark" type="button"><i class="finish-dark"></i><span>Dark Panel</span></button>
-<button data-finish="white" type="button"><i class="finish-white"></i><span>White</span></button>
-<button data-finish="custom" type="button"><i class="finish-custom">▧</i><span>Custom</span></button>
-</div></section><details class="studio-background"><summary>Custom background &amp; content</summary><div class="pair"><label>Wall finish<select id="finish" value="concrete"><option value="plain">Paint</option><option value="brick">Brick</option><option value="wood">Wood</option><option selected="" value="concrete">Concrete</option><option value="dark">Dark panel</option><option value="white">White</option><option value="custom">Custom photo</option></select></label><label>Wall colour<input id="wall_colour" type="color" value="#6b6b6b"/></label></div><label class="upload">Upload wall photo<input accept="image/png,image/jpeg,image/webp" id="wall-photo" type="file"/></label><button class="link" id="clear-photo">Remove photo</button><p class="hint">Photo fills the wall rectangle as an illustrative backdrop. Perspective calibration is not included yet.</p><div class="pair"><label hidden>Scale reference height <span class="unit">ft</span><input id="human_height" max="10" min="0.3" step="0.01" type="number" value="5.75"/></label><label>Content preview<select id="content"><option selected="" value="sample">Default sunset picture</option><option value="gradient">Studio graphic</option><option value="black">Black screen</option><option value="image">Upload image below</option></select></label></div><label class="upload">Upload screen image<input accept="image/png,image/jpeg,image/webp" id="screen-photo" type="file"/></label></details>
-</aside>
-<div class="preview-column studio-canvas"><section class="preview-panel"><div class="preview-toolbar"><div><span class="elevation-title">▱   Front Elevation</span></div><div class="preview-tools"><label class="preview-selector">Preview<select id="preview_mode"><option value="exact">Exact design dimensions</option><option value="cabinet">Buildable cabinet layout</option></select></label><label><input checked="" id="show-grid" title="Show cabinet grid" type="checkbox"/> Cabinet grid lines</label><label><input checked="" id="show-spaces" title="Show dotted margin guides" type="checkbox"/> Space guides</label><button aria-label="Zoom out" id="zoom-out">−</button><span id="zoom-value">100%</span><button aria-label="Zoom in" id="zoom-in">+</button><button id="zoom-reset">Fit</button><button aria-label="Expand preview" id="preview-fullscreen" type="button">⛶</button><button aria-label="Pan preview" aria-pressed="false" id="pan-preview" title="Drag to pan the zoomed preview" type="button">Pan</button></div></div><div class="preview-size-controls"><div aria-label="Screen width" class="preview-width-buttons" role="group"><button aria-label="Decrease preview screen width" data-direction="-1" data-preview-axis="width" type="button">−</button><span id="preview-width-label">Width</span><button aria-label="Increase preview screen width" data-direction="1" data-preview-axis="width" type="button">+</button></div><div aria-label="Screen height" class="preview-height-buttons" role="group"><button aria-label="Increase preview screen height" data-direction="1" data-preview-axis="height" type="button">+</button><span id="preview-height-label">Height</span><button aria-label="Decrease preview screen height" data-direction="-1" data-preview-axis="height" type="button">−</button></div><div class="drawing" id="drawing"><svg aria-label="Scaled LED wall design" id="wall-svg" role="img"></svg></div></div><div class="preview-footer"><span><i class="dot"></i> Scaled front elevation</span><span id="fit-status">Calculating…</span></div></section><div class="metrics" id="metrics"></div><details class="design-notes"><summary>Buildable layout &amp; design notes</summary><section aria-live="polite" class="size-feedback" hidden="" id="size-feedback"><div id="size-comparison"></div><p id="size-explanation"></p><div class="size-actions"><button class="quiet" id="snap-size">Use this cabinet layout</button><button class="quiet" id="cover-size">Meet / exceed requested size</button></div></section><div class="notice" id="warnings"></div><div class="bottom-actions"><button class="quiet" id="export-json">Export design JSON</button><button class="primary" id="results-btn">View design results →</button></div></details></div>
-<aside class="studio-inspector"><aside aria-labelledby="controller-heading" class="panel controller-panel studio-controller"><h2 id="controller-heading">Controller</h2><label class="hint"><input id="controller-auto" type="checkbox" checked=""/> Auto-select recommended controller</label><p class="hint" id="controller-recommendation" aria-live="polite">Calculating pixel requirement…</p><label><select id="controller"><option value="">Select controller</option></select></label><h3 hidden="" id="controller-model-name">Select a controller</h3><p class="controller-kind" id="controller-kind">LED video wall equipment</p><dl class="controller-specs" id="controller-specs"></dl><label class="controller-rate-field">Base rate <span class="rate-stepper"><input id="q_controller_rate" min="0" step="0.01" type="number" value=""/><button aria-label="Decrease controller base rate" data-rate-step="-1" type="button">−</button><button aria-label="Increase controller base rate" data-rate-step="1" type="button">+</button></span></label><details class="controller-pricing"><summary>Quantity &amp; full price</summary><label>Controller quantity<input id="q_controller_qty" min="0" step="0.01" type="number" value="1"/></label><label>Full controller price · INR, before GST<input id="q_controller_total" readonly="" type="text"/></label></details><details class="studio-controller-details"><summary>Description &amp; source</summary><label>Controller description<textarea id="q_controller_description" rows="6"></textarea></label><p class="hint" id="controller-source"></p></details></aside><section class="panel studio-estimate"><h2>Quotation Summary</h2><div class="summary-items" id="studio-summary-items"></div><details class="quote-breakdown"><summary>Price breakdown</summary><dl id="studio-cost-lines"></dl></details><div class="studio-total"><span>Estimated total · INR (including GST)</span><strong id="studio-total">—</strong></div><p class="hint" id="studio-rate-status"></p><button class="link" id="studio-quote-details">Review quotation →</button><button class="primary" id="summary-download" type="button">↓   Download quotation</button></section></aside></div></section>
-<section hidden="" id="results"><div class="print-brand"><img alt="Pro Mark logo" onerror="this.remove()" onload="this.parentNode.classList.add('has-logo')" src="{{ url_for('static', filename='logo.png') }}"/><b>PROMARK LED STUDIO</b></div><div class="result-actions"><div><p class="eyebrow">PROMARK LED STUDIO · PROJECT REPORT</p><h2>Design results &amp; specifications</h2></div><button class="primary" id="print-btn">Print / save PDF</button></div><div class="panel" id="result-summary"></div><div id="result-drawing"></div><div class="specifications-layout"><section class="panel specifications-panel"><h2>Materials &amp; technical specifications</h2><p class="hint">Cabinet quantities and dimensions are calculated from the selected model. Equipment without supplied specifications remains pending.</p><div class="material-list" id="materials"></div></section></div><section class="panel"><h2>Excel quotation</h2><p class="hint">Client name, sales person and contact information (phone or email) are required to download a quotation. Fields marked * are required.</p><p class="hint">Matches your reference layout. LED price = cabinet rate per sq.ft. × screen area. Controller unit price = base rate × 130 × 2. Controller total = unit price × quantity, before GST. LED pricing uses the selected screen area. Mounting structure, installation, UPS and cabling have separate rows with blank rates for the company actual prices. Enter those prices in the yellow Rate cells in Excel. Unfilled rates keep the total pending.</p><div class="planning-grid"><label>Client name *<input aria-required="true" id="q_client" required="" type="text" value=""/></label><label>Project detail<input id="q_project" type="text" value="Quotation of Video Wall"/></label><label>Location<input id="q_location" type="text" value=""/></label><label>Contact details *<input aria-required="true" id="q_contact" required="" type="text" value=""/></label><label>Date<input id="q_date" type="date" value=""/></label><label>Sales person *<input aria-required="true" id="q_salesperson" required="" type="text" value=""/></label><label>Version<input id="q_version" type="text" value="1"/></label><label>Subject<input id="q_subject" type="text" value="Quotation of Video Wall"/></label><label>LED cabinet rate · INR / sq.ft. (automatic)<input id="q_wall_rate" min="0" step="0.01" type="number" value=""/></label><label>Full LED price · INR, before GST<input id="q_led_total" readonly="" type="text"/></label><label hidden>Full installation price · INR, before GST<input id="q_install_total" readonly="" type="text"/></label><label hidden>Full structure price · INR, before GST<input id="q_structure_total" readonly="" type="text"/></label><label hidden>Structure rate · INR / sq.ft.<input id="q_mount_rate" min="0" step="0.01" type="number" value=""/></label><label>Screen area · sq.ft.<input id="q_mount_qty" readonly="" step="any" type="number" value="1"/></label><label hidden>Installation rate · INR / sq.ft.<input id="q_installation_rate" min="0" step="0.01" type="number" value=""/></label><label>GST percentage<input id="q_gst" min="0" step="0.01" type="number" value="18"/></label><label>Mounting description<input id="q_mount_description" type="text" value=""/></label><label>Installation description<input id="q_installation_description" type="text" value="Installation Charges."/></label><label>Company CIN<input id="q_cin" type="text" value="U36109PB2010PTC034337"/></label><label>Company GSTIN<input id="q_company_gst" type="text" value="03AAFCP7669C1ZF"/></label><label>Company PAN<input id="q_pan" type="text" value="AAFCP7669C"/></label></div><button class="primary" id="download-quotation" type="button">Download Excel quotation</button><p class="hint">GST starts at the reference’s 18% and is editable. Controller descriptions use the supplied datasheets. Confirm receiving-card compatibility and port mapping. Company registration fields are editable.</p></section><section class="panel quote-panel"><h2>Partial cost estimate</h2><p class="hint">Enter your rates. This includes LED cabinets and installation only. Controllers, cables and other items are excluded.</p><div class="planning-grid"><label>Cabinet unit price · INR<input id="cabinet_price" min="0" placeholder="Not provided" step="0.01" type="number"/></label><label>Installation cost · INR<input id="installation_cost" min="0" step="0.01" type="number" value="0"/></label><label>Tax percentage<input id="tax_percent" max="100" min="0" step="0.01" type="number" value="0"/></label></div><div id="quote-summary"></div></section></section>
-<footer>PROMARK LED STUDIO · LED wall designer <span>Product catalogue · 5 October 2026</span></footer>
-</main>
-<dialog id="catalogue-dialog"><div class="dialog-head"><div><p class="eyebrow">DISPLAY LIBRARY</p><h2>Choose an LED cabinet</h2></div><button aria-label="Close" class="close" data-close="catalogue-dialog">×</button></div><p class="hint">Choose a model and its cabinet size. Each model is listed once. View specifications or choose a model; missing ratings are marked Not provided.</p><div id="catalogue-cards"></div><div class="dialog-actions"><label class="upload">Import catalogue JSON<input accept=".json,application/json" id="import-catalogue" type="file"/></label><button class="quiet" id="download-catalogue">Download catalogue template</button></div></dialog>
-<dialog id="projects-dialog"><div class="dialog-head"><h2>Saved projects</h2><button aria-label="Close" class="close" data-close="projects-dialog">×</button></div><div id="project-list"></div><p class="hint">Background and screen photos are preview-only and are not stored with saved projects.</p></dialog>
-<dialog id="detail-dialog"><div class="dialog-head"><h2 id="detail-title">Product specifications</h2><button aria-label="Close specifications" class="close" data-close="detail-dialog">×</button></div><div class="detail-specs" id="detail-specs"></div></dialog>
-<script src="{{ url_for('static', filename='controller-matching.js', v='1') }}"></script><script src="{{ url_for('static', filename='app.js', v='71') }}"></script><script src="{{ url_for('static', filename='studio.js', v='66') }}"></script><script src="{{ url_for('static', filename='reference.js', v='65') }}"></script></body></html>
+    <header><a class="brand" href="/"><span class="brand-mark"><span class="brand-fallback">PM</span><img
+                    alt="Pro Mark logo" class="brand-logo" onerror="this.remove()"
+                    onload="this.parentNode.classList.add('has-logo')"
+                    src="{{ url_for('static', filename='logo.png') }}" /></span><span class="brand-text">PROMARK LED
+                STUDIO</span></a>
+        <nav><button class="active" data-tab="designer">Designer</button><button id="header-catalogue"
+                type="button">Catalogue</button><button id="header-projects" type="button">Projects</button></nav>
+        <div class="header-actions"><button class="quiet" id="projects-btn"
+                title="Saved projects">Projects</button><button class="quiet" id="save-btn">Save</button><button
+                class="primary" id="studio-download">↓ Download quotation</button></div>
+    </header>
+    <aside aria-label="Workspace navigation" class="tool-rail">
+        <button class="active" data-workspace="design"><span>▦</span>Design</button>
+        <button data-workspace="screens"><span>▣</span>Screens</button>
+        <button data-workspace="content"><span>▧</span>Content</button>
+        <button data-workspace="layouts"><span>⊞</span>Layouts</button>
+        <button data-workspace="quotation"><span>▤</span>Quotation</button>
+        <button data-workspace="settings"><span>⚙</span>Settings</button>
+    </aside>
+    <main>
+        <div class="heading" hidden="">
+            <div>
+                <p class="eyebrow">DARK PRO / LED WORKSPACE</p>
+                <h1>Design your next display.</h1>
+                <p class="sub">Configure, visualise and quote — all in one workspace.</p>
+            </div><span class="badge" id="studio-catalogue-count">Loading catalogue…</span>
+        </div>
+        <div aria-live="polite" id="status" role="status"></div>
+        <section id="designer">
+            <div class="workspace">
+                <aside class="studio-settings panel screen-settings">
+                    <section class="display-top">
+                        <div class="panel-title">
+                            <h2>Screen Settings</h2>
+                        </div>
+                        <div class="display-top-grid">
+                            <div class="display-controls"><label class="environment-field backing-control">Video wall
+                                    type<select id="environment">
+                                        <option value="indoor">Indoor video wall</option>
+                                        <option value="outdoor">Outdoor video wall</option>
+                                    </select></label>
+                                <div class="environment-choice"><span class="field-label">Environment</span>
+                                    <div class="switch" id="environment-buttons"><button class="active"
+                                            data-environment="indoor" type="button">Indoor</button><button
+                                            data-environment="outdoor" type="button">Outdoor</button></div>
+                                </div>
+                                <div class="technology-field"><span class="field-label">LED technology</span>
+                                    <div aria-label="LED technology" class="switch" id="technology-buttons"
+                                        role="group"><button class="technology-all" data-value="all"
+                                            type="button">All</button><button data-value="SMD"
+                                            type="button">SMD</button><button data-value="COB"
+                                            type="button">COB</button></div><input id="technology" type="hidden"
+                                        value="all" />
+                                </div>
+                                <div class="model-choice"><label class="model-field">Cabinet model<select
+                                            id="product"></select></label>
+                                    <figure class="product-figure cabinet-mini" hidden="" id="product-figure"><img
+                                            alt="" id="product-image" />
+                                        <figcaption hidden="" id="product-caption"></figcaption>
+                                    </figure>
+                                </div>
+                                <p class="hint" id="technology-hint">Choose a technology to filter models.</p><label
+                                    class="cabinet-size-field">Cabinet size<select id="cabinet_size"
+                                        aria-label="Cabinet size"></select></label>
+                                <div class="product-summary reference-cabinet-size" id="product-summary"></div>
+                            </div>
+                        </div>
+                        <details class="model-options">
+                            <summary>Model details &amp; installation</summary><label>Installation<select
+                                    id="installation">
+                                    <option>Wall mounted</option>
+                                    <option>Floor supported structure</option>
+                                    <option>Hanging</option>
+                                    <option>Custom</option>
+                                </select></label><button class="link" id="product-details">Full specifications
+                                ↗</button><button class="link" id="catalogue-btn" type="button">Browse catalogue
+                                ↗</button>
+                        </details>
+                    </section>
+                    <section class="dimensions-panel" id="dimensions-panel">
+                        <div class="unit-line"><span>Screen Dimensions</span>
+                            <div class="switch compact" id="units"><button class="active"
+                                    data-value="ft">ft</button><button data-value="m">m</button></div>
+                        </div>
+                        <div class="screen-dimension-fields"><label>Width <span class="unit">ft</span><span
+                                    class="dimension-stepper"><input id="screen_width" min="0.001" step="any"
+                                        type="number" value="2.0997" /><button aria-label="Decrease screen width"
+                                        data-direction="-1" data-step-target="screen_width"
+                                        type="button">−</button><button aria-label="Increase screen width"
+                                        data-direction="1" data-step-target="screen_width"
+                                        type="button">+</button></span></label><label>Height <span
+                                    class="unit">ft</span><span class="dimension-stepper"><input id="screen_height"
+                                        min="0.001" step="any" type="number" value="1.5748" /><button
+                                        aria-label="Decrease screen height" data-direction="-1"
+                                        data-step-target="screen_height" type="button">−</button><button
+                                        aria-label="Increase screen height" data-direction="1"
+                                        data-step-target="screen_height" type="button">+</button></span></label></div>
+                        <details class="advanced-layout" id="advanced-layout">
+                            <summary>Wall size &amp; advanced layout</summary><label>Dimension button step<select
+                                    id="dimension_step">
+                                    <option value="unit">1 ft per click</option>
+                                    <option selected="" value="cabinet">Model default steps (screen only)</option>
+                                </select></label>
+                            <p class="hint" id="step-hint">Model defaults use cabinet steps; wall buttons change by 1 of
+                                the selected unit.</p>
+                            <div class="pair"><label>Wall width <span class="unit">ft</span><span
+                                        class="dimension-stepper"><button aria-label="Decrease wall width"
+                                            data-direction="-1" data-step-target="wall_width"
+                                            type="button">−</button><input id="wall_width" min="0.01" step="any"
+                                            type="number" value="16.4000" /><button aria-label="Increase wall width"
+                                            data-direction="1" data-step-target="wall_width"
+                                            type="button">+</button></span></label><label>Wall height <span
+                                        class="unit">ft</span><span class="dimension-stepper"><button
+                                            aria-label="Decrease wall height" data-direction="-1"
+                                            data-step-target="wall_height" type="button">−</button><input
+                                            id="wall_height" min="0.01" step="any" type="number"
+                                            value="9.8400" /><button aria-label="Increase wall height"
+                                            data-direction="1" data-step-target="wall_height"
+                                            type="button">+</button></span></label></div>
+                            <div class="preset-control"><label>Starting dimensions<select id="size_preset">
+                                        <option selected="" value="showroom">Dark Pro showroom · 14.698 × 7.874 ft
+                                            screen</option>
+                                        <option value="model">Model defaults · one cabinet / 5 × 3 m wall</option>
+                                        <option value="standard">Standard · 16 × 10 ft wall / 12 × 7 ft screen</option>
+                                        <option value="compact">Compact · 12 × 8 ft wall / 8 × 4.5 ft screen</option>
+                                        <option value="large">Large · 24 × 14 ft wall / 20 × 11.25 ft screen</option>
+                                    </select></label><button class="quiet" id="reset-dimensions">Apply preset / reset
+                                    dimensions</button></div><label>Size screen by<select id="mode">
+                                    <option value="dimensions">Screen dimensions</option>
+                                    <option value="grid">Cabinet columns / rows</option>
+                                    <option value="resolution">Target resolution</option>
+                                </select></label>
+                            <div class="pixel-controls">
+                                <div class="pair"><label>Screen width <span class="pixel-unit">px</span><span
+                                            class="dimension-stepper"><button aria-label="Decrease pixel width"
+                                                data-direction="-1" data-pixel-axis="width"
+                                                type="button">−</button><input
+                                                aria-label="Calculated screen width pixels" id="screen_pixels_w"
+                                                readonly="" type="number" value="416" /><button
+                                                aria-label="Increase pixel width" data-direction="1"
+                                                data-pixel-axis="width"
+                                                type="button">+</button></span></label><label>Screen height <span
+                                            class="pixel-unit">px</span><span class="dimension-stepper"><button
+                                                aria-label="Decrease pixel height" data-direction="-1"
+                                                data-pixel-axis="height" type="button">−</button><input
+                                                aria-label="Calculated screen height pixels" id="screen_pixels_h"
+                                                readonly="" type="number" value="312" /><button
+                                                aria-label="Increase pixel height" data-direction="1"
+                                                data-pixel-axis="height" type="button">+</button></span></label></div>
+                                <p class="hint" id="pixel-hint">One click adds or removes one cabinet's pixels.</p>
+                            </div>
+                            <div id="dimension-fields"><label>Sizing policy<select id="policy">
+                                        <option value="within">Fit within requested size</option>
+                                        <option selected="" value="nearest">Nearest achievable size</option>
+                                        <option value="cover">Meet or exceed requested size</option>
+                                    </select></label></div>
+                            <div hidden="" id="grid-fields">
+                                <div class="pair"><label>Columns<input id="columns" min="1" step="1" type="number"
+                                            value="1" /></label><label>Rows<input id="rows" min="1" step="1"
+                                            type="number" value="1" /></label></div>
+                            </div>
+                            <div hidden="" id="resolution-fields"><label>Resolution target<select id="resolution">
+                                        <option value="1920,1080">FHD · 1920 × 1080</option>
+                                        <option value="3840,2160">UHD · 3840 × 2160</option>
+                                        <option value="7680,4320">8K · 7680 × 4320</option>
+                                        <option value="custom">Custom</option>
+                                    </select></label>
+                                <div class="pair"><label>Pixel width<input id="target_pixels_w" min="1" step="1"
+                                            type="number" value="1920" /></label><label>Pixel height<input
+                                            id="target_pixels_h" min="1" step="1" type="number" value="1080" /></label>
+                                </div>
+                                <p class="hint">Targets round up to whole cabinets. Actual resolution is shown in
+                                    results.</p>
+                            </div><label>Screen position<select id="position">
+                                    <option value="centre">Centred on wall</option>
+                                    <option value="custom">Custom offsets</option>
+                                </select></label>
+                            <div class="pair" hidden="" id="position-fields"><label>From left <span
+                                        class="unit">ft</span><input id="left" min="0" step="0.01" type="number"
+                                        value="0.100" /></label><label>From floor <span class="unit">ft</span><input
+                                        id="bottom" min="0" step="0.01" type="number" value="0.150" /></label></div>
+                        </details>
+                    </section>
+                    <section class="finish-settings"><span class="field-label">Background Wall Finish</span>
+                        <div class="finish-swatches" id="finish-swatches">
+                            <button class="active" data-finish="concrete" type="button"><i
+                                    class="finish-concrete"></i><span>Concrete</span></button>
+                            <button data-finish="wood" type="button"><i
+                                    class="finish-wood"></i><span>Wood</span></button>
+                            <button data-finish="dark" type="button"><i class="finish-dark"></i><span>Dark
+                                    Panel</span></button>
+                            <button data-finish="white" type="button"><i
+                                    class="finish-white"></i><span>White</span></button>
+                            <button data-finish="custom" type="button"><i
+                                    class="finish-custom">▧</i><span>Custom</span></button>
+                        </div>
+                    </section>
+                    <details class="studio-background">
+                        <summary>Custom background &amp; content</summary>
+                        <div class="pair"><label>Wall finish<select id="finish" value="concrete">
+                                    <option value="plain">Paint</option>
+                                    <option value="brick">Brick</option>
+                                    <option value="wood">Wood</option>
+                                    <option selected="" value="concrete">Concrete</option>
+                                    <option value="dark">Dark panel</option>
+                                    <option value="white">White</option>
+                                    <option value="custom">Custom photo</option>
+                                </select></label><label>Wall colour<input id="wall_colour" type="color"
+                                    value="#6b6b6b" /></label></div><label class="upload">Upload wall photo<input
+                                accept="image/png,image/jpeg,image/webp" id="wall-photo" type="file" /></label><button
+                            class="link" id="clear-photo">Remove photo</button><label class="room-photo-scale">Room
+                            photo zoom <output id="room-photo-scale-value" for="room-photo-scale">100%</output><input
+                                id="room-photo-scale" type="range" min="100" max="250" step="5"
+                                value="100" /></label><button class="link" id="reset-room-photo" type="button">Reset
+                            room photo position</button>
+                        <p class="hint">Drag the room photo in the preview to align its TV with the video wall. Use Room
+                            photo zoom if the TV needs to be larger.</p>
+                        <div class="pair"><label hidden>Scale reference height <span class="unit">ft</span><input
+                                    id="human_height" max="10" min="0.3" step="0.01" type="number"
+                                    value="5.75" /></label><label>Content preview<select id="content">
+                                    <option selected="" value="sample">Default sunset picture</option>
+                                    <option value="gradient">Studio graphic</option>
+                                    <option value="black">Black screen</option>
+                                    <option value="image">Upload image below</option>
+                                </select></label></div><label class="upload">Upload screen image<input
+                                accept="image/png,image/jpeg,image/webp" id="screen-photo" type="file" /></label>
+                    </details>
+                </aside>
+                <div class="preview-column studio-canvas">
+                    <section class="preview-panel">
+                        <div class="preview-toolbar">
+                            <div><span class="elevation-title">▱   Front Elevation</span></div>
+                            <div class="preview-tools"><label class="preview-selector">Preview<select id="preview_mode">
+                                        <option value="exact">Exact design dimensions</option>
+                                        <option value="cabinet">Buildable cabinet layout</option>
+                                    </select></label><label><input checked="" id="show-grid" title="Show cabinet grid"
+                                        type="checkbox" /> Cabinet grid lines</label><label><input checked=""
+                                        id="show-spaces" title="Show dotted margin guides" type="checkbox" /> Space
+                                    guides</label><button aria-label="Zoom out" id="zoom-out">−</button><span
+                                    id="zoom-value">100%</span><button aria-label="Zoom in"
+                                    id="zoom-in">+</button><button id="zoom-reset">Fit</button><button
+                                    aria-label="Expand preview" id="preview-fullscreen" type="button">⛶</button><button
+                                    aria-label="Pan preview" aria-pressed="false" id="pan-preview"
+                                    title="Drag to pan the zoomed preview" type="button">Pan</button></div>
+                        </div>
+                        <div class="preview-size-controls">
+                            <div aria-label="Screen width" class="preview-width-buttons" role="group"><button
+                                    aria-label="Decrease preview screen width" data-direction="-1"
+                                    data-preview-axis="width" type="button">−</button><span
+                                    id="preview-width-label">Width</span><button
+                                    aria-label="Increase preview screen width" data-direction="1"
+                                    data-preview-axis="width" type="button">+</button></div>
+                            <div aria-label="Screen height" class="preview-height-buttons" role="group"><button
+                                    aria-label="Increase preview screen height" data-direction="1"
+                                    data-preview-axis="height" type="button">+</button><span
+                                    id="preview-height-label">Height</span><button
+                                    aria-label="Decrease preview screen height" data-direction="-1"
+                                    data-preview-axis="height" type="button">−</button></div>
+                            <div class="drawing" id="drawing"><svg aria-label="Scaled LED wall design" id="wall-svg"
+                                    role="img"></svg></div>
+                        </div>
+                        <div class="preview-footer"><span><i class="dot"></i> Drag room photo to align the
+                                TV</span><span id="fit-status">Calculating…</span></div>
+                    </section>
+                    <div class="metrics" id="metrics"></div>
+                    <details class="design-notes">
+                        <summary>Buildable layout &amp; design notes</summary>
+                        <section aria-live="polite" class="size-feedback" hidden="" id="size-feedback">
+                            <div id="size-comparison"></div>
+                            <p id="size-explanation"></p>
+                            <div class="size-actions"><button class="quiet" id="snap-size">Use this cabinet
+                                    layout</button><button class="quiet" id="cover-size">Meet / exceed requested
+                                    size</button></div>
+                        </section>
+                        <div class="notice" id="warnings"></div>
+                        <div class="bottom-actions"><button class="quiet" id="export-json">Export design
+                                JSON</button><button class="primary" id="results-btn">View design results →</button>
+                        </div>
+                    </details>
+                </div>
+                <aside class="studio-inspector">
+                    <aside aria-labelledby="controller-heading" class="panel controller-panel studio-controller">
+                        <h2 id="controller-heading">Controller</h2><label class="hint"><input id="controller-auto"
+                                type="checkbox" checked="" /> Auto-select recommended controller</label>
+                        <p class="hint" id="controller-recommendation" aria-live="polite">Calculating pixel requirement…
+                        </p><label><select id="controller">
+                                <option value="">Select controller</option>
+                            </select></label>
+                        <h3 hidden="" id="controller-model-name">Select a controller</h3>
+                        <p class="controller-kind" id="controller-kind">LED video wall equipment</p>
+                        <dl class="controller-specs" id="controller-specs"></dl><label
+                            class="controller-rate-field">Base rate <span class="rate-stepper"><input
+                                    id="q_controller_rate" min="0" step="0.01" type="number" value="" /><button
+                                    aria-label="Decrease controller base rate" data-rate-step="-1"
+                                    type="button">−</button><button aria-label="Increase controller base rate"
+                                    data-rate-step="1" type="button">+</button></span></label>
+                        <details class="controller-pricing">
+                            <summary>Quantity &amp; full price</summary><label>Controller quantity<input
+                                    id="q_controller_qty" min="0" step="0.01" type="number"
+                                    value="1" /></label><label>Full controller price · INR, before GST<input
+                                    id="q_controller_total" readonly="" type="text" /></label>
+                        </details>
+                        <details class="studio-controller-details">
+                            <summary>Description &amp; source</summary><label>Controller description<textarea
+                                    id="q_controller_description" rows="6"></textarea></label>
+                            <p class="hint" id="controller-source"></p>
+                        </details>
+                    </aside>
+                    <section class="panel studio-estimate">
+                        <h2>Quotation Summary</h2>
+                        <div class="summary-items" id="studio-summary-items"></div>
+                        <details class="quote-breakdown">
+                            <summary>Price breakdown</summary>
+                            <dl id="studio-cost-lines"></dl>
+                        </details>
+                        <div class="studio-total"><span>Estimated total · INR (including GST)</span><strong
+                                id="studio-total">—</strong></div>
+                        <p class="hint" id="studio-rate-status"></p><button class="link"
+                            id="studio-quote-details">Review quotation →</button><button class="primary"
+                            id="summary-download" type="button">↓   Download quotation</button>
+                    </section>
+                </aside>
+            </div>
+        </section>
+        <section hidden="" id="results">
+            <div class="print-brand"><img alt="Pro Mark logo" onerror="this.remove()"
+                    onload="this.parentNode.classList.add('has-logo')"
+                    src="{{ url_for('static', filename='logo.png') }}" /><b>PROMARK LED STUDIO</b></div>
+            <div class="result-actions">
+                <div>
+                    <p class="eyebrow">PROMARK LED STUDIO · PROJECT REPORT</p>
+                    <h2>Design results &amp; specifications</h2>
+                </div><button class="primary" id="print-btn">Print / save PDF</button>
+            </div>
+            <div class="panel" id="result-summary"></div>
+            <div id="result-drawing"></div>
+            <div class="specifications-layout">
+                <section class="panel specifications-panel">
+                    <h2>Materials &amp; technical specifications</h2>
+                    <p class="hint">Cabinet quantities and dimensions are calculated from the selected model. Equipment
+                        without supplied specifications remains pending.</p>
+                    <div class="material-list" id="materials"></div>
+                </section>
+            </div>
+            <section class="panel">
+                <h2>Excel quotation</h2>
+                <p class="hint">Client name, sales person and contact information (phone or email) are required to
+                    download a quotation. Fields marked * are required.</p>
+                <p class="hint">Matches your reference layout. LED price = cabinet rate per sq.ft. × screen area.
+                    Controller unit price = base rate × 130 × 2. Controller total = unit price × quantity, before GST.
+                    LED pricing uses the selected screen area. Mounting structure, installation, UPS and cabling have
+                    separate rows with blank rates for the company actual prices. Enter those prices in the yellow Rate
+                    cells in Excel. Unfilled rates keep the total pending.</p>
+                <div class="planning-grid"><label>Client name *<input aria-required="true" id="q_client" required=""
+                            type="text" value="" /></label><label>Project detail<input id="q_project" type="text"
+                            value="Quotation of Video Wall" /></label><label>Location<input id="q_location" type="text"
+                            value="" /></label><label>Contact details *<input aria-required="true" id="q_contact"
+                            required="" type="text" value="" /></label><label>Date<input id="q_date" type="date"
+                            value="" /></label><label>Sales person *<input aria-required="true" id="q_salesperson"
+                            required="" type="text" value="" /></label><label>Version<input id="q_version" type="text"
+                            value="1" /></label><label>Subject<input id="q_subject" type="text"
+                            value="Quotation of Video Wall" /></label><label>LED cabinet rate · INR / sq.ft.
+                        (automatic)<input id="q_wall_rate" min="0" step="0.01" type="number"
+                            value="" /></label><label>Full LED price · INR, before GST<input id="q_led_total"
+                            readonly="" type="text" /></label><label hidden>Full installation price · INR, before
+                        GST<input id="q_install_total" readonly="" type="text" /></label><label hidden>Full structure
+                        price · INR, before GST<input id="q_structure_total" readonly="" type="text" /></label><label
+                        hidden>Structure rate · INR / sq.ft.<input id="q_mount_rate" min="0" step="0.01" type="number"
+                            value="" /></label><label>Screen area · sq.ft.<input id="q_mount_qty" readonly="" step="any"
+                            type="number" value="1" /></label><label hidden>Installation rate · INR / sq.ft.<input
+                            id="q_installation_rate" min="0" step="0.01" type="number" value="" /></label><label>GST
+                        percentage<input id="q_gst" min="0" step="0.01" type="number"
+                            value="18" /></label><label>Mounting description<input id="q_mount_description" type="text"
+                            value="" /></label><label>Installation description<input id="q_installation_description"
+                            type="text" value="Installation Charges." /></label><label>Company CIN<input id="q_cin"
+                            type="text" value="U36109PB2010PTC034337" /></label><label>Company GSTIN<input
+                            id="q_company_gst" type="text" value="03AAFCP7669C1ZF" /></label><label>Company PAN<input
+                            id="q_pan" type="text" value="AAFCP7669C" /></label></div><button class="primary"
+                    id="download-quotation" type="button">Download Excel quotation</button>
+                <p class="hint">GST starts at the reference’s 18% and is editable. Controller descriptions use the
+                    supplied datasheets. Confirm receiving-card compatibility and port mapping. Company registration
+                    fields are editable.</p>
+            </section>
+            <section class="panel quote-panel">
+                <h2>Partial cost estimate</h2>
+                <p class="hint">Enter your rates. This includes LED cabinets and installation only. Controllers, cables
+                    and other items are excluded.</p>
+                <div class="planning-grid"><label>Cabinet unit price · INR<input id="cabinet_price" min="0"
+                            placeholder="Not provided" step="0.01" type="number" /></label><label>Installation cost ·
+                        INR<input id="installation_cost" min="0" step="0.01" type="number"
+                            value="0" /></label><label>Tax percentage<input id="tax_percent" max="100" min="0"
+                            step="0.01" type="number" value="0" /></label></div>
+                <div id="quote-summary"></div>
+            </section>
+        </section>
+        <footer>PROMARK LED STUDIO · LED wall designer <span>Product catalogue · 5 October 2026</span></footer>
+    </main>
+    <dialog id="catalogue-dialog">
+        <div class="dialog-head">
+            <div>
+                <p class="eyebrow">DISPLAY LIBRARY</p>
+                <h2>Choose an LED cabinet</h2>
+            </div><button aria-label="Close" class="close" data-close="catalogue-dialog">×</button>
+        </div>
+        <p class="hint">Choose a model and its cabinet size. Each model is listed once. View specifications or choose a
+            model; missing ratings are marked Not provided.</p>
+        <div id="catalogue-cards"></div>
+        <div class="dialog-actions"><label class="upload">Import catalogue JSON<input accept=".json,application/json"
+                    id="import-catalogue" type="file" /></label><button class="quiet" id="download-catalogue">Download
+                catalogue template</button></div>
+    </dialog>
+    <dialog id="projects-dialog">
+        <div class="dialog-head">
+            <h2>Saved projects</h2><button aria-label="Close" class="close" data-close="projects-dialog">×</button>
+        </div>
+        <div id="project-list"></div>
+        <p class="hint">Background and screen photos are preview-only and are not stored with saved projects.</p>
+    </dialog>
+    <dialog id="detail-dialog">
+        <div class="dialog-head">
+            <h2 id="detail-title">Product specifications</h2><button aria-label="Close specifications" class="close"
+                data-close="detail-dialog">×</button>
+        </div>
+        <div class="detail-specs" id="detail-specs"></div>
+    </dialog>
+    <script src="{{ url_for('static', filename='controller-matching.js', v='1') }}"></script>
+    <script src="{{ url_for('static', filename='app.js', v='71') }}"></script>
+    <script src="{{ url_for('static', filename='studio.js', v='66') }}"></script>
+    <script src="{{ url_for('static', filename='reference.js', v='66') }}"></script>
+</body>
+
+</html>

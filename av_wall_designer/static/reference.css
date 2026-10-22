@@ -1,36 +1,1645 @@
 /* Functional Dark Pro layout, based on the selected showroom reference. */
-body.reference-layout{--paper:#0a151f;background:radial-gradient(ellipse at 45% 0,#142536,#0a151f 65%);font-family:"Segoe UI",Inter,system-ui,sans-serif;font-size:13px}
-.reference-layout header{height:72px;margin:8px 10px 0;border-radius:13px 13px 0 0;padding:0 20px;gap:22px;background:linear-gradient(110deg,#071016,#0a1118);border:1px solid #192b38}
-.reference-layout .brand{font-size:20px;white-space:nowrap;letter-spacing:-.5px}.reference-layout .brand-mark.has-logo{height:35px;max-width:135px;min-width:35px}.reference-layout .brand-logo{height:35px;max-width:135px}.reference-layout .brand-text{padding-left:10px!important}.reference-layout .header-actions{margin-left:auto}.reference-layout nav{gap:20px;margin-right:auto}.reference-layout nav button{font-size:13px;border-bottom-width:2px;padding:0 8px}.reference-layout .header-actions button{font-size:11px;padding:9px 13px}.reference-layout #projects-btn{font-size:0;width:32px;padding:5px}.reference-layout #projects-btn:before{content:'▱';font-size:23px;color:#b8cbdc}.reference-layout main{margin-left:82px;padding:12px 12px 0 6px;max-width:none}.reference-layout .workspace{grid-template-columns:278px minmax(0,1fr) 298px;gap:12px}
-.tool-rail{position:absolute;top:80px;left:10px;width:72px;min-height:calc(100vh - 92px);background:#080f16;border:1px solid #172632;border-top:0;border-radius:0 0 12px 12px;padding-top:14px;display:flex;flex-direction:column;gap:7px}.tool-rail button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;padding:13px 0;border:0;border-left:2px solid transparent;border-radius:5px;font-size:10px;background:transparent;color:#adbed0}.tool-rail button span{font-size:24px;font-weight:400;line-height:1}.tool-rail button.active{background:#112c3a;color:#2ddff1;border-left-color:#2ddff1}.tool-rail button:hover{background:#132532}
-.reference-layout .panel,.reference-layout .preview-panel{border-radius:10px;margin-bottom:12px;border-color:#20313f}.reference-layout .screen-settings{padding:16px 15px;margin:0;background:linear-gradient(125deg,#111c26,#0d171f);overflow:hidden}.reference-layout .display-top{padding:0;box-shadow:none;border:0;background:none;margin:0}.reference-layout .panel-title{padding-bottom:13px;border-bottom:1px solid #22313d;margin-bottom:13px}.reference-layout .panel-title h2{font-size:14px}.reference-layout .display-top-grid,.reference-layout .display-controls{display:flex;flex-direction:column;gap:0;align-items:stretch}.reference-layout .field-label{font-size:11px;font-weight:400;margin-bottom:7px}.reference-layout .backing-control{display:none!important}.reference-layout .environment-choice,.reference-layout .technology-field{margin-bottom:16px}.reference-layout .switch{margin:0;padding:0;background:#0b151e;border-radius:6px;overflow:hidden}.reference-layout .switch button{padding:8px 6px;font-size:12px;border-radius:5px;min-height:35px}.reference-layout .switch button.active{background:#173d4c;box-shadow:inset 0 0 14px #28cbe514}.reference-layout .technology-all{flex:0 0 36px;font-size:9px!important}.reference-layout .model-choice{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:7px;align-items:center}.reference-layout .model-field{margin-bottom:0!important;min-width:0}.reference-layout .model-field select{font-size:11px;padding:8px 7px;height:36px;min-height:36px}.reference-layout .cabinet-mini{display:block!important;background:none!important;border:0!important;padding:0!important;margin:0!important;min-width:0}.reference-layout .cabinet-mini[hidden]{display:none!important}.reference-layout .cabinet-mini img{height:66px!important;width:68px!important;object-fit:contain;border:0!important;border-radius:5px}.reference-layout .display-controls #product-summary{display:block;width:100%;margin:6px 0 8px;min-height:32px}.reference-layout .reference-cabinet-size .cabinet-stat{display:none}.reference-layout .reference-cabinet-size .cabinet-stat:first-child{display:flex;padding:0;background:transparent;gap:2px;border:0}.reference-layout .reference-cabinet-size .cabinet-stat:first-child>span{font-size:10px}.reference-layout .reference-cabinet-size .cabinet-stat strong{font-size:11px;font-weight:400}
-.reference-layout details{border-top:1px solid #22313d;padding-top:9px;margin-top:6px}.reference-layout details summary{font-size:10px;color:#a1b7c9;cursor:pointer}.reference-layout details[open] summary{margin-bottom:10px;color:#39ddeb}.reference-layout .model-options{margin-bottom:10px}.reference-layout .model-options label{margin-top:10px}.reference-layout .dimensions-panel{margin:14px 0 0;padding-top:14px;border-top:1px solid #23313c}.reference-layout .unit-line{font-size:12px;margin-bottom:13px;color:#e4edf7}.reference-layout .switch.compact{border:0;width:85px;max-width:85px}.reference-layout .compact button{padding:3px 10px;min-height:27px;font-size:12px}.reference-layout .screen-dimension-fields{display:grid;gap:10px}.reference-layout .screen-dimension-fields label{font-size:11px;font-weight:400;margin:0}.reference-layout .screen-dimension-fields label>.unit{display:none}.reference-layout .screen-dimension-fields .dimension-stepper{grid-template-columns:minmax(0,1fr) 32px 32px;gap:7px;margin-top:5px}.reference-layout .screen-dimension-fields input:not([type=checkbox]){min-height:34px;padding:6px 9px;text-align:left;font-size:13px;background:#0b151e;border-color:#344857}.reference-layout .screen-dimension-fields button{min-height:34px;border-radius:5px;background:linear-gradient(#1c2b39,#111d28);border:1px solid #344857;color:#d3e7f7;font-size:22px}.reference-layout .advanced-layout{margin-top:12px}.reference-layout .advanced-layout .pair{gap:8px}.reference-layout .advanced-layout label{font-size:10px}.reference-layout .advanced-layout .dimension-stepper{grid-template-columns:24px minmax(0,1fr) 24px}.reference-layout .advanced-layout input,.reference-layout .advanced-layout select{font-size:11px}.reference-layout .advanced-layout .preset-control{margin-top:12px}
-.reference-layout .finish-settings{margin-top:14px;padding-top:14px;border-top:1px solid #23313c}.finish-swatches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 8px}.reference-layout .finish-swatches button{padding:0;border:0;background:transparent;font-size:9px;color:#c1d0df;min-width:0}.finish-swatches i{height:41px;width:100%;display:flex;align-items:center;justify-content:center;border:1px solid #3c4e60;border-radius:5px;margin-bottom:4px;font-style:normal;background-color:#1e2d3a}.finish-swatches button.active i{outline:2px solid #27d6e9;outline-offset:-1px;box-shadow:0 0 10px #1cd6ea28}.finish-concrete{background-image:url('/static/showroom-room.png');background-size:380px auto;background-position:20% 20%}.finish-wood{background:repeating-linear-gradient(90deg,#977047 0 3px,#795b3e 3px 5px,#b18b64 5px 7px,#926e48 7px 14px)}.finish-dark{background:repeating-linear-gradient(90deg,#151d23 0 4px,#28313a 4px 6px,#0c1218 6px 8px)}.finish-white{background:linear-gradient(130deg,#e9ecf3,#bfc5d0)}.finish-custom{font-size:24px;color:#d7e7f5;background:linear-gradient(130deg,#33465c,#24374b)}.reference-layout .studio-background{margin-top:11px}.reference-layout .studio-background summary{font-size:10px}
-.reference-layout .studio-canvas{min-width:0;position:static}.reference-layout .preview-toolbar{min-height:56px;padding:12px 14px;align-items:center;gap:8px}.elevation-title{font-size:11px;background:#0e1a24;border:1px solid #2a3c4b;border-radius:5px;padding:8px 12px;display:inline-block;white-space:nowrap}.reference-layout .preview-tools{margin:0;gap:5px;justify-content:flex-end}.reference-layout .preview-tools label{font-size:0;gap:1px}.reference-layout .preview-tools label input{width:12px;height:12px}.reference-layout .preview-tools .preview-selector{display:none}.reference-layout .preview-tools button{padding:4px 7px;min-height:28px;font-size:15px}.reference-layout .preview-tools #zoom-value{font-size:10px;color:#acbfd0}.reference-layout .preview-tools #zoom-reset{font-size:10px}.reference-layout .preview-size-controls{padding:0;background:#293039;position:relative}.reference-layout .drawing{background:#293039;min-height:0;aspect-ratio:1030/720;overflow:auto}.reference-layout .drawing svg{display:block;width:100%;height:auto;min-height:0;aspect-ratio:1030/720}.reference-layout .preview-width-buttons{top:24px;left:50%;background:transparent;border:0;gap:8px;transform:translateX(-50%);padding:0;box-shadow:none}.reference-layout .preview-height-buttons{right:10px;top:42%;background:transparent;border:0;gap:16px;width:60px;transform:none;box-shadow:none}.reference-layout .preview-size-controls button{width:29px;height:29px;min-height:29px;min-width:29px;border-radius:5px;border:1px solid #456071;background:linear-gradient(#263948,#0d1c27);color:#d9e7f2;font-size:18px;box-shadow:0 1px 5px #0004}.reference-layout .preview-size-controls span{font-size:13px;line-height:1.3;color:white;white-space:nowrap;font-weight:600}.reference-layout .preview-width-buttons span{min-width:82px;text-align:center}.reference-layout .preview-footer{padding:8px 12px;font-size:9px}.reference-layout .preview-footer span{color:#b2c7d7}.reference-layout #fit-status{color:#39d8e8!important}.reference-layout .metrics{grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0;gap:10px}.reference-layout .metric{padding:15px 14px;border-top:1px solid #20313f!important;display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:10px}.reference-layout .metric:before{content:'▣';font-size:25px;color:#60cee9;grid-row:1/4;align-self:center}.reference-layout .metric:nth-child(2):before{content:'⊞'}.reference-layout .metric:nth-child(3):before{content:'⬡'}.reference-layout .metric strong{font-size:15px;letter-spacing:0}.reference-layout .metric span,.reference-layout .metric small{font-size:10px}.reference-layout .metric:nth-child(4){display:grid}.reference-layout .metric:nth-child(4):before{content:'▧'}.reference-layout .notice:empty{display:none}.reference-layout .notice{font-size:10px;padding:8px}.reference-layout .bottom-actions{margin:8px 0}.reference-layout .size-feedback{padding:12px}.reference-layout .size-feedback strong{font-size:13px}.reference-layout .size-feedback span,.reference-layout .size-feedback p{font-size:10px}
-.reference-layout .studio-inspector{display:block;position:static;grid-column:auto}.reference-layout .studio-controller{padding:15px;border-top:1px solid #20313f}.reference-layout .studio-controller h2{font-size:14px;padding-bottom:12px;border-bottom:1px solid #233441;margin:0 0 10px}.reference-layout .studio-controller>label{margin-bottom:10px;font-size:10px}.reference-layout #controller{font-size:11px;min-height:33px}.controller-visual{height:75px;width:100%;margin:5px 0 12px;overflow:hidden;border-radius:6px;background:#0b151e;display:flex;align-items:center;justify-content:center}.controller-visual img{display:block;max-width:100%;max-height:100%;object-fit:contain}.controller-visual .catalogue-excerpt{width:200px;height:67px;position:relative;overflow:hidden}.controller-visual .catalogue-excerpt img{position:absolute;max-width:none;max-height:none;width:2133px;height:1600px;left:-62px;top:var(--source-top);object-fit:fill}.reference-layout #controller-model-name{font-size:17px;margin:8px 0 0;color:#eef4fa}.reference-layout .controller-kind{font-size:11px;color:#aabbd0;margin:2px 0 12px}.controller-specs{margin:0 0 13px;border-top:1px solid #233441}.controller-specs>div{display:grid;grid-template-columns:85px minmax(0,1fr);gap:7px;padding:7px 0;border-bottom:1px solid #233441;font-size:10px}.controller-specs dt{color:#a6b8cc}.controller-specs dd{margin:0;color:#e0eaf6;line-height:1.4}.controller-specs .spec-features dd{font-size:9px}.reference-layout .controller-rate-field{margin:5px 0;display:flex;align-items:center;gap:8px;font-size:10px}.rate-stepper{display:grid;grid-template-columns:minmax(0,1fr) 25px 25px;gap:5px;flex:1;min-width:0;align-items:center}.reference-layout .rate-stepper input{min-height:31px;margin:0;padding:6px 8px;font-size:12px}.reference-layout .rate-stepper button{padding:0;font-size:17px;min-height:29px}.reference-layout .controller-pricing,.reference-layout .studio-controller-details{margin-top:11px;padding-top:8px}.reference-layout .studio-controller-details summary{font-size:10px;padding-bottom:0}.reference-layout .studio-controller-details textarea{font-size:11px}
-.reference-layout .studio-estimate{padding:15px}.reference-layout .studio-estimate h2{font-size:14px;padding-bottom:12px;border-bottom:1px solid #233441;margin:0}.summary-item{display:grid;grid-template-columns:51px minmax(0,1fr) auto;gap:10px;align-items:center;padding:13px 0;border-bottom:1px solid #233441}.summary-item .summary-thumb{width:51px;height:42px;object-fit:contain;border-radius:4px;background:#122230;display:flex;align-items:center;justify-content:center;overflow:hidden}.summary-item .summary-thumb img{max-width:100%;max-height:100%;object-fit:contain}.summary-item strong{font-size:11px;display:block}.summary-item small{font-size:9px;color:#9cb0c6;display:block;margin-top:3px}.summary-quantity{text-align:right;font-size:15px;font-weight:600}.summary-quantity span{display:block;font-size:9px;font-weight:400;color:#a1b3c7}.reference-layout .studio-estimate dl{margin:8px 0}.reference-layout .studio-estimate dl div{font-size:9px;margin:7px 0}.reference-layout .studio-total{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px}.reference-layout .studio-total span{font-size:10px;max-width:100px}.reference-layout .studio-total strong{font-size:20px;color:#eff6ff;margin:0}.reference-layout .studio-estimate .hint{font-size:9px;margin:7px 0}.reference-layout .studio-estimate .primary{font-size:12px;padding:11px 5px}.reference-layout #studio-quote-details{width:auto;margin:3px 0;padding:3px 0;font-size:10px}.reference-layout footer{padding:15px 0;margin-top:15px}
-.reference-layout #wall-svg text.dimension-inside,.reference-layout #wall-svg text.dimension-outside{stroke:none;font-weight:500}
-.reference-layout .preview-panel:fullscreen{width:100%;height:100vh;display:flex;flex-direction:column}.reference-layout .preview-panel:fullscreen .preview-size-controls{flex:1;min-height:0}.reference-layout .preview-panel:fullscreen .drawing{height:100%;aspect-ratio:auto}.reference-layout .preview-panel:fullscreen svg{height:100%;width:100%;aspect-ratio:auto}
-@media(min-width:1600px){.reference-layout .workspace{grid-template-columns:295px minmax(0,1fr) 320px}.reference-layout .screen-settings{padding:20px}.reference-layout .switch button{min-height:39px}.reference-layout .field-label{font-size:12px}.reference-layout .model-field select{font-size:12px}.reference-layout .screen-dimension-fields input{min-height:39px}.reference-layout .finish-swatches i{height:47px}}
-@media(max-width:1220px){.reference-layout .workspace{grid-template-columns:250px minmax(0,1fr)}.reference-layout .studio-inspector{grid-column:2;display:grid;grid-template-columns:1fr 1fr;gap:12px}.reference-layout .studio-controller,.reference-layout .studio-estimate{min-width:0}.reference-layout header{gap:15px}.reference-layout .brand{font-size:17px}.reference-layout .brand-logo{max-width:100px;height:30px}.reference-layout .brand-mark.has-logo{max-width:100px}.reference-layout nav{gap:9px}.reference-layout .header-actions{gap:5px}.reference-layout #save-btn{display:none}.reference-layout .metric{padding:12px 8px;grid-template-columns:22px minmax(0,1fr);gap:6px}.reference-layout .metric strong{font-size:12px}}
-@media(max-width:800px){.reference-layout header{margin:0;border-radius:0;padding:12px;height:auto;flex-wrap:wrap;gap:10px}.reference-layout .brand{font-size:16px}.reference-layout nav{order:3;width:100%;height:34px;flex-basis:100%}.reference-layout .header-actions{margin-left:auto}.reference-layout #projects-btn{display:none}.tool-rail{position:static;width:auto;min-height:0;flex-direction:row;justify-content:space-between;margin:0 10px;border-radius:0 0 8px 8px;padding:4px 0;gap:0}.tool-rail button{width:auto;flex:1;padding:8px 1px;font-size:9px;border-left:0;border-bottom:2px solid transparent;gap:4px}.tool-rail button span{font-size:20px}.tool-rail button.active{border-bottom-color:#27ddea}.reference-layout main{margin:0;padding:12px 10px}.reference-layout .workspace{display:flex;flex-direction:column;gap:12px}.reference-layout .screen-settings{order:0!important;width:100%}.reference-layout .studio-canvas{order:1!important;width:100%}.reference-layout .studio-inspector{order:2!important;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px}.reference-layout .display-controls{display:flex}.reference-layout .environment-choice,.reference-layout .technology-field{margin-bottom:12px}.reference-layout .finish-swatches{grid-template-columns:repeat(5,minmax(0,1fr))}.reference-layout .screen-dimension-fields{grid-template-columns:1fr 1fr;gap:12px}.reference-layout .preview-toolbar{padding:10px 8px;gap:5px}.reference-layout .preview-tools{gap:3px}.reference-layout .preview-tools #zoom-value{display:none}.reference-layout .elevation-title{font-size:10px;padding:6px}.reference-layout .preview-tools button{padding:4px 6px;font-size:12px}.reference-layout .preview-width-buttons{top:12px;gap:5px}.reference-layout .preview-size-controls button{width:23px;height:23px;min-width:23px;min-height:23px;font-size:15px}.reference-layout .preview-size-controls span{font-size:10px}.reference-layout .preview-width-buttons span{min-width:66px}.reference-layout .preview-height-buttons{right:0;gap:8px;width:42px}.reference-layout .metric strong{font-size:11px}.reference-layout .metric small{font-size:8px}.reference-layout .metric{padding:10px 6px;grid-template-columns:1fr}.reference-layout .metric:before{display:none}.reference-layout .controller-specs>div{grid-template-columns:65px minmax(0,1fr);font-size:9px}.reference-layout .studio-total{display:block}.reference-layout .studio-total strong{font-size:18px;margin-top:5px}}
-@media(max-width:460px){.reference-layout .studio-inspector{display:block}.reference-layout .brand-logo{height:25px;max-width:80px}.reference-layout .brand-mark.has-logo{height:25px;max-width:80px}.reference-layout .brand-text{font-size:13px;padding-left:7px!important}.reference-layout .header-actions button{font-size:10px;padding:8px}.reference-layout .screen-dimension-fields .dimension-stepper{grid-template-columns:minmax(0,1fr) 25px 25px;gap:4px}.reference-layout .screen-dimension-fields input{font-size:12px}.reference-layout .screen-dimension-fields button{font-size:18px}.reference-layout .preview-tools label{display:none}}
-@media print{.tool-rail{display:none!important}.reference-layout main{margin:0;padding:0}.reference-layout .panel,.reference-layout #result-drawing{background:white;color:#142b36}.reference-layout #result-drawing svg{max-height:330px}}
-.reference-layout .display-controls .switch{margin:0}.reference-layout .technology-all{display:none}.reference-layout .model-options .link{display:block;margin:8px 0;font-size:10px}
-.reference-layout #controller-model-name[hidden]{display:none!important}.reference-layout .studio-controller>label:has(#controller){margin:0}.reference-layout #controller{font-size:17px;font-weight:650;margin:0;padding:4px 0;min-height:31px;border:0;background:transparent;color:#edf4fb}.reference-layout #controller option{font-size:12px;background:#111c26}.reference-layout .controller-kind{margin:2px 0 10px}.reference-layout .controller-specs>div{padding:6px 0}.controller-specs dd{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.reference-layout .studio-controller-details{padding-top:7px;margin-top:7px}.reference-layout .controller-pricing{padding-top:7px;margin-top:7px}
-.reference-layout .quote-breakdown{margin:6px 0 12px;border:0;padding:0}.reference-layout .quote-breakdown summary{font-size:9px}.reference-layout .design-notes{margin:9px 0 0;padding:9px 12px;background:#111d26;border:1px solid #2c3c48;border-radius:7px}.reference-layout .design-notes>summary{font-size:10px;color:#aabfce}.reference-layout .design-notes[open]>summary{margin-bottom:12px}.reference-layout .design-notes .size-feedback{margin:0 0 10px}.reference-layout .design-notes .bottom-actions{margin-bottom:0}.reference-layout .preview-size-controls span{background:#101c27aa;border-radius:4px;padding:3px 5px;text-shadow:0 1px 3px #000}
-.tool-rail svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.reference-layout .preview-tools svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}.reference-layout .preview-tools #pan-preview{font-size:10px}.reference-layout #pan-preview[aria-pressed=true]{background:#174152;color:#49dfed;border-color:#39d5e7}.reference-layout .drawing.pan-enabled{cursor:grab;touch-action:none}.reference-layout .drawing.panning{cursor:grabbing}.reference-layout .drawing.panning svg{pointer-events:none}
-.controller-visual .catalogue-excerpt{width:220px;height:35px}.controller-visual .catalogue-excerpt img{width:2533px;height:1900px;left:-82px;top:var(--source-top)}.summary-thumb .controller-visual{transform:scale(.23);width:220px;height:35px;flex:none;background:transparent;margin:0;overflow:visible}.summary-thumb .controller-visual .catalogue-excerpt{width:220px;height:35px}.summary-thumb .controller-visual img{max-width:none;max-height:none}
-@media(max-width:800px){.reference-layout .preview-tools #pan-preview{display:none}}
-.reference-layout .brand-mark.has-logo{width:auto;overflow:visible;flex:none;max-width:105px}.reference-layout .brand-logo{width:auto;max-width:105px;height:28px}.reference-layout .brand-mark.has-logo{height:28px}.reference-layout .header-actions #studio-download{white-space:nowrap}
-@media(max-width:460px){.reference-layout .brand-mark.has-logo{max-width:65px;height:19px}.reference-layout .brand-logo{max-width:65px;height:19px}.reference-layout .brand-text{font-size:12px}.reference-layout header{gap:5px;padding:10px 8px}.reference-layout .header-actions button{padding:8px 7px;font-size:9px}}
+body.reference-layout {
+    --paper: #0a151f;
+    background: radial-gradient(ellipse at 45% 0, #142536, #0a151f 65%);
+    font-family: "Segoe UI", Inter, system-ui, sans-serif;
+    font-size: 13px
+}
+
+.reference-layout header {
+    height: 72px;
+    margin: 8px 10px 0;
+    border-radius: 13px 13px 0 0;
+    padding: 0 20px;
+    gap: 22px;
+    background: linear-gradient(110deg, #071016, #0a1118);
+    border: 1px solid #192b38
+}
+
+.reference-layout .brand {
+    font-size: 20px;
+    white-space: nowrap;
+    letter-spacing: -.5px
+}
+
+.reference-layout .brand-mark.has-logo {
+    height: 35px;
+    max-width: 135px;
+    min-width: 35px
+}
+
+.reference-layout .brand-logo {
+    height: 35px;
+    max-width: 135px
+}
+
+.reference-layout .brand-text {
+    padding-left: 10px !important
+}
+
+.reference-layout .header-actions {
+    margin-left: auto
+}
+
+.reference-layout nav {
+    gap: 20px;
+    margin-right: auto
+}
+
+.reference-layout nav button {
+    font-size: 13px;
+    border-bottom-width: 2px;
+    padding: 0 8px
+}
+
+.reference-layout .header-actions button {
+    font-size: 11px;
+    padding: 9px 13px
+}
+
+.reference-layout #projects-btn {
+    font-size: 0;
+    width: 32px;
+    padding: 5px
+}
+
+.reference-layout #projects-btn:before {
+    content: '▱';
+    font-size: 23px;
+    color: #b8cbdc
+}
+
+.reference-layout main {
+    margin-left: 82px;
+    padding: 12px 12px 0 6px;
+    max-width: none
+}
+
+.reference-layout .workspace {
+    grid-template-columns: 278px minmax(0, 1fr) 298px;
+    gap: 12px
+}
+
+.tool-rail {
+    position: absolute;
+    top: 80px;
+    left: 10px;
+    width: 72px;
+    min-height: calc(100vh - 92px);
+    background: #080f16;
+    border: 1px solid #172632;
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px
+}
+
+.tool-rail button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    padding: 13px 0;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 5px;
+    font-size: 10px;
+    background: transparent;
+    color: #adbed0
+}
+
+.tool-rail button span {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1
+}
+
+.tool-rail button.active {
+    background: #112c3a;
+    color: #2ddff1;
+    border-left-color: #2ddff1
+}
+
+.tool-rail button:hover {
+    background: #132532
+}
+
+.reference-layout .panel,
+.reference-layout .preview-panel {
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border-color: #20313f
+}
+
+.reference-layout .screen-settings {
+    padding: 16px 15px;
+    margin: 0;
+    background: linear-gradient(125deg, #111c26, #0d171f);
+    overflow: hidden
+}
+
+.reference-layout .display-top {
+    padding: 0;
+    box-shadow: none;
+    border: 0;
+    background: none;
+    margin: 0
+}
+
+.reference-layout .panel-title {
+    padding-bottom: 13px;
+    border-bottom: 1px solid #22313d;
+    margin-bottom: 13px
+}
+
+.reference-layout .panel-title h2 {
+    font-size: 14px
+}
+
+.reference-layout .display-top-grid,
+.reference-layout .display-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch
+}
+
+.reference-layout .field-label {
+    font-size: 11px;
+    font-weight: 400;
+    margin-bottom: 7px
+}
+
+.reference-layout .backing-control {
+    display: none !important
+}
+
+.reference-layout .environment-choice,
+.reference-layout .technology-field {
+    margin-bottom: 16px
+}
+
+.reference-layout .switch {
+    margin: 0;
+    padding: 0;
+    background: #0b151e;
+    border-radius: 6px;
+    overflow: hidden
+}
+
+.reference-layout .switch button {
+    padding: 8px 6px;
+    font-size: 12px;
+    border-radius: 5px;
+    min-height: 35px
+}
+
+.reference-layout .switch button.active {
+    background: #173d4c;
+    box-shadow: inset 0 0 14px #28cbe514
+}
+
+.reference-layout .technology-all {
+    flex: 0 0 36px;
+    font-size: 9px !important
+}
+
+.reference-layout .model-choice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 68px;
+    gap: 7px;
+    align-items: center
+}
+
+.reference-layout .model-field {
+    margin-bottom: 0 !important;
+    min-width: 0
+}
+
+.reference-layout .model-field select {
+    font-size: 11px;
+    padding: 8px 7px;
+    height: 36px;
+    min-height: 36px
+}
+
+.reference-layout .cabinet-mini {
+    display: block !important;
+    background: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0
+}
+
+.reference-layout .cabinet-mini[hidden] {
+    display: none !important
+}
+
+.reference-layout .cabinet-mini img {
+    height: 66px !important;
+    width: 68px !important;
+    object-fit: contain;
+    border: 0 !important;
+    border-radius: 5px
+}
+
+.reference-layout .display-controls #product-summary {
+    display: block;
+    width: 100%;
+    margin: 6px 0 8px;
+    min-height: 32px
+}
+
+.reference-layout .reference-cabinet-size .cabinet-stat {
+    display: none
+}
+
+.reference-layout .reference-cabinet-size .cabinet-stat:first-child {
+    display: flex;
+    padding: 0;
+    background: transparent;
+    gap: 2px;
+    border: 0
+}
+
+.reference-layout .reference-cabinet-size .cabinet-stat:first-child>span {
+    font-size: 10px
+}
+
+.reference-layout .reference-cabinet-size .cabinet-stat strong {
+    font-size: 11px;
+    font-weight: 400
+}
+
+.reference-layout details {
+    border-top: 1px solid #22313d;
+    padding-top: 9px;
+    margin-top: 6px
+}
+
+.reference-layout details summary {
+    font-size: 10px;
+    color: #a1b7c9;
+    cursor: pointer
+}
+
+.reference-layout details[open] summary {
+    margin-bottom: 10px;
+    color: #39ddeb
+}
+
+.reference-layout .model-options {
+    margin-bottom: 10px
+}
+
+.reference-layout .model-options label {
+    margin-top: 10px
+}
+
+.reference-layout .dimensions-panel {
+    margin: 14px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid #23313c
+}
+
+.reference-layout .unit-line {
+    font-size: 12px;
+    margin-bottom: 13px;
+    color: #e4edf7
+}
+
+.reference-layout .switch.compact {
+    border: 0;
+    width: 85px;
+    max-width: 85px
+}
+
+.reference-layout .compact button {
+    padding: 3px 10px;
+    min-height: 27px;
+    font-size: 12px
+}
+
+.reference-layout .screen-dimension-fields {
+    display: grid;
+    gap: 10px
+}
+
+.reference-layout .screen-dimension-fields label {
+    font-size: 11px;
+    font-weight: 400;
+    margin: 0
+}
+
+.reference-layout .screen-dimension-fields label>.unit {
+    display: none
+}
+
+.reference-layout .screen-dimension-fields .dimension-stepper {
+    grid-template-columns: minmax(0, 1fr) 32px 32px;
+    gap: 7px;
+    margin-top: 5px
+}
+
+.reference-layout .screen-dimension-fields input:not([type=checkbox]) {
+    min-height: 34px;
+    padding: 6px 9px;
+    text-align: left;
+    font-size: 13px;
+    background: #0b151e;
+    border-color: #344857
+}
+
+.reference-layout .screen-dimension-fields button {
+    min-height: 34px;
+    border-radius: 5px;
+    background: linear-gradient(#1c2b39, #111d28);
+    border: 1px solid #344857;
+    color: #d3e7f7;
+    font-size: 22px
+}
+
+.reference-layout .advanced-layout {
+    margin-top: 12px
+}
+
+.reference-layout .advanced-layout .pair {
+    gap: 8px
+}
+
+.reference-layout .advanced-layout label {
+    font-size: 10px
+}
+
+.reference-layout .advanced-layout .dimension-stepper {
+    grid-template-columns: 24px minmax(0, 1fr) 24px
+}
+
+.reference-layout .advanced-layout input,
+.reference-layout .advanced-layout select {
+    font-size: 11px
+}
+
+.reference-layout .advanced-layout .preset-control {
+    margin-top: 12px
+}
+
+.reference-layout .finish-settings {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #23313c
+}
+
+.finish-swatches {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 8px
+}
+
+.reference-layout .finish-swatches button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 9px;
+    color: #c1d0df;
+    min-width: 0
+}
+
+.finish-swatches i {
+    height: 41px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #3c4e60;
+    border-radius: 5px;
+    margin-bottom: 4px;
+    font-style: normal;
+    background-color: #1e2d3a
+}
+
+.finish-swatches button.active i {
+    outline: 2px solid #27d6e9;
+    outline-offset: -1px;
+    box-shadow: 0 0 10px #1cd6ea28
+}
+
+.finish-concrete {
+    background-image: url('/static/showroom-room.png');
+    background-size: 380px auto;
+    background-position: 20% 20%
+}
+
+.finish-wood {
+    background: repeating-linear-gradient(90deg, #977047 0 3px, #795b3e 3px 5px, #b18b64 5px 7px, #926e48 7px 14px)
+}
+
+.finish-dark {
+    background: repeating-linear-gradient(90deg, #151d23 0 4px, #28313a 4px 6px, #0c1218 6px 8px)
+}
+
+.finish-white {
+    background: linear-gradient(130deg, #e9ecf3, #bfc5d0)
+}
+
+.finish-custom {
+    font-size: 24px;
+    color: #d7e7f5;
+    background: linear-gradient(130deg, #33465c, #24374b)
+}
+
+.reference-layout .studio-background {
+    margin-top: 11px
+}
+
+.reference-layout .studio-background summary {
+    font-size: 10px
+}
+
+.reference-layout .studio-canvas {
+    min-width: 0;
+    position: static
+}
+
+.reference-layout .preview-toolbar {
+    min-height: 56px;
+    padding: 12px 14px;
+    align-items: center;
+    gap: 8px
+}
+
+.elevation-title {
+    font-size: 11px;
+    background: #0e1a24;
+    border: 1px solid #2a3c4b;
+    border-radius: 5px;
+    padding: 8px 12px;
+    display: inline-block;
+    white-space: nowrap
+}
+
+.reference-layout .preview-tools {
+    margin: 0;
+    gap: 5px;
+    justify-content: flex-end
+}
+
+.reference-layout .preview-tools label {
+    font-size: 0;
+    gap: 1px
+}
+
+.reference-layout .preview-tools label input {
+    width: 12px;
+    height: 12px
+}
+
+.reference-layout .preview-tools .preview-selector {
+    display: none
+}
+
+.reference-layout .preview-tools button {
+    padding: 4px 7px;
+    min-height: 28px;
+    font-size: 15px
+}
+
+.reference-layout .preview-tools #zoom-value {
+    font-size: 10px;
+    color: #acbfd0
+}
+
+.reference-layout .preview-tools #zoom-reset {
+    font-size: 10px
+}
+
+.reference-layout .preview-size-controls {
+    padding: 0;
+    background: #293039;
+    position: relative
+}
+
+.reference-layout .drawing {
+    background: #293039;
+    min-height: 0;
+    aspect-ratio: 1030/720;
+    overflow: auto
+}
+
+.reference-layout .drawing svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1030/720
+}
+
+.reference-layout .preview-width-buttons {
+    top: 24px;
+    left: 50%;
+    background: transparent;
+    border: 0;
+    gap: 8px;
+    transform: translateX(-50%);
+    padding: 0;
+    box-shadow: none
+}
+
+.reference-layout .preview-height-buttons {
+    right: 10px;
+    top: 42%;
+    background: transparent;
+    border: 0;
+    gap: 16px;
+    width: 60px;
+    transform: none;
+    box-shadow: none
+}
+
+.reference-layout .preview-size-controls button {
+    width: 29px;
+    height: 29px;
+    min-height: 29px;
+    min-width: 29px;
+    border-radius: 5px;
+    border: 1px solid #456071;
+    background: linear-gradient(#263948, #0d1c27);
+    color: #d9e7f2;
+    font-size: 18px;
+    box-shadow: 0 1px 5px #0004
+}
+
+.reference-layout .preview-size-controls span {
+    font-size: 13px;
+    line-height: 1.3;
+    color: white;
+    white-space: nowrap;
+    font-weight: 600
+}
+
+.reference-layout .preview-width-buttons span {
+    min-width: 82px;
+    text-align: center
+}
+
+.reference-layout .preview-footer {
+    padding: 8px 12px;
+    font-size: 9px
+}
+
+.reference-layout .preview-footer span {
+    color: #b2c7d7
+}
+
+.reference-layout #fit-status {
+    color: #39d8e8 !important
+}
+
+.reference-layout .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 12px 0;
+    gap: 10px
+}
+
+.reference-layout .metric {
+    padding: 15px 14px;
+    border-top: 1px solid #20313f !important;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px
+}
+
+.reference-layout .metric:before {
+    content: '▣';
+    font-size: 25px;
+    color: #60cee9;
+    grid-row: 1/4;
+    align-self: center
+}
+
+.reference-layout .metric:nth-child(2):before {
+    content: '⊞'
+}
+
+.reference-layout .metric:nth-child(3):before {
+    content: '⬡'
+}
+
+.reference-layout .metric strong {
+    font-size: 15px;
+    letter-spacing: 0
+}
+
+.reference-layout .metric span,
+.reference-layout .metric small {
+    font-size: 10px
+}
+
+.reference-layout .metric:nth-child(4) {
+    display: grid
+}
+
+.reference-layout .metric:nth-child(4):before {
+    content: '▧'
+}
+
+.reference-layout .notice:empty {
+    display: none
+}
+
+.reference-layout .notice {
+    font-size: 10px;
+    padding: 8px
+}
+
+.reference-layout .bottom-actions {
+    margin: 8px 0
+}
+
+.reference-layout .size-feedback {
+    padding: 12px
+}
+
+.reference-layout .size-feedback strong {
+    font-size: 13px
+}
+
+.reference-layout .size-feedback span,
+.reference-layout .size-feedback p {
+    font-size: 10px
+}
+
+.reference-layout .studio-inspector {
+    display: block;
+    position: static;
+    grid-column: auto
+}
+
+.reference-layout .studio-controller {
+    padding: 15px;
+    border-top: 1px solid #20313f
+}
+
+.reference-layout .studio-controller h2 {
+    font-size: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #233441;
+    margin: 0 0 10px
+}
+
+.reference-layout .studio-controller>label {
+    margin-bottom: 10px;
+    font-size: 10px
+}
+
+.reference-layout #controller {
+    font-size: 11px;
+    min-height: 33px
+}
+
+.controller-visual {
+    height: 75px;
+    width: 100%;
+    margin: 5px 0 12px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #0b151e;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.controller-visual img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain
+}
+
+.controller-visual .catalogue-excerpt {
+    width: 200px;
+    height: 67px;
+    position: relative;
+    overflow: hidden
+}
+
+.controller-visual .catalogue-excerpt img {
+    position: absolute;
+    max-width: none;
+    max-height: none;
+    width: 2133px;
+    height: 1600px;
+    left: -62px;
+    top: var(--source-top);
+    object-fit: fill
+}
+
+.reference-layout #controller-model-name {
+    font-size: 17px;
+    margin: 8px 0 0;
+    color: #eef4fa
+}
+
+.reference-layout .controller-kind {
+    font-size: 11px;
+    color: #aabbd0;
+    margin: 2px 0 12px
+}
+
+.controller-specs {
+    margin: 0 0 13px;
+    border-top: 1px solid #233441
+}
+
+.controller-specs>div {
+    display: grid;
+    grid-template-columns: 85px minmax(0, 1fr);
+    gap: 7px;
+    padding: 7px 0;
+    border-bottom: 1px solid #233441;
+    font-size: 10px
+}
+
+.controller-specs dt {
+    color: #a6b8cc
+}
+
+.controller-specs dd {
+    margin: 0;
+    color: #e0eaf6;
+    line-height: 1.4
+}
+
+.controller-specs .spec-features dd {
+    font-size: 9px
+}
+
+.reference-layout .controller-rate-field {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px
+}
+
+.rate-stepper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 25px 25px;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+    align-items: center
+}
+
+.reference-layout .rate-stepper input {
+    min-height: 31px;
+    margin: 0;
+    padding: 6px 8px;
+    font-size: 12px
+}
+
+.reference-layout .rate-stepper button {
+    padding: 0;
+    font-size: 17px;
+    min-height: 29px
+}
+
+.reference-layout .controller-pricing,
+.reference-layout .studio-controller-details {
+    margin-top: 11px;
+    padding-top: 8px
+}
+
+.reference-layout .studio-controller-details summary {
+    font-size: 10px;
+    padding-bottom: 0
+}
+
+.reference-layout .studio-controller-details textarea {
+    font-size: 11px
+}
+
+.reference-layout .studio-estimate {
+    padding: 15px
+}
+
+.reference-layout .studio-estimate h2 {
+    font-size: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #233441;
+    margin: 0
+}
+
+.summary-item {
+    display: grid;
+    grid-template-columns: 51px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid #233441
+}
+
+.summary-item .summary-thumb {
+    width: 51px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #122230;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden
+}
+
+.summary-item .summary-thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain
+}
+
+.summary-item strong {
+    font-size: 11px;
+    display: block
+}
+
+.summary-item small {
+    font-size: 9px;
+    color: #9cb0c6;
+    display: block;
+    margin-top: 3px
+}
+
+.summary-quantity {
+    text-align: right;
+    font-size: 15px;
+    font-weight: 600
+}
+
+.summary-quantity span {
+    display: block;
+    font-size: 9px;
+    font-weight: 400;
+    color: #a1b3c7
+}
+
+.reference-layout .studio-estimate dl {
+    margin: 8px 0
+}
+
+.reference-layout .studio-estimate dl div {
+    font-size: 9px;
+    margin: 7px 0
+}
+
+.reference-layout .studio-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 12px
+}
+
+.reference-layout .studio-total span {
+    font-size: 10px;
+    max-width: 100px
+}
+
+.reference-layout .studio-total strong {
+    font-size: 20px;
+    color: #eff6ff;
+    margin: 0
+}
+
+.reference-layout .studio-estimate .hint {
+    font-size: 9px;
+    margin: 7px 0
+}
+
+.reference-layout .studio-estimate .primary {
+    font-size: 12px;
+    padding: 11px 5px
+}
+
+.reference-layout #studio-quote-details {
+    width: auto;
+    margin: 3px 0;
+    padding: 3px 0;
+    font-size: 10px
+}
+
+.reference-layout footer {
+    padding: 15px 0;
+    margin-top: 15px
+}
+
+.reference-layout #wall-svg text.dimension-inside,
+.reference-layout #wall-svg text.dimension-outside {
+    stroke: none;
+    font-weight: 500
+}
+
+.reference-layout .preview-panel:fullscreen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column
+}
+
+.reference-layout .preview-panel:fullscreen .preview-size-controls {
+    flex: 1;
+    min-height: 0
+}
+
+.reference-layout .preview-panel:fullscreen .drawing {
+    height: 100%;
+    aspect-ratio: auto
+}
+
+.reference-layout .preview-panel:fullscreen svg {
+    height: 100%;
+    width: 100%;
+    aspect-ratio: auto
+}
+
+@media(min-width:1600px) {
+    .reference-layout .workspace {
+        grid-template-columns: 295px minmax(0, 1fr) 320px
+    }
+
+    .reference-layout .screen-settings {
+        padding: 20px
+    }
+
+    .reference-layout .switch button {
+        min-height: 39px
+    }
+
+    .reference-layout .field-label {
+        font-size: 12px
+    }
+
+    .reference-layout .model-field select {
+        font-size: 12px
+    }
+
+    .reference-layout .screen-dimension-fields input {
+        min-height: 39px
+    }
+
+    .reference-layout .finish-swatches i {
+        height: 47px
+    }
+}
+
+@media(max-width:1220px) {
+    .reference-layout .workspace {
+        grid-template-columns: 250px minmax(0, 1fr)
+    }
+
+    .reference-layout .studio-inspector {
+        grid-column: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px
+    }
+
+    .reference-layout .studio-controller,
+    .reference-layout .studio-estimate {
+        min-width: 0
+    }
+
+    .reference-layout header {
+        gap: 15px
+    }
+
+    .reference-layout .brand {
+        font-size: 17px
+    }
+
+    .reference-layout .brand-logo {
+        max-width: 100px;
+        height: 30px
+    }
+
+    .reference-layout .brand-mark.has-logo {
+        max-width: 100px
+    }
+
+    .reference-layout nav {
+        gap: 9px
+    }
+
+    .reference-layout .header-actions {
+        gap: 5px
+    }
+
+    .reference-layout #save-btn {
+        display: none
+    }
+
+    .reference-layout .metric {
+        padding: 12px 8px;
+        grid-template-columns: 22px minmax(0, 1fr);
+        gap: 6px
+    }
+
+    .reference-layout .metric strong {
+        font-size: 12px
+    }
+}
+
+@media(max-width:800px) {
+    .reference-layout header {
+        margin: 0;
+        border-radius: 0;
+        padding: 12px;
+        height: auto;
+        flex-wrap: wrap;
+        gap: 10px
+    }
+
+    .reference-layout .brand {
+        font-size: 16px
+    }
+
+    .reference-layout nav {
+        order: 3;
+        width: 100%;
+        height: 34px;
+        flex-basis: 100%
+    }
+
+    .reference-layout .header-actions {
+        margin-left: auto
+    }
+
+    .reference-layout #projects-btn {
+        display: none
+    }
+
+    .tool-rail {
+        position: static;
+        width: auto;
+        min-height: 0;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 0 10px;
+        border-radius: 0 0 8px 8px;
+        padding: 4px 0;
+        gap: 0
+    }
+
+    .tool-rail button {
+        width: auto;
+        flex: 1;
+        padding: 8px 1px;
+        font-size: 9px;
+        border-left: 0;
+        border-bottom: 2px solid transparent;
+        gap: 4px
+    }
+
+    .tool-rail button span {
+        font-size: 20px
+    }
+
+    .tool-rail button.active {
+        border-bottom-color: #27ddea
+    }
+
+    .reference-layout main {
+        margin: 0;
+        padding: 12px 10px
+    }
+
+    .reference-layout .workspace {
+        display: flex;
+        flex-direction: column;
+        gap: 12px
+    }
+
+    .reference-layout .screen-settings {
+        order: 0 !important;
+        width: 100%
+    }
+
+    .reference-layout .studio-canvas {
+        order: 1 !important;
+        width: 100%
+    }
+
+    .reference-layout .studio-inspector {
+        order: 2 !important;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px
+    }
+
+    .reference-layout .display-controls {
+        display: flex
+    }
+
+    .reference-layout .environment-choice,
+    .reference-layout .technology-field {
+        margin-bottom: 12px
+    }
+
+    .reference-layout .finish-swatches {
+        grid-template-columns: repeat(5, minmax(0, 1fr))
+    }
+
+    .reference-layout .screen-dimension-fields {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px
+    }
+
+    .reference-layout .preview-toolbar {
+        padding: 10px 8px;
+        gap: 5px
+    }
+
+    .reference-layout .preview-tools {
+        gap: 3px
+    }
+
+    .reference-layout .preview-tools #zoom-value {
+        display: none
+    }
+
+    .reference-layout .elevation-title {
+        font-size: 10px;
+        padding: 6px
+    }
+
+    .reference-layout .preview-tools button {
+        padding: 4px 6px;
+        font-size: 12px
+    }
+
+    .reference-layout .preview-width-buttons {
+        top: 12px;
+        gap: 5px
+    }
+
+    .reference-layout .preview-size-controls button {
+        width: 23px;
+        height: 23px;
+        min-width: 23px;
+        min-height: 23px;
+        font-size: 15px
+    }
+
+    .reference-layout .preview-size-controls span {
+        font-size: 10px
+    }
+
+    .reference-layout .preview-width-buttons span {
+        min-width: 66px
+    }
+
+    .reference-layout .preview-height-buttons {
+        right: 0;
+        gap: 8px;
+        width: 42px
+    }
+
+    .reference-layout .metric strong {
+        font-size: 11px
+    }
+
+    .reference-layout .metric small {
+        font-size: 8px
+    }
+
+    .reference-layout .metric {
+        padding: 10px 6px;
+        grid-template-columns: 1fr
+    }
+
+    .reference-layout .metric:before {
+        display: none
+    }
+
+    .reference-layout .controller-specs>div {
+        grid-template-columns: 65px minmax(0, 1fr);
+        font-size: 9px
+    }
+
+    .reference-layout .studio-total {
+        display: block
+    }
+
+    .reference-layout .studio-total strong {
+        font-size: 18px;
+        margin-top: 5px
+    }
+}
+
+@media(max-width:460px) {
+    .reference-layout .studio-inspector {
+        display: block
+    }
+
+    .reference-layout .brand-logo {
+        height: 25px;
+        max-width: 80px
+    }
+
+    .reference-layout .brand-mark.has-logo {
+        height: 25px;
+        max-width: 80px
+    }
+
+    .reference-layout .brand-text {
+        font-size: 13px;
+        padding-left: 7px !important
+    }
+
+    .reference-layout .header-actions button {
+        font-size: 10px;
+        padding: 8px
+    }
+
+    .reference-layout .screen-dimension-fields .dimension-stepper {
+        grid-template-columns: minmax(0, 1fr) 25px 25px;
+        gap: 4px
+    }
+
+    .reference-layout .screen-dimension-fields input {
+        font-size: 12px
+    }
+
+    .reference-layout .screen-dimension-fields button {
+        font-size: 18px
+    }
+
+    .reference-layout .preview-tools label {
+        display: none
+    }
+}
+
+@media print {
+    .tool-rail {
+        display: none !important
+    }
+
+    .reference-layout main {
+        margin: 0;
+        padding: 0
+    }
+
+    .reference-layout .panel,
+    .reference-layout #result-drawing {
+        background: white;
+        color: #142b36
+    }
+
+    .reference-layout #result-drawing svg {
+        max-height: 330px
+    }
+}
+
+.reference-layout .display-controls .switch {
+    margin: 0
+}
+
+.reference-layout .technology-all {
+    display: none
+}
+
+.reference-layout .model-options .link {
+    display: block;
+    margin: 8px 0;
+    font-size: 10px
+}
+
+.reference-layout #controller-model-name[hidden] {
+    display: none !important
+}
+
+.reference-layout .studio-controller>label:has(#controller) {
+    margin: 0
+}
+
+.reference-layout #controller {
+    font-size: 17px;
+    font-weight: 650;
+    margin: 0;
+    padding: 4px 0;
+    min-height: 31px;
+    border: 0;
+    background: transparent;
+    color: #edf4fb
+}
+
+.reference-layout #controller option {
+    font-size: 12px;
+    background: #111c26
+}
+
+.reference-layout .controller-kind {
+    margin: 2px 0 10px
+}
+
+.reference-layout .controller-specs>div {
+    padding: 6px 0
+}
+
+.controller-specs dd {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden
+}
+
+.reference-layout .studio-controller-details {
+    padding-top: 7px;
+    margin-top: 7px
+}
+
+.reference-layout .controller-pricing {
+    padding-top: 7px;
+    margin-top: 7px
+}
+
+.reference-layout .quote-breakdown {
+    margin: 6px 0 12px;
+    border: 0;
+    padding: 0
+}
+
+.reference-layout .quote-breakdown summary {
+    font-size: 9px
+}
+
+.reference-layout .design-notes {
+    margin: 9px 0 0;
+    padding: 9px 12px;
+    background: #111d26;
+    border: 1px solid #2c3c48;
+    border-radius: 7px
+}
+
+.reference-layout .design-notes>summary {
+    font-size: 10px;
+    color: #aabfce
+}
+
+.reference-layout .design-notes[open]>summary {
+    margin-bottom: 12px
+}
+
+.reference-layout .design-notes .size-feedback {
+    margin: 0 0 10px
+}
+
+.reference-layout .design-notes .bottom-actions {
+    margin-bottom: 0
+}
+
+.reference-layout .preview-size-controls span {
+    background: #101c27aa;
+    border-radius: 4px;
+    padding: 3px 5px;
+    text-shadow: 0 1px 3px #000
+}
+
+.tool-rail svg {
+    width: 23px;
+    height: 23px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round
+}
+
+.reference-layout .preview-tools svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5
+}
+
+.reference-layout .preview-tools #pan-preview {
+    font-size: 10px
+}
+
+.reference-layout #pan-preview[aria-pressed=true] {
+    background: #174152;
+    color: #49dfed;
+    border-color: #39d5e7
+}
+
+.reference-layout .drawing.pan-enabled {
+    cursor: grab;
+    touch-action: none
+}
+
+.reference-layout .drawing:not(.pan-enabled) {
+    cursor: move;
+    touch-action: none
+}
+
+.reference-layout .drawing.dragging-room {
+    cursor: grabbing
+}
+
+.reference-layout .room-photo-scale {
+    margin-top: 12px
+}
+
+.reference-layout .room-photo-scale output {
+    float: right
+}
+
+.reference-layout .drawing.panning {
+    cursor: grabbing
+}
+
+.reference-layout .drawing.panning svg {
+    pointer-events: none
+}
+
+.controller-visual .catalogue-excerpt {
+    width: 220px;
+    height: 35px
+}
+
+.controller-visual .catalogue-excerpt img {
+    width: 2533px;
+    height: 1900px;
+    left: -82px;
+    top: var(--source-top)
+}
+
+.summary-thumb .controller-visual {
+    transform: scale(.23);
+    width: 220px;
+    height: 35px;
+    flex: none;
+    background: transparent;
+    margin: 0;
+    overflow: visible
+}
+
+.summary-thumb .controller-visual .catalogue-excerpt {
+    width: 220px;
+    height: 35px
+}
+
+.summary-thumb .controller-visual img {
+    max-width: none;
+    max-height: none
+}
+
+@media(max-width:800px) {
+    .reference-layout .preview-tools #pan-preview {
+        display: none
+    }
+}
+
+.reference-layout .brand-mark.has-logo {
+    width: auto;
+    overflow: visible;
+    flex: none;
+    max-width: 105px
+}
+
+.reference-layout .brand-logo {
+    width: auto;
+    max-width: 105px;
+    height: 28px
+}
+
+.reference-layout .brand-mark.has-logo {
+    height: 28px
+}
+
+.reference-layout .header-actions #studio-download {
+    white-space: nowrap
+}
+
+@media(max-width:460px) {
+    .reference-layout .brand-mark.has-logo {
+        max-width: 65px;
+        height: 19px
+    }
+
+    .reference-layout .brand-logo {
+        max-width: 65px;
+        height: 19px
+    }
+
+    .reference-layout .brand-text {
+        font-size: 12px
+    }
+
+    .reference-layout header {
+        gap: 5px;
+        padding: 10px 8px
+    }
+
+    .reference-layout .header-actions button {
+        padding: 8px 7px;
+        font-size: 9px
+    }
+}
 
 /* Four live metrics, with square feet always visible regardless of input unit. */
-.reference-layout .metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.reference-layout .metric{min-width:0}.reference-layout .metric strong{overflow-wrap:anywhere}
-@media(max-width:1500px){.reference-layout .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(min-width:1501px){.reference-layout .metric{grid-template-columns:24px minmax(0,1fr);column-gap:7px;padding:13px 10px}.reference-layout .metric strong{font-size:13px}}
-.reference-layout .cabinet-size-field{margin-top:9px!important;margin-bottom:4px!important;font-size:11px;font-weight:400}.reference-layout .cabinet-size-field select{font-size:11px;padding:7px 6px;min-height:34px}.catalogue-card .card-text label{margin:10px 0 0}.catalogue-card .card-text select{max-width:310px;font-size:12px}.selected-cabinet{padding:10px 12px;border:1px solid var(--line);border-radius:6px;color:var(--navy)}
+.reference-layout .metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr))
+}
 
-.reference-layout .studio-controller>label:has(#controller-auto){display:flex;align-items:center;gap:7px;line-height:1.5}.reference-layout #controller-auto{width:14px;height:14px;min-height:14px;margin:0;accent-color:#39cbe0;flex:none}.reference-layout #controller-recommendation{line-height:1.6;color:#b9d6e4;font-size:11px}.reference-layout #total-video-pixels{line-height:1.6;overflow-wrap:anywhere}
+.reference-layout .metric {
+    min-width: 0
+}
 
-.summary-item.summary-controller{grid-template-columns:minmax(0,1fr) auto}
+.reference-layout .metric strong {
+    overflow-wrap: anywhere
+}
+
+@media(max-width:1500px) {
+    .reference-layout .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+}
+
+@media(min-width:1501px) {
+    .reference-layout .metric {
+        grid-template-columns: 24px minmax(0, 1fr);
+        column-gap: 7px;
+        padding: 13px 10px
+    }
+
+    .reference-layout .metric strong {
+        font-size: 13px
+    }
+}
+
+.reference-layout .cabinet-size-field {
+    margin-top: 9px !important;
+    margin-bottom: 4px !important;
+    font-size: 11px;
+    font-weight: 400
+}
+
+.reference-layout .cabinet-size-field select {
+    font-size: 11px;
+    padding: 7px 6px;
+    min-height: 34px
+}
+
+.catalogue-card .card-text label {
+    margin: 10px 0 0
+}
+
+.catalogue-card .card-text select {
+    max-width: 310px;
+    font-size: 12px
+}
+
+.selected-cabinet {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--navy)
+}
+
+.reference-layout .studio-controller>label:has(#controller-auto) {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    line-height: 1.5
+}
+
+.reference-layout #controller-auto {
+    width: 14px;
+    height: 14px;
+    min-height: 14px;
+    margin: 0;
+    accent-color: #39cbe0;
+    flex: none
+}
+
+.reference-layout #controller-recommendation {
+    line-height: 1.6;
+    color: #b9d6e4;
+    font-size: 11px
+}
+
+.reference-layout #total-video-pixels {
+    line-height: 1.6;
+    overflow-wrap: anywhere
+}
+
+.summary-item.summary-controller {
+    grid-template-columns: minmax(0, 1fr) auto
+}
