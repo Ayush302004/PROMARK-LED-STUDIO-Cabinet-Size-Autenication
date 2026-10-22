@@ -10,8 +10,7 @@ const referenceOriginalRestore = restore;
 restore = function (data) { referenceOriginalRestore(data); resetRoomPosition(); syncReferenceControls(); };
 const referenceOriginalDraw = draw;
 const roomPhotoPosition = { x: 0, y: 0, scale: 1 };
-draw = function (r = result) 
-{
+draw = function (r = result) {
     if (!r) return;
     const exact = $('preview_mode').value === 'exact', d = exact ? r.design : r;
     const W = r.wall_width_m, H = r.wall_height_m, sw = d.width_m, sh = d.height_m;
