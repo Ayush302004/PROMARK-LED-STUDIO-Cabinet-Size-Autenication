@@ -56,6 +56,13 @@ class CatalogueTests(unittest.TestCase):
         for image in images:
             self.assertTrue((root / image).is_file(), image)
 
+    def test_pm12_cob_and_smd_share_the_same_picture(self):
+        catalogue = json.loads((Path(__file__).resolve().parents[1] / "catalogue.json").read_text(encoding="utf-8"))
+        cob = next(p for p in catalogue if p["id"] == "pm-1-2-cob")
+        smd = next(p for p in catalogue if p["id"] == "pm-1-25-smd-600")
+        self.assertEqual(smd["image"], cob["image"])
+        self.assertTrue(all(option["image"] == cob["image"] for option in smd["cabinet_options"]))
+
 
     def test_pixels_match_pitch_and_known_counts(self):
         expected = {"uda-ii-1-2": (512, 384), "uda-ii-1-5": (416, 312), "uda-ii-1-8": (344, 258), "uda-ii-2-5": (256, 192), "umate-sf4": (216, 216)}

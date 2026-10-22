@@ -475,7 +475,7 @@
       }
     },
     "pixel_source": "Native cabinet resolution confirmed by user, 17 October 2026",
-    "image": "models/uda-ii-1-5.png",
+    "image": "models/uda-ii-1-2.png",
     "image_caption": "Product image supplied for this model",
     "supplied_specifications": [
       {
@@ -539,7 +539,7 @@
           }
         },
         "pixel_source": "Native cabinet resolution confirmed by user, 17 October 2026",
-        "image": "models/uda-ii-1-5.png",
+        "image": "models/uda-ii-1-2.png",
         "image_caption": "Product image supplied for this model",
         "supplied_specifications": [
           {
@@ -603,7 +603,7 @@
           }
         },
         "pixel_source": "Native resolution for this cabinet option has not been supplied.",
-        "image": "models/uda-ii-1-5.png",
+        "image": "models/uda-ii-1-2.png",
         "image_caption": "Product image supplied for this model",
         "supplied_specifications": [
           {
