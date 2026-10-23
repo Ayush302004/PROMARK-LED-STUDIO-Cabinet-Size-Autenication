@@ -1,7 +1,3 @@
-/**
- * Authentication Module
- * Handles login, logout, registration and token management
- */
 
 const AUTH = {
     token: null,
