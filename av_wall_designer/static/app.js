@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const fields = ['controller', 'technology', 'q_client', 'q_project', 'q_location', 'q_contact', 'q_date', 'q_salesperson', 'q_version', 'q_subject', 'q_wall_rate', 'q_controller_rate', 'q_controller_qty', 'q_mount_rate', 'q_mount_qty', 'q_installation_rate', 'q_gst', 'q_controller_description', 'q_mount_description', 'q_installation_description', 'q_cin', 'q_company_gst', 'q_pan', 'dimension_step', 'preview_mode', 'size_preset', 'wall_width', 'wall_height', 'screen_width', 'screen_height', 'columns', 'rows', 'target_pixels_w', 'target_pixels_h', 'mode', 'policy', 'position', 'left', 'bottom', 'installation', 'finish', 'wall_colour', 'human_height', 'content'];
+const fields = ['controller', 'technology', 'q_client', 'q_project', 'q_location', 'q_contact', 'q_date', 'q_salesperson', 'q_version', 'q_subject', 'q_wall_rate', 'q_controller_qty', 'q_mount_rate', 'q_mount_qty', 'q_installation_rate', 'q_gst', 'q_controller_description', 'q_mount_description', 'q_installation_description', 'q_cin', 'q_company_gst', 'q_pan', 'dimension_step', 'preview_mode', 'size_preset', 'wall_width', 'wall_height', 'screen_width', 'screen_height', 'columns', 'rows', 'target_pixels_w', 'target_pixels_h', 'mode', 'policy', 'position', 'left', 'bottom', 'installation', 'finish', 'wall_colour', 'human_height', 'content'];
 let controllers = [], catalogue = [], product = null, result = null, lastGoodResult = null, unit = 'ft', environment = 'indoor', scene = 'Video wall', zoom = 1, wallPhoto = '', screenPhoto = '', revision = 0, timer = null;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const resolutionText = p => p && p.pixels_w != null && p.pixels_h != null ? `${Number(p.pixels_w).toLocaleString('en-IN')} × ${Number(p.pixels_h).toLocaleString('en-IN')} px` : 'Not provided';
@@ -323,7 +323,7 @@ function renderCatalogue() {
     }));
 }
 
-function restore(data) { $('controller-auto').checked = data.auto_controller === true; if (['pm-1-5-smd', 'umate-sf4', 'pm-2-5-smd'].includes(data.product?.id)) { data = { ...data, product: catalogue.find(p => p.environment === (data.environment || 'indoor')), technology: 'all' }; message('This saved model has been removed. Review the replacement model before continuing.'); } $('controller').value = data.controller || ''; fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; }); const restoredController = controllers.find(c => c.id === $('controller').value); if (restoredController) { if (!['unit_inr', 'base_x130_x2'].includes(data.controller_price_mode)) $('q_controller_rate').value = restoredController.base_rate ?? ''; $('q_controller_description').value = controllerDescription(restoredController, $('q_controller_description').value); } else { $('controller-auto').checked = true; $('q_controller_description').value = ''; $('q_controller_rate').value = ''; } unit = data.unit || 'ft'; $('dimension_step').value = data.dimension_step || 'unit'; $('preview_mode').value = data.preview_mode || 'exact'; environment = data.environment || 'indoor'; if (data.product) { product = { ...data.product }; const current = familyFor(product); if (current) { product = resolveCabinet(current, product.cabinet_option_id || product.id); } else { catalogue.push(product); } } wallPhoto = ''; screenPhoto = ''; document.querySelectorAll('.unit').forEach(el => el.textContent = unit); document.querySelectorAll('#units button').forEach(b => b.classList.toggle('active', b.dataset.value === unit)); $('resolution').value = 'custom'; $('human_height').max = unit === 'ft' ? 10 : 3; formatDimensionInputs(); selectScene(data.scene || 'Conference'); selectEnvironment(environment, true); updateVisibility(); showTab('designer'); }
+function restore(data) { $('controller-auto').checked = data.auto_controller === true; if (['pm-1-5-smd', 'umate-sf4', 'pm-2-5-smd'].includes(data.product?.id)) { data = { ...data, product: catalogue.find(p => p.environment === (data.environment || 'indoor')), technology: 'all' }; message('This saved model has been removed. Review the replacement model before continuing.'); } $('controller').value = data.controller || ''; fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; }); const restoredController = controllers.find(c => c.id === $('controller').value); if (restoredController) { $('q_controller_description').value = controllerDescription(restoredController, $('q_controller_description').value); } else { $('controller-auto').checked = true; $('q_controller_description').value = ''; } $('q_controller_total').value = 'Pending revised controller rates'; unit = data.unit || 'ft'; $('dimension_step').value = data.dimension_step || 'unit'; $('preview_mode').value = data.preview_mode || 'exact'; environment = data.environment || 'indoor'; if (data.product) { product = { ...data.product }; const current = familyFor(product); if (current) { product = resolveCabinet(current, product.cabinet_option_id || product.id); } else { catalogue.push(product); } } wallPhoto = ''; screenPhoto = ''; document.querySelectorAll('.unit').forEach(el => el.textContent = unit); document.querySelectorAll('#units button').forEach(b => b.classList.toggle('active', b.dataset.value === unit)); $('resolution').value = 'custom'; $('human_height').max = unit === 'ft' ? 10 : 3; formatDimensionInputs(); selectScene(data.scene || 'Conference'); selectEnvironment(environment, true); updateVisibility(); showTab('designer'); }
 async function initialise() {
     controllers = await api('/api/controllers');
     for (const c of controllers) { const option = document.createElement('option'); option.value = c.id; option.textContent = c.name + (c.kind === 'LED Wall Controller' ? '' : ' · ' + c.kind); $('controller').append(option); }
@@ -444,19 +444,19 @@ function updateFullPrices() {
     if (!result) return;
     const area = quotationAreaSqft();
     $('q_install_total').value = 'Company actual price'; $('q_structure_total').value = 'Company actual price';
-    const cr = $('q_controller_rate').value; $('q_controller_total').value = cr === '' ? 'Rate required' : (Number(cr) * 130 * 2 * Number($('q_controller_qty').value === '' ? 1 : $('q_controller_qty').value)).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    $('q_controller_total').value = 'Pending revised controller rates';
     for (const [input, output, factor] of [['q_wall_rate', 'q_led_total', 1]]) {
         const raw = $(input).value; $(output).value = raw === '' ? 'Rate required' : (Number(raw) * factor * area).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 }
-for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_controller_rate', 'q_controller_qty']) $(id).addEventListener('input', updateFullPrices);
+for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_controller_qty']) $(id).addEventListener('input', updateFullPrices);
 
 // Use model-specific paragraph wording; switching models clears the previous price.
 function applyControllerSelection() {
     const c = controllers.find(c => c.id === $('controller').value);
     $('q_controller_description').value = c?.description || '';
-    $('q_controller_rate').value = c?.base_rate ?? '';
-    $('controller-source').textContent = c ? 'Source: ' + c.source + ' · Controller unit price = base rate × 130 × 2, before GST.' : '';
+    $('q_controller_total').value = 'Pending revised controller rates';
+    $('controller-source').textContent = c ? 'Source: ' + c.source + ' · Pricing is pending revised controller rates.' : 'Controller pricing is pending revised rates.';
 }
 $('controller').addEventListener('change', () => { $('controller-auto').checked = false; applyControllerSelection(); updateControllerRecommendation(); updateFullPrices(); schedule(); });
 $('controller-auto').onchange = () => { updateControllerRecommendation(); updateFullPrices(); if (result) renderResults(); };

@@ -110,8 +110,7 @@ def build_quotation(data,base):
     if controller:
         for old_name in controller.get('legacy_names', ['Huidu '+controller['id'], controller['id']]):
             controller_desc=controller_desc.replace(old_name,controller['name'])
-    if controller and 'controller_rate' not in q:
-        q['controller_rate']=controller.get('base_rate')
+    q.pop('controller_rate', None)
     if 'wall_rate' not in q:q['wall_rate']=p.get('base_rate_sqft')
     gst=numeric(q.get('gst'),'GST',18,100)/100
     wb=Workbook();ws=wb.active;ws.title='Quotation';wb.calculation=CalcProperties(calcId=191029,fullCalcOnLoad=True)
@@ -179,7 +178,7 @@ def build_quotation(data,base):
         description=str(value or fallback).strip()
         return description if actual_price.lower() in description.lower() else description.rstrip('. ') + '. ' + actual_price
     lines=[('Videowall',description,1,'Nos',q.get('wall_rate')),
-      ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',q.get('controller_rate')),
+      ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',None),
       ('Mounting Structure',manual_description(q.get('mount_description'),'Mounting structure'),1,'Nos',None),
       ('Installation',manual_description(q.get('installation_description'),'Installation charges'),1,'Nos',None),
       ('UPS',manual_description(None,'UPS'),1,'Nos',None),
@@ -199,7 +198,6 @@ def build_quotation(data,base):
         factor=''
         ws.cell(row,6,f'=IF(\'Design & Specifications\'!B{source}="","",ROUND(\'Design & Specifications\'!B{source}{factor}*\'Design & Specifications\'!B3,2))')
         ws.cell(row,4).number_format='0'
-    ws['F11']="=IF('Design & Specifications'!B6=\"\",\"\",ROUND('Design & Specifications'!B6*130*2,2))"
     merged(total_row,1,9,'Total Amount',True)
     ws.cell(total_row,10,f'=IF(COUNT(F10:F{last_item_row})<{len(lines)},"Rates pending",ROUND(SUM(J10:J{last_item_row}),2))')
     ws.cell(total_row,10).number_format='#,##0.00'
@@ -210,7 +208,7 @@ def build_quotation(data,base):
     merged(31,1,10,'CIN: '+str(q.get('cin','U36109PB2010PTC034337'))+'    GST: '+str(q.get('company_gst','03AAFCP7669C1ZF'))+'    PAN: '+str(q.get('pan','AAFCP7669C')) ,True)
     merged(33,1,10,'We hope the estimate is in line with your requirements. For any clarifications, please get back to us.')
     merged(34,1,10,'Thanks & Regards')
-    merged(36,1,10,'Editable yellow cells: quantities, rates and GST. LED total = cabinet rate × screen sq.ft.; controller unit price = base rate × 130 × 2; controller total = unit price × quantity, before GST. Mounting structure, installation, UPS and cabling are not priced automatically. Enter the company actual prices directly in Rate cells F12:F15. Enter 0 for an included / no-charge item. Blank rates keep the final total pending.')
+    merged(36,1,10,'Editable yellow cells: quantities, rates and GST. LED total = cabinet rate × screen sq.ft. Controller rates are pending revision and are not calculated. Mounting structure, installation, UPS and cabling are not priced automatically. Enter the company actual prices directly in Rate cells F12:F15. Enter 0 for an included / no-charge item. Blank rates keep the final total pending.')
     ws.row_dimensions[36].height=44
     thin=Side(style='thin',color='000000')
     for row in ws.iter_rows(min_row=8,max_row=total_row,max_col=10):
@@ -224,7 +222,7 @@ def build_quotation(data,base):
     ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J36'
     ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=1;ws.sheet_properties.pageSetUpPr.fitToPage=True
     specs=wb.create_sheet('Design & Specifications');specs.column_dimensions['A'].width=42;specs.column_dimensions['B'].width=100
-    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('Mounting structure rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller base rate',numeric(q.get('controller_rate'),'Controller base rate')),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller',((controller or {}).get('name') or data.get('controller') or 'To be selected')),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
+    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('Mounting structure rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller pricing','Pending revised controller rates; not calculated.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller',((controller or {}).get('name') or data.get('controller') or 'To be selected')),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
     if p.get('id') in REFERENCE_QUOTES:
         rows.append(('Quotation specification source','User-supplied quotation screenshot for this video wall type. Quotation wording is separate from configured cabinet geometry.'))
         rows.append(('Quotation technical description',description))
@@ -247,7 +245,7 @@ def build_quotation(data,base):
     for row in specs:
         for cell in row:cell.alignment=Alignment(wrap_text=True,vertical='top')
         specs.row_dimensions[row[0].row].height=180 if row[0].value in ('Quotation technical description','Controller technical description') else 32
-    for cell in ('B2','B3','B6'):specs[cell].fill=PatternFill('solid',fgColor='FFF2CC')
+    for cell in ('B2','B3'):specs[cell].fill=PatternFill('solid',fgColor='FFF2CC')
     specs['B2'].number_format='#,##0.00'
     for cell in ('B3', 'B12'):
         specs[cell].number_format='0.000'
@@ -265,7 +263,7 @@ def build_quotation(data,base):
     # Store formula results for viewers that do not recalculate on opening.
     def money(value):return float(Decimal(str(value)).quantize(Decimal('0.01'),rounding='ROUND_HALF_UP'))
     cached={}
-    unit_rates=[numeric(q.get('wall_rate'),'LED rate'),numeric(q.get('controller_rate'),'Controller rate')]+[None]*4
+    unit_rates=[numeric(q.get('wall_rate'),'LED rate')]+[None]*5
     for row,rate in zip(range(10,last_item_row+1),unit_rates):
         if rate is None:
             for col in ('F','H','I','J'):

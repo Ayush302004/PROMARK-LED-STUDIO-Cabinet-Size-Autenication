@@ -113,7 +113,6 @@ document.querySelectorAll('[data-finish]').forEach(b => b.onclick = () => {
     else { wallPhoto = ''; $('wall-photo').value = ''; if (v === 'white') $('wall_colour').value = '#f0f1f3'; }
     draw(); syncReferenceControls(); if (result) renderResults();
 });
-document.querySelectorAll('[data-rate-step]').forEach(b => b.onclick = () => { const input = $('q_controller_rate'); input.value = Math.max(0, Number(input.value || 0) + Number(b.dataset.rateStep)); input.dispatchEvent(new Event('input', { bubbles: true })); });
 $('preview-fullscreen').onclick = async () => { const panel = document.querySelector('.preview-panel'); try { if (document.fullscreenElement) await document.exitFullscreen(); else await panel.requestFullscreen(); } catch { message('Fullscreen is unavailable in this browser.', true); } };
 document.querySelectorAll('[data-workspace]').forEach(b => b.onclick = () => {
     document.querySelectorAll('[data-workspace]').forEach(el => el.classList.toggle('active', el === b));

@@ -8,7 +8,7 @@ class QuotationTests(unittest.TestCase):
         self.client=app.test_client()
         self.products=self.client.get('/api/catalogue').get_json()
     def payload(self,p):
-        return dict(product=p,environment=p['environment'],unit='m',wall_width=6,wall_height=4,mode='grid',columns=5,rows=4,controller='VX400',quotation={})
+        return dict(product=p,environment=p['environment'],unit='m',wall_width=6,wall_height=4,mode='grid',columns=5,rows=4,controller='HD-KV410',quotation={})
     def test_variants_and_quote(self):
         variants=[p for p in self.products if p['id'].startswith('pm-')]
         self.assertEqual(len(variants),5)
@@ -23,11 +23,17 @@ class QuotationTests(unittest.TestCase):
             self.assertIn('Rates pending',ws['J14'].value)
             self.assertEqual(len(wb['Design & Specifications']._images),1)
     def test_rates_formulas_and_text_safety(self):
-        d=self.payload(self.products[-1]);d['quotation']={'client':'=HYPERLINK("bad")','wall_rate':10000,'controller_rate':500,'mount_rate':200,'installation_rate':100,'gst':18,'controller_qty':2,'controller_description':'=1+1'}
+        d=self.payload(self.products[-1]);d['quotation']={'client':'=HYPERLINK("bad")','salesperson':'Sales','contact':'555-0100','wall_rate':10000,'controller_rate':500,'mount_rate':200,'installation_rate':100,'gst':18,'controller_qty':2,'controller_description':'=1+1'}
         r=self.client.post('/api/quotation',json=d);self.assertEqual(r.status_code,200)
         ws=load_workbook(BytesIO(r.data))['Quotation']
-        self.assertEqual(ws['F10'].value,10000);self.assertEqual(ws['G10'].value,0.18);self.assertEqual(ws['D11'].value,2)
+        self.assertTrue(str(ws['F10'].value).startswith('=IF('));self.assertEqual(ws['G10'].value,0.18);self.assertEqual(ws['D11'].value,2)
+        self.assertIsNone(ws['F11'].value)
         self.assertEqual(ws['J11'].value,'=IF(F11="","",ROUND(D11*I11,2))')
+        self.assertIn('Rates pending',ws['J16'].value)
+        self.assertEqual(load_workbook(BytesIO(r.data),data_only=True)['Quotation']['J16'].value,'Rates pending')
+        specs=load_workbook(BytesIO(r.data))['Design & Specifications']
+        controller_pricing=next(row[1].value for row in specs.iter_rows(min_col=1,max_col=2) if row[0].value=='Controller pricing')
+        self.assertEqual(controller_pricing,'Pending revised controller rates; not calculated.')
         self.assertNotEqual(ws['A1'].data_type,'f');self.assertNotEqual(ws['C11'].data_type,'f')
     def test_invalid_rates_rejected(self):
         for bad in [-1,'NaN','Infinity','abc']:
