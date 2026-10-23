@@ -59,7 +59,35 @@ function exactDecimalStep(value, step, direction) {
 
 const display = m => m / (unit === 'ft' ? 0.3048 : 1);
 function message(text, error = false) { $('status').textContent = text; $('status').classList.toggle('error', error); }
-async function api(url, body) { const response = await fetch(url, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); const data = await response.json(); if (!response.ok) throw Error(data.error || 'Request failed'); return data; }
+async function api(url, body) {
+    const headers = { 'Content-Type': 'application/json' };
+    
+    // Add authentication token if available
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(url, body === undefined ? { headers } : { 
+        method: 'POST', 
+        headers, 
+        body: JSON.stringify(body),
+        credentials: 'include'
+    });
+    
+    const data = await response.json();
+    
+    // If unauthorized, redirect to login
+    if (response.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        throw Error('Authentication required');
+    }
+    
+    if (!response.ok) throw Error(data.error || 'Request failed');
+    return data;
+}
 function state() { const data = { unit, environment, scene, product }; fields.forEach(id => data[id] = $(id).value); data.controller_price_mode = 'base_x130_x2'; data.auto_controller = $('controller-auto').checked; data.quotation = Object.fromEntries(fields.filter(id => id.startsWith('q_')).map(id => [id.slice(2), $(id).value])); return data; }
 function updateVisibility() { updateDimensionSteps(); const known = product && product.pixels_w != null && product.pixels_h != null; $('mode').querySelector('option[value="resolution"]').disabled = !known; if (!known && $('mode').value === 'resolution') $('mode').value = 'dimensions';['dimensions', 'grid', 'resolution'].forEach((v, i) => $(['dimension-fields', 'grid-fields', 'resolution-fields'][i]).hidden = $('mode').value !== v); $('position-fields').hidden = $('position').value === 'centre'; const custom = $('resolution').value === 'custom'; $('target_pixels_w').disabled = !custom; $('target_pixels_h').disabled = !custom; }
 function familyFor(p) {
@@ -334,7 +362,7 @@ $('environment').onchange = () => selectEnvironment($('environment').value); doc
 $('product').onchange = () => { product = resolveCabinet(catalogue.find(p => p.id === $('product').value)); resetScreenDefaults(); renderProducts(); schedule(); }; $('resolution').onchange = () => { if ($('resolution').value !== 'custom') { const [w, h] = $('resolution').value.split(','); $('target_pixels_w').value = w; $('target_pixels_h').value = h; } updateVisibility(); schedule(); }; $('show-grid').onchange = () => { draw(); if (result) renderResults(); }; $('results-btn').onclick = () => { showTab('results'); window.scrollTo({ top: 0, behavior: 'smooth' }); }; $('print-btn').onclick = () => { if (!result) { message('Enter a valid design before printing.', true); return; } showTab('results'); renderResults(); window.print(); }; $('export-json').onclick = () => { if (!result) return message('Correct the design before exporting.', true); download('PROMARK-LED-STUDIO-Design.json', { ...state(), calculated: result }); }; $('catalogue-btn').onclick = () => $('catalogue-dialog').showModal(); $('product-details').onclick = () => { if (product) showProductDetails(product); }; $('download-catalogue').onclick = () => download('catalogue-template.json', catalogue);
 for (const [id, kind] of [['wall-photo', 'wall'], ['screen-photo', 'screen']]) $(id).onchange = () => { const f = $(id).files[0]; if (!f) return; if (!['image/png', 'image/jpeg', 'image/webp'].includes(f.type) || f.size > 5 * 1024 * 1024) return message('Use a PNG, JPEG or WebP image smaller than 5 MB.', true); const reader = new FileReader(); reader.onload = () => { if (kind === 'wall') wallPhoto = reader.result; else { screenPhoto = reader.result; $('content').value = 'image'; } draw(); if (result) renderResults(); }; reader.readAsDataURL(f); }; $('clear-photo').onclick = () => { wallPhoto = ''; $('wall-photo').value = ''; draw(); if (result) renderResults(); }; $('zoom-in').onclick = () => { zoom = Math.min(2.5, zoom + .25); draw(); }; $('zoom-out').onclick = () => { zoom = Math.max(.5, zoom - .25); draw(); }; $('zoom-reset').onclick = () => { zoom = 1; draw(); };
 $('save-btn').onclick = async () => { if (!result) return message('Correct the design before saving.', true); const name = prompt('Project name', `${scene} LED wall`); if (name === null) return; try { await api('/api/projects', { ...state(), name }); message(`Saved “${name || 'Untitled project'}”. Preview photos are not stored.`); } catch (e) { message(e.message, true); } };
-$('projects-btn').onclick = async () => { try { const records = await api('/api/projects'); $('project-list').replaceChildren(...records.map(rec => { const btn = document.createElement('button'); btn.className = 'project-item'; const label = document.createElement('strong'); label.textContent = rec.name; const date = document.createElement('small'); date.textContent = rec.created; btn.append(label, date); btn.onclick = async () => { try { restore(await api(`/api/projects/${rec.id}`)); $('projects-dialog').close(); message('Project loaded. Re-upload any preview photos.'); } catch (e) { message(e.message, true); } }; return btn; })); if (!records.length) $('project-list').textContent = 'No saved projects yet.'; $('projects-dialog').showModal(); } catch (e) { message(e.message, true); } };
+$('projects-btn').onclick = async () => { try { const data = await api('/api/projects'); const records = data.projects || data; $('project-list').replaceChildren(...records.map(rec => { const btn = document.createElement('button'); btn.className = 'project-item'; const label = document.createElement('strong'); label.textContent = rec.name; const date = document.createElement('small'); date.textContent = rec.created_at || rec.created; btn.append(label, date); btn.onclick = async () => { try { restore(await api(`/api/projects/${rec.id || rec._id}`)); $('projects-dialog').close(); message('Project loaded. Re-upload any preview photos.'); } catch (e) { message(e.message, true); } }; return btn; })); if (!records.length) $('project-list').textContent = 'No saved projects yet.'; $('projects-dialog').showModal(); } catch (e) { message(e.message, true); } };
 $('import-catalogue').onchange = async () => { const f = $('import-catalogue').files[0]; if (!f) return; try { if (f.size > 1024 * 1024) throw Error('Catalogue must be smaller than 1 MB'); const incoming = JSON.parse(await f.text()); if (!Array.isArray(incoming) || !incoming.length || incoming.length > 200) throw Error('Catalogue must contain 1–200 product objects'); const ids = new Set(); for (const p of incoming) { if (!p || typeof p !== 'object' || typeof p.id !== 'string' || typeof p.name !== 'string' || !['indoor', 'outdoor'].includes(p.environment) || ids.has(p.id)) throw Error('Each product needs a unique string id, name and indoor/outdoor environment'); ids.add(p.id); await api('/api/calculate', { ...state(), product: p, mode: 'grid', columns: 1, rows: 1 }); } catalogue = incoming; product = null; selectEnvironment(incoming[0].environment); message('Catalogue imported for this session. Save a project to preserve its selected product.'); } catch (e) { message(`Import failed: ${e.message}`, true); } };
 $('snap-size').onclick = () => { if (!result) return; const r = result; $('screen_width').value = dimensionInput(display(r.width_m)); $('screen_height').value = heightFormat(display(r.height_m)); $('columns').value = r.columns; $('rows').value = r.rows; $('mode').value = 'grid'; updateVisibility(); schedule(); }; $('cover-size').onclick = () => { $('policy').value = 'cover'; schedule(); };
 $('reset-dimensions').onclick = applyPreset;

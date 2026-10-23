@@ -119,6 +119,22 @@ document.querySelectorAll('[data-workspace]').forEach(b => b.onclick = () => {
     const page = b.dataset.workspace;
     if (page === 'screens') { $('catalogue-btn').click(); return; }
     if (page === 'quotation') { showTab('results'); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (page === 'admin') {
+        // Show admin dashboard
+        document.getElementById('designer')?.setAttribute('hidden', '');
+        document.getElementById('results')?.setAttribute('hidden', '');
+        const adminSection = document.getElementById('admin-section');
+        if (adminSection) {
+            adminSection.removeAttribute('hidden');
+            // Load dashboard data
+            if (window.AdminDashboard) {
+                window.AdminDashboard.loadDashboard();
+            }
+        }
+        return;
+    }
+    // Hide admin section when switching to other workspaces
+    document.getElementById('admin-section')?.setAttribute('hidden', '');
     showTab('designer');
     let target = document.querySelector('.screen-settings');
     if (page === 'content') { target = document.querySelector('.studio-background'); target.open = true; }
@@ -131,7 +147,7 @@ $('wall-photo').addEventListener('change', () => { $('finish').value = 'custom';
 syncReferenceControls();
 
 
-const railIcons = { design: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>', screens: '<rect x="2" y="3" width="20" height="16"/><path d="M7 23h10M12 19v4"/>', content: '<rect x="2" y="3" width="20" height="18" rx="2"/><path d="m3 17 6-6 4 4 4-5 5 7"/><circle cx="7" cy="7" r="1"/>', layouts: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>', quotation: '<path d="M5 2h10l4 4v16H5zM15 2v5h4M8 11h8M8 15h8M8 19h5"/>', settings: '<path d="m9 3 1-2h4l1 2 3 2 3 1v4l-2 2 1 4-3 3-4-1-2 2H7l-1-3-3-2v-4l2-2V6z"/><circle cx="12" cy="11" r="4"/>' };
+const railIcons = { design: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>', screens: '<rect x="2" y="3" width="20" height="16"/><path d="M7 23h10M12 19v4"/>', content: '<rect x="2" y="3" width="20" height="18" rx="2"/><path d="m3 17 6-6 4 4 4-5 5 7"/><circle cx="7" cy="7" r="1"/>', layouts: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>', quotation: '<path d="M5 2h10l4 4v16H5zM15 2v5h4M8 11h8M8 15h8M8 19h5"/>', settings: '<path d="m9 3 1-2h4l1 2 3 2 3 1v4l-2 2 1 4-3 3-4-1-2 2H7l-1-3-3-2v-4l2-2V6z"/><circle cx="12" cy="11" r="4"/>', admin: '<path d="M12 2L3 7v4c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z"/><path d="M9 12l2 2 4-4"/>' };
 document.querySelectorAll('[data-workspace]').forEach(b => b.querySelector('span').innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${railIcons[b.dataset.workspace]}</svg>`);
 $('preview-fullscreen').innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></svg>';
 const drawing = $('drawing'); let pan = null;

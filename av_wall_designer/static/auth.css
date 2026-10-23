@@ -1,0 +1,265 @@
+/**
+ * Authentication UI Styles
+ */
+
+/* Auth section in header */
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* User menu container */
+.user-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+#user-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    white-space: nowrap;
+}
+
+.user-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    margin: 0;
+    background: var(--surface, #1e1e1e);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 220px;
+    z-index: 10000;
+    overflow: hidden;
+}
+
+.user-info {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border, #333);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-info strong {
+    font-size: 14px;
+    color: var(--text, #fff);
+}
+
+.user-info small {
+    font-size: 12px;
+    color: var(--text-muted, #999);
+}
+
+.user-info .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--accent, #0066ff);
+    color: white;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.user-menu .menu-item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text, #fff);
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.user-menu .menu-item:hover {
+    background: var(--hover, rgba(255, 255, 255, 0.1));
+}
+
+/* Auth dialog */
+#auth-dialog {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    max-width: 440px;
+    width: 90vw;
+    background: var(--surface, #1e1e1e);
+    color: var(--text, #fff);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#auth-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+/* Auth tabs */
+#auth-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border, #333);
+    margin: 0 -24px;
+    padding: 0 24px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted, #999);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-tab.active {
+    color: var(--accent, #0066ff);
+    border-bottom-color: var(--accent, #0066ff);
+}
+
+.auth-tab:hover:not(.active) {
+    color: var(--text, #fff);
+}
+
+/* Auth forms */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text, #fff);
+}
+
+.auth-form input {
+    padding: 10px 12px;
+    background: var(--input-bg, #2a2a2a);
+    border: 1px solid var(--border, #444);
+    border-radius: 6px;
+    color: var(--text, #fff);
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--accent, #0066ff);
+}
+
+.auth-form button[type="submit"] {
+    margin-top: 8px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Form messages */
+.form-message {
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+}
+
+.form-message:not(:empty) {
+    display: block;
+}
+
+.form-message.error {
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff3b30;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.form-message.success {
+    background: rgba(52, 199, 89, 0.15);
+    color: #34c759;
+    border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+/* Dialog body */
+.dialog-body {
+    padding: 0 24px 24px;
+}
+
+/* Hints in forms */
+.auth-form .hint {
+    margin: -8px 0 0;
+    font-size: 12px;
+    color: var(--text-muted, #999);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    #auth-dialog {
+        max-width: 100vw;
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .user-menu {
+        right: -8px;
+    }
+}
+
+
+/* Admin Dashboard Button in Sidebar */
+#admin-dashboard-btn {
+    display: none !important; /* Hidden by default */
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05)) !important;
+    border-left-color: #ffd700 !important;
+}
+
+/* Only show for admins via JavaScript */
+#admin-dashboard-btn.admin-visible {
+    display: flex !important;
+}
+
+#admin-dashboard-btn span {
+    font-size: 22px !important;
+    line-height: 1 !important;
+    display: block !important;
+}
+
+#admin-dashboard-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1)) !important;
+}
+
+#admin-dashboard-btn.active {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 215, 0, 0.15)) !important;
+    color: #ffd700 !important;
+}
+
+/* Ensure proper spacing in tool-rail buttons */
+.tool-rail button {
+    min-height: 60px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+}
+
+.tool-rail button span {
+    display: block;
+    line-height: 1;
+}

@@ -1,7 +1,0 @@
-Specification display update
-
-Specifications now follow the same top-to-bottom row order as the supplied product-sheet photographs. Each parameter and its value remain on a separate table row.
-
-This order is used in the catalogue details, design results, and the Excel Design & Specifications sheet, including for previously saved projects. Existing specification values, pricing and calculations have not changed.
-
-Restart the application and press Ctrl+F5 to load the updated display code.

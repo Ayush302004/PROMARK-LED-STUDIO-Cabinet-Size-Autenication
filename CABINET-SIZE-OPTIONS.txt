@@ -1,5 +1,0 @@
-Select a size directly from the existing model dropdown or catalogue.
-1.5 SMD and COB: added 600 x 337.5 x 39.75 mm options.
-1.25 SMD and COB: 600 x 337.5 x 38.1 mm options.
-Original models and their prices are unchanged. New entries temporarily use original-model rates: 1.5 SMD 14753 INR/sq.ft.; 1.5 COB 17231 INR/sq.ft.; 1.25 SMD and COB 21500 INR/sq.ft.
-New 1.5 cabinet native pixel resolutions need confirmation; original 640 x 480 pixel counts are not reused.

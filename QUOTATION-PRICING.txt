@@ -1,8 +1,0 @@
-LED unit rate per sq.ft. = cabinet rate.
-LED total = unit rate x actual cabinet-built screen area in sq.ft.
-Installation = editable rate (default INR 800) x same area.
-Structure = editable rate (default INR 800) x same area.
-GST applies using the selected percentage. Controller pricing is unchanged.
-Excel: edit LED base rate in Design & Specifications!B2.
-
-Controller unit price = controller base rate x 130 x 2; controller total also uses controller quantity.

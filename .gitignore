@@ -14,7 +14,7 @@ ENV/
 .env.*
 !.env.example
 
-# Node.js dependencies, if used
+# Node.js dependencies
 node_modules/
 
 # Test and tooling caches
@@ -22,7 +22,6 @@ node_modules/
 .mypy_cache/
 .ruff_cache/
 .coverage
-.coverage.*
 htmlcov/
 
 # Build outputs
@@ -33,19 +32,21 @@ dist/
 # Logs
 *.log
 
-# Local databases and SQLite temporary files
+# Database files
 *.db
+*.db-journal
 *.sqlite
 *.sqlite3
-*-journal
-*-wal
-*-shm
+
+# MongoDB data files (if running locally)
+data/
+*.lock
 
 # Editor settings
 .vscode/
 .idea/
 
-# Operating system files
+# OS files
 .DS_Store
 Thumbs.db
 Desktop.ini

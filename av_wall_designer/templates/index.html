@@ -11,6 +11,8 @@
     <link href="{{ url_for('static', filename='studio.css', v='51') }}" rel="stylesheet" />
     <link href="{{ url_for('static', filename='dark-pro.css') }}?v=56" rel="stylesheet" />
     <link href="{{ url_for('static', filename='reference.css', v='63') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='auth.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='admin-dashboard.css') }}" rel="stylesheet" />
 </head>
 
 <body class="light-studio dark-pro reference-layout">
@@ -21,9 +23,14 @@
                 STUDIO</span></a>
         <nav><button class="active" data-tab="designer">Designer</button><button id="header-catalogue"
                 type="button">Catalogue</button><button id="header-projects" type="button">Projects</button></nav>
-        <div class="header-actions"><button class="quiet" id="projects-btn"
-                title="Saved projects">Projects</button><button class="quiet" id="save-btn">Save</button><button
-                class="primary" id="studio-download">↓ Download quotation</button></div>
+        <div class="header-actions">
+            <button class="quiet" id="projects-btn" title="Saved projects">Projects</button>
+            <button class="quiet" id="save-btn">Save</button>
+            <button class="primary" id="studio-download">↓ Download quotation</button>
+            <div class="auth-section" id="auth-section">
+                <!-- Will be populated by auth.js -->
+            </div>
+        </div>
     </header>
     <aside aria-label="Workspace navigation" class="tool-rail">
         <button class="active" data-workspace="design"><span>▦</span>Design</button>
@@ -32,6 +39,7 @@
         <button data-workspace="layouts"><span>⊞</span>Layouts</button>
         <button data-workspace="quotation"><span>▤</span>Quotation</button>
         <button data-workspace="settings"><span>⚙</span>Settings</button>
+        <button id="admin-dashboard-btn" data-workspace="admin" style="display: none !important;"><span>👑</span>Admin</button>
     </aside>
     <main>
         <div class="heading" hidden="">
@@ -396,6 +404,12 @@
         <footer>PROMARK LED STUDIO by Ayush · LED wall designer · Contact support: <a
                 href="mailto:akkoundal2004@gmail.com">akkoundal2004@gmail.com</a><span>Product catalogue · 5 October
                 2026</span></footer>
+        </section>
+        <section hidden="" id="admin-section">
+            <div id="admin-dashboard-content">
+                <div class="loading-spinner">Loading admin dashboard...</div>
+            </div>
+        </section>
     </main>
     <dialog id="catalogue-dialog">
         <div class="dialog-head">
@@ -425,6 +439,9 @@
         </div>
         <div class="detail-specs" id="detail-specs"></div>
     </dialog>
+    <script src="{{ url_for('static', filename='auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='auth-debug.js') }}"></script>
+    <script src="{{ url_for('static', filename='admin-dashboard.js') }}"></script>
     <script src="{{ url_for('static', filename='controller-matching.js', v='1') }}"></script>
     <script src="{{ url_for('static', filename='app.js', v='71') }}"></script>
     <script src="{{ url_for('static', filename='studio.js', v='66') }}"></script>

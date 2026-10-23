@@ -1,5 +1,0 @@
-Display & installation now appears at the top, replacing application tiles.
-Indoor / Outdoor is a dropdown above technology and model selection.
-Dimensions & layout, including width/height and pixel +/- controls, is below the wall preview in the former controller area.
-Controller controls and application tiles are removed. Excel quotation still supports editable controller line details; no controller model is preselected by the designer.
-Background settings remain available.

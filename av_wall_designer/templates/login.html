@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width,initial-scale=1" name="viewport" />
+    <title>Login · PROMARK LED STUDIO</title>
+    <link href="{{ url_for('static', filename='favicon.png') }}" rel="icon" type="image/png" />
+    <link href="{{ url_for('static', filename='login.css') }}" rel="stylesheet" />
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="brand-section">
+                <span class="brand-mark">
+                    <img alt="Pro Mark logo" class="brand-logo" 
+                         src="{{ url_for('static', filename='logo.png') }}" 
+                         onerror="this.style.display='none'" />
+                </span>
+                <h1>PROMARK LED STUDIO</h1>
+                <p class="tagline">LED Wall Designer</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="register">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <div class="form-message" id="login-message"></div>
+                
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required autocomplete="email" 
+                           placeholder="your@email.com" />
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required 
+                           autocomplete="current-password" placeholder="••••••••" />
+                </div>
+
+                <button type="submit" class="btn-primary" id="login-submit">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-loader" style="display: none;">Logging in...</span>
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form" style="display: none;">
+                <div class="form-message" id="register-message"></div>
+                
+                <div class="form-group">
+                    <label for="register-name">Full Name</label>
+                    <input type="text" id="register-name" required autocomplete="name" 
+                           placeholder="John Doe" />
+                </div>
+
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required autocomplete="email" 
+                           placeholder="your@email.com" />
+                </div>
+
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required 
+                           autocomplete="new-password" minlength="8" placeholder="••••••••" />
+                    <small class="hint">At least 8 characters with uppercase, lowercase, number and special character</small>
+                </div>
+
+                <button type="submit" class="btn-primary" id="register-submit">
+                    <span class="btn-text">Register</span>
+                    <span class="btn-loader" style="display: none;">Creating account...</span>
+                </button>
+            </form>
+
+            <div class="footer-text">
+                <p>© 2024 PROMARK. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='login.js') }}"></script>
+</body>
+</html>
