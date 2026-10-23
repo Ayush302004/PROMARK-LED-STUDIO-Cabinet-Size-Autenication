@@ -243,6 +243,55 @@ function selectedSpecificationSheets(p) {
         return !technology || !kind || kind === technology;
     });
 }
+function matchingIndoorCobPixelDensity(p) {
+    if (p.environment !== 'indoor' || String(p.technology || '').toUpperCase() !== 'SMD' || p.pitch_mm == null) return null;
+    const candidates = catalogue.filter(item => item.environment === 'indoor' && item.technology === 'COB')
+        .flatMap(item => [item, ...(item.cabinet_options || [])])
+        .map(item => ({
+            distance: Math.abs(Number(item.pitch_mm) - Number(p.pitch_mm)),
+            sheets: item.supplied_specifications || [],
+        }))
+        .filter(item => item.distance <= 0.05)
+        .sort((a, b) => a.distance - b.distance);
+    for (const candidate of candidates) {
+        for (const sheet of candidate.sheets) {
+            const density = Object.entries(sheet.specs || {}).find(([key]) => /pixel\s+density/i.test(key));
+            if (density) return density[1];
+        }
+    }
+    return null;
+}
+function cabinetOptionSpecifications(sheet, p) {
+    const specs = { ...(sheet.specs || {}) };
+    const dimensions = cabinetDimensions(p).replace(/ mm$/, '');
+    const dimensionEntries = Object.entries(specs).filter(([key]) => /^Cabinet\s+(?:—\s*)?Dimensions?\b/i.test(key));
+    const sameCabinet = dimensionEntries.some(([, value]) => String(value).replace(/\s*mm$/i, '').replace(/\s/g, '') === dimensions.replace(/\s/g, ''));
+    dimensionEntries.forEach(([key]) => delete specs[key]);
+    if (!sameCabinet) {
+        ['Cabinet — Modules (W×H)', 'Cabinet — Resolution (W×H)', 'Cabinet — Dimensions (mm)', 'Weight (kg)', 'Pixel density (dot/m²)', 'Peak power consumption (W/m²)', 'Average power consumption (W/m²)', 'Cabinet Input voltage', 'IP protection level'].forEach(key => delete specs[key]);
+    }
+    const values = {
+        'Pixel Pitch (mm)': p.pitch_mm == null ? null : fmt(p.pitch_mm),
+        'Cabinet — Resolution (W×H)': p.pixels_w == null || p.pixels_h == null ? null : `${fmt(p.pixels_w)} × ${fmt(p.pixels_h)}`,
+        'Cabinet — Dimensions (mm)': dimensions,
+        'Maintenance access': p.maintenance,
+        'White balance brightness (nit)': p.brightness_nits == null ? null : fmt(p.brightness_nits),
+        'Refresh rate (Hz)': p.refresh_hz == null ? null : fmt(p.refresh_hz),
+        'Weight (kg)': p.weight_kg == null ? null : fmt(p.weight_kg),
+        'IP protection level': p.ip_rating,
+    };
+    for (const [key, value] of Object.entries(values)) {
+        if (value != null) specs[key] = value;
+        else if (!sameCabinet) delete specs[key];
+    }
+    const matchingDensity = matchingIndoorCobPixelDensity(p);
+    if (matchingDensity != null) {
+        specs['Pixel density (dot/m²)'] = matchingDensity;
+    } else if (p.pixels_w != null && p.pixels_h != null && p.width_mm && p.height_mm) {
+        specs['Pixel density (dot/m²)'] = fmt(p.pixels_w * p.pixels_h * 1_000_000 / (p.width_mm * p.height_mm));
+    }
+    return { specs, sameCabinet };
+}
 function suppliedSpecifications(p) {
     const sheets = selectedSpecificationSheets(p);
     if (!sheets.length) return '';
@@ -251,7 +300,8 @@ function suppliedSpecifications(p) {
         const reference = canonical.find(item => item.model === sheet.model) || {};
         const order = sheet.specification_order || reference.specification_order || [];
         const featureOrder = sheet.feature_specification_order || reference.feature_specification_order || [];
-        return `<article class="spec-sheet"><h4>${esc(sheet.model)}</h4>${specificationTable(sheet.specs, order)}${sheet.feature_specs ? `<h4>Product features — supplied feature page</h4>${specificationTable(sheet.feature_specs, featureOrder)}` : ''}${sheet.note ? `<p class="spec-note">${esc(sheet.note)}</p>` : ''}</article>`;
+        const selected = cabinetOptionSpecifications(sheet, p);
+        return `<article class="spec-sheet"><h4>${esc(sheet.model)}</h4>${specificationTable(selected.specs, order)}${sheet.feature_specs && selected.sameCabinet ? `<h4>Product features — supplied feature page</h4>${specificationTable(sheet.feature_specs, featureOrder)}` : ''}${sheet.note ? `<p class="spec-note">${esc(sheet.note)}</p>` : ''}</article>`;
     }).join('');
     return `<section class="supplied-specs"><h3>Pro Mark cabinet specifications</h3><p class="hint">${p.technology ? 'Technical table for the selected PM variant.' : 'Transcribed PM references; configured original-model values are listed separately below.'}</p>${tables}</section>`;
 }
