@@ -17,7 +17,8 @@
       "Huidu HD-KV410",
       "HD-KV410"
     ],
-    "base_rate": 25000
+    "rmb_rate": 599,
+    "rate_inr": 17970
   },
   {
     "id": "HD-VP620A",
@@ -37,7 +38,8 @@
       "Huidu HD-VP620A",
       "HD-VP620A"
     ],
-    "base_rate": 30000
+    "rmb_rate": 1799,
+    "rate_inr": 53970
   },
   {
     "id": "HD-VP820A",
@@ -57,7 +59,8 @@
       "Huidu HD-VP820A",
       "HD-VP820A"
     ],
-    "base_rate": 40000
+    "rmb_rate": 2699,
+    "rate_inr": 80970
   },
   {
     "id": "HD-VP8",
@@ -77,7 +80,8 @@
       "Huidu HD-VP8",
       "HD-VP8"
     ],
-    "base_rate": 60000
+    "rmb_rate": 2899,
+    "rate_inr": 86970
   },
   {
     "id": "HD-VP12",
@@ -97,7 +101,8 @@
       "Huidu HD-VP12",
       "HD-VP12"
     ],
-    "base_rate": 100000
+    "rmb_rate": 3499,
+    "rate_inr": 104970
   },
   {
     "id": "HD-VP1640A",
@@ -117,7 +122,8 @@
       "Huidu HD-VP1640A",
       "HD-VP1640A"
     ],
-    "base_rate": 150000
+    "rmb_rate": 4999,
+    "rate_inr": 149970
   },
   {
     "id": "HD-VP2430",
@@ -137,7 +143,8 @@
       "Huidu HD-VP2430",
       "HD-VP2430"
     ],
-    "base_rate": 250000
+    "rmb_rate": 7799,
+    "rate_inr": 233970
   },
   {
     "id": "HD-VP2060",
@@ -157,7 +164,8 @@
       "Huidu HD-VP2060",
       "HD-VP2060"
     ],
-    "base_rate": 200000
+    "rmb_rate": 7499,
+    "rate_inr": 224970
   },
   {
     "id": "HD-VP3060",
@@ -177,7 +185,8 @@
       "Huidu HD-VP3060",
       "HD-VP3060"
     ],
-    "base_rate": 300000
+    "rmb_rate": 12699,
+    "rate_inr": 380970
   },
   {
     "id": "HD-VP4060",
@@ -197,6 +206,7 @@
       "Huidu HD-VP4060",
       "HD-VP4060"
     ],
-    "base_rate": 350000
+    "rmb_rate": 17999,
+    "rate_inr": 539970
   }
 ]

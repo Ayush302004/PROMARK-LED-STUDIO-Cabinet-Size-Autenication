@@ -11,12 +11,14 @@ function updateStudioSummary(){
    const raw=$(id).value;if(raw===''){pending=true;lines.push([label,'Rate required']);}else{const cost=Number(raw)*factor;total+=cost;lines.push([label,amount(cost)]);}
   }
  }
- lines.push(['Controller','Pending revised controller rates']);pending=true;
+ if(controller?.rate_inr!=null){
+  const cost=controller.rate_inr*Number($('q_controller_qty').value||1);total+=cost;lines.push(['Controller cost',amount(cost)]);
+ }else{pending=true;lines.push(['Controller cost','Select a controller']);}
  for(const label of ['Mounting Structure','Installation','UPS','Cabling'])lines.push([label,'Company actual price']);
  pending=true;
  target.innerHTML=lines.map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('');
  $('studio-total').textContent=pending?'Rates pending':amount(total*(1+Number($('q_gst').value||0)/100));
- $('studio-rate-status').textContent=pending?'Controller rates are pending revision. Enter company actual prices for mounting structure, installation, UPS and cabling in the Excel quotation.':'Includes '+$('q_gst').value+'% GST. Final rounding is applied in Excel.';
+ $('studio-rate-status').textContent=pending?'Controller rate is included where selected. Enter company actual prices for mounting structure, installation, UPS and cabling in the Excel quotation.':'Includes '+$('q_gst').value+'% GST. Final rounding is applied in Excel.';
  $('studio-catalogue-count').textContent=catalogue.length+' display models · '+controllers.length+' controllers';
 }
 const originalFullPrices=updateFullPrices;
