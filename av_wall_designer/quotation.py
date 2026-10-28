@@ -263,13 +263,13 @@ def build_quotation(data,base):
     # Store formula results for viewers that do not recalculate on opening.
     def money(value):return float(Decimal(str(value)).quantize(Decimal('0.01'),rounding='ROUND_HALF_UP'))
     cached={}
-    unit_rates=[numeric(q.get('wall_rate'),'LED rate')]+[None]*5
+    unit_rates=[numeric(q.get('wall_rate'),'LED rate'),numeric((controller or {}).get('rate_inr'),'Controller rate')]+[None]*4
     for row,rate in zip(range(10,last_item_row+1),unit_rates):
         if rate is None:
             for col in ('F','H','I','J'):
                 if ws[f'{col}{row}'].data_type=='f':cached[f'{col}{row}']=''
             continue
-        full=money(Decimal(str(rate))*sqft_decimal) if row!=11 else money(rate*130*2)
+        full=money(Decimal(str(rate))*sqft_decimal) if row==10 else money(rate)
         cached[f'F{row}']=full
         tax=money(full*gst);gross=money(full+tax)
         cached[f'H{row}']=tax;cached[f'I{row}']=gross;cached[f'J{row}']=money(float(ws.cell(row,4).value)*gross)
@@ -292,3 +292,337 @@ def build_quotation(data,base):
                 content=ET.tostring(tree,encoding='utf-8')
             dst.writestr(item,content)
     final.seek(0);return final
+
+
+def build_quotation_pdf(data, base):
+    """Build a landscape PROMARK quotation matching the supplied reference layout."""
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+
+    result = calculate(data)
+    product = data['product']
+    quotation = dict(data.get('quotation') or {})
+    gst_percent = numeric(quotation.get('gst'), 'GST', 18, 100)
+    gst = gst_percent / 100
+    unit = data.get('unit', 'm')
+
+    controllers = json.loads((Path(base) / 'controllers.json').read_text(encoding='utf-8'))
+    controller = next((item for item in controllers if item['id'] == data.get('controller')), None)
+    if data.get('controller') and not controller:
+        raise ValueError('This controller is no longer available. Select a current PROMARK controller before downloading.')
+
+    if data.get('preview_mode', 'exact') == 'exact' and data.get('mode') == 'dimensions':
+        width = Decimal(str(data['screen_width']))
+        height = Decimal(str(data['screen_height']))
+    else:
+        dimensions = result.get('design') or result
+        divisor = Decimal('0.3048') if unit == 'ft' else Decimal(1)
+        width = Decimal(str(dimensions['width_m'])) / divisor
+        height = Decimal(str(dimensions['height_m'])) / divisor
+
+    area = width * height
+    area_sqft = area if unit == 'ft' else area / Decimal('0.09290304')
+    wall_rate = numeric(quotation.get('wall_rate'), 'LED rate')
+    controller_quantity = numeric(quotation.get('controller_qty'), 'Controller quantity', 1, 100000)
+    controller_rate = numeric((controller or {}).get('rate_inr'), 'Controller rate')
+
+    def indian(value):
+        try:
+            value = Decimal(str(value or 0)).quantize(Decimal('0.01'))
+            whole, frac = f'{value:.2f}'.split('.')
+            if len(whole) <= 3:
+                return f'{whole}.{frac}'
+            last3, rest = whole[-3:], whole[:-3]
+            rest = rest[-2:] and format(int(rest), ',')
+            return f'{rest},{last3}.{frac}' if rest else f'{last3}.{frac}'
+        except Exception:
+            return '0.00'
+
+    def parsed_date(value):
+        try:
+            return date.fromisoformat(str(value)).strftime('%d-%m-%Y')
+        except Exception:
+            return date.today().strftime('%d-%m-%Y')
+
+    output = BytesIO()
+    page_width, page_height = landscape(A4)
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Small', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=7))
+    styles.add(ParagraphStyle(name='SmallBold', parent=styles['BodyText'], fontName='Helvetica-Bold', fontSize=7, leading=8))
+    styles.add(ParagraphStyle(name='Center', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=8, alignment=1))
+
+    def page_decor(canvas, doc):
+        canvas.saveState()
+        logo_path = Path(base) / 'static' / 'logo.png'
+        if logo_path.exists():
+            canvas.drawImage(str(logo_path), 18*mm, page_height-28*mm, width=48*mm, height=14*mm, preserveAspectRatio=True, mask='auto')
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.rect(0, 0, page_width, 22*mm, fill=1, stroke=0)
+        canvas.setFillColor(colors.white)
+        canvas.setFont('Helvetica-Bold', 9)
+        canvas.drawCentredString(page_width/2, 7*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+        canvas.restoreState()
+
+    doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
+                            rightMargin=12*mm, topMargin=24*mm, bottomMargin=25*mm,
+                            title='Promark Video Wall Quotation')
+    story = [Spacer(1, 0*mm)]
+
+    reference_name = 'Quotations of Video Wall'
+    if product.get('environment') and product.get('pitch_mm') is not None:
+        reference_name = f"{float(product['pitch_mm']):g}mm {product.get('technology', 'SMD')} {str(product['environment']).title()} Video Wall"
+
+    wall_description = reference_description(product, indian(width), indian(height), unit, indian(area_sqft)) if reference_description(product, width, height, unit, area_sqft) else None
+    if not wall_description:
+        wall_description = (f"Supply of {product.get('technology', 'LED')} LED video wall ({indian(width)}W x {indian(height)}H {unit}). "
+                            f"Pixel Pitch: {product.get('pitch_mm', '—')}mm. Cabinet layout: {result.get('columns', 0)}W x {result.get('rows', 0)}H.")
+
+    left_info = [
+        [Paragraph('<b>Client Name:</b> '+str(quotation.get('client','')), styles['Small'])],
+        [Paragraph('<b>Project Detail:</b> '+str(quotation.get('project') or reference_name), styles['Small'])],
+        [Paragraph('<b>Location:</b> '+str(quotation.get('location','')), styles['Small'])],
+        [Paragraph('<b>Sub:</b> '+str(quotation.get('subject') or f"Quotation of {reference_name}"), styles['Small'])],
+    ]
+    right_info = [
+        [Paragraph('<b>Date:</b> '+parsed_date(quotation.get('date')), styles['Small'])],
+        [Paragraph('<b>Sales Person:</b> '+str(quotation.get('salesperson','')), styles['Small'])],
+        [Paragraph('<b>Version:</b> '+str(quotation.get('version','1')), styles['Small'])],
+        ['',],
+    ]
+    info = Table([[Table(left_info, colWidths=[112*mm]), Table(right_info, colWidths=[112*mm])]],
+                 colWidths=[112*mm, 112*mm], rowHeights=[24*mm])
+    info.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'), ('LINEBELOW',(0,0),(-1,-1),0,colors.white)]))
+    story += [info, Spacer(1, 2*mm)]
+
+    headers = ['Sr. No.', 'Item', 'Description', 'Qty', 'Unit', 'Rate', 'GST', 'GST amount', 'Rate incl.\ntaxes', 'Amount']
+    pdf_rows = [headers]
+    subtotal = Decimal('0')
+    gst_total = Decimal('0')
+
+    wall_base = Decimal(str(area_sqft)) * Decimal(str(wall_rate or 0))
+    wall_gst_amount = wall_base * Decimal(str(gst))
+    wall_gross = wall_base + wall_gst_amount
+    subtotal += wall_gross
+    gst_total += wall_gst_amount
+    pdf_rows.append(['1', 'Videowall', wall_description.replace('\n','<br/>'), '1', 'Nos', indian(wall_base), f'{gst_percent:g}%', indian(wall_gst_amount), indian(wall_gross), indian(wall_gross)])
+
+    if controller:
+        controller_base = Decimal(str(controller_rate or 0)) * Decimal(str(controller_quantity))
+        controller_gst = controller_base * Decimal(str(gst))
+        controller_gross = controller_base + controller_gst
+        subtotal += controller_gross
+        gst_total += controller_gst
+        controller_description = ' '.join(str(quotation.get('controller_description') or controller.get('description') or controller.get('name','')).split())
+        pdf_rows.append(['2', 'LED Wall\nController', controller_description, f'{controller_quantity:g}', 'Nos', indian(controller_rate), f'{gst_percent:g}%', indian(controller_gst), indian(controller_rate * (1 + gst)), indian(controller_gross)])
+
+    mount_rate = numeric(quotation.get('mount_rate'), 'Mounting rate', 0)
+    mount_qty = numeric(quotation.get('mount_qty'), 'Mounting quantity', 1)
+    install_rate = numeric(quotation.get('installation_rate'), 'Installation rate', 0)
+    mount_base = Decimal(str(mount_rate)) * Decimal(str(mount_qty))
+    install_base = Decimal(str(install_rate))
+    for number, (item_name, desc, rate_base) in enumerate([
+        ('UniPole', str(quotation.get('mount_description') or 'Supply of Uni-Pole.'), mount_base),
+        ('Installation', str(quotation.get('installation_description') or 'Supply of Installation charges.'), install_base),
+    ], start=len(pdf_rows)-1):
+        rate = rate_base
+        gst_amount = rate * Decimal(str(gst))
+        gross = rate + gst_amount
+        if rate:
+            subtotal += gross
+            gst_total += gst_amount
+        pdf_rows.append([str(number+1), item_name, desc, '1', 'Nos', indian(rate) if rate else 'As per actual', f'{gst_percent:g}%', indian(gst_amount) if rate else '-', indian(gross) if rate else '-', indian(gross) if rate else '-'])
+
+    table = Table([[Paragraph(str(v).replace('\n','<br/>'), styles['Small']) for v in pdf_rows[0]]] +
+                  [[Paragraph(str(v).replace('\n','<br/>'), styles['Small']) for v in row] for row in pdf_rows[1:]],
+                  repeatRows=1, colWidths=[12*mm,26*mm,66*mm,10*mm,12*mm,19*mm,12*mm,20*mm,22*mm,25*mm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#d9e9f4')),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.black), ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('GRID',(0,0),(-1,-1),0.5,colors.black), ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('ALIGN',(3,0),(5,-1),'CENTER'), ('ALIGN',(6,0),(-1,-1),'RIGHT'),
+        ('TOPPADDING',(0,0),(-1,-1),2), ('BOTTOMPADDING',(0,0),(-1,-1),2),
+    ]))
+    story += [table]
+
+    story.append(Table([
+        ['', '', '', '', '', '', '', '', Paragraph('<b>Total Amount</b>', styles['Small']), Paragraph(indian(subtotal), styles['Small'])],
+        ['', '', '', '', '', '', '', '', Paragraph('<b>GST Amount</b>', styles['Small']), Paragraph(indian(gst_total), styles['Small'])],
+    ], colWidths=[12*mm,26*mm,66*mm,10*mm,12*mm,19*mm,12*mm,20*mm,22*mm,25*mm], style=[
+        ('GRID',(8,0),(-1,-1),0.5,colors.black), ('ALIGN',(8,0),(-1,-1),'RIGHT'), ('VALIGN',(0,0),(-1,-1),'MIDDLE')]))
+    story += [Spacer(1, 2*mm), Paragraph('<b>Terms and conditions:</b>', styles['SmallBold'])]
+    for index, term in enumerate(TERMS, 1):
+        story.append(Paragraph(f'{index}) {term}', styles['Small']))
+    story += [Spacer(1, 1*mm), Paragraph('<b>Promark Techsolutions Pvt. Ltd.</b>', styles['Small'])]
+
+    doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
+    output.seek(0)
+    return output
+
+
+def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
+    """Convert an edited quotation worksheet into the branded reference PDF layout."""
+    from openpyxl import load_workbook
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+
+    workbook = load_workbook(file_stream, data_only=True)
+    if 'Quotation' not in workbook.sheetnames:
+        raise ValueError('The Excel file must contain a Quotation worksheet.')
+    sheet = workbook['Quotation']
+
+    def merged_value(row, start_col, end_col):
+        for col in range(start_col, end_col + 1):
+            value = sheet.cell(row, col).value
+            if value not in (None, ''):
+                return str(value)
+        return ''
+
+    def number(value):
+        if isinstance(value, (int, float)):
+            return float(value)
+        if value in (None, ''):
+            return 0.0
+        try:
+            return float(str(value).replace(',', '').replace('₹', '').strip())
+        except ValueError:
+            return 0.0
+
+    def indian(value):
+        return f'{number(value):,.2f}'
+
+    import html
+
+    headers = [sheet.cell(8, col).value or '' for col in range(1, 11)]
+    rows = []
+    total_amount = 0.0
+    total_gst = 0.0
+
+    for row_number in range(10, 37):
+        sr = sheet.cell(row_number, 1).value
+        item = sheet.cell(row_number, 2).value
+        description = sheet.cell(row_number, 3).value
+        if sr in (None, '') and item in (None, ''):
+            continue
+        item_text = str(item or '').strip()
+        if item_text.lower() == 'total amount':
+            continue
+
+        qty = number(sheet.cell(row_number, 4).value)
+        unit = sheet.cell(row_number, 5).value or 'Nos'
+        rate = number(sheet.cell(row_number, 6).value)
+        gst_value = number(sheet.cell(row_number, 7).value)
+        gst_fraction = gst_value / 100 if gst_value > 1 else gst_value
+        gst_amount = rate * gst_fraction * qty
+        inclusive_rate = rate * (1 + gst_fraction)
+        amount = qty * inclusive_rate
+        total_gst += gst_amount
+        total_amount += amount
+
+        description_text = str(description or '')[:900]
+        converted = [sr or '', item or '', description_text, qty if qty else '', unit,
+                     indian(rate) if rate else ('-' if sheet.cell(row_number, 6).value is None else '0.00'),
+                     f'{gst_fraction:.0%}', indian(gst_amount) if rate else '-',
+                     indian(inclusive_rate) if rate else '-', indian(amount) if rate else '-']
+        rows.append(converted)
+
+    output = BytesIO()
+    page_width, page_height = landscape(A4)
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='ReferenceSmall', parent=styles['BodyText'], fontName='Helvetica', fontSize=5.7, leading=6.2))
+    styles.add(ParagraphStyle(name='ReferenceBold', parent=styles['BodyText'], fontName='Helvetica-Bold', fontSize=5.7, leading=6.2))
+
+    def page_decor(canvas, doc):
+        canvas.saveState()
+        logo_path = Path(__file__).parent / 'static' / 'logo.png'
+        if logo_path.exists():
+            canvas.drawImage(str(logo_path), 12*mm, page_height-27*mm, width=55*mm, height=17*mm, preserveAspectRatio=True, mask='auto')
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.rect(0, 0, page_width, 14*mm, fill=1, stroke=0)
+        canvas.setFillColor(colors.white)
+        canvas.setFont('Helvetica-Bold', 8)
+        canvas.drawCentredString(page_width/2, 5*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+        canvas.restoreState()
+
+    doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm, rightMargin=12*mm,
+                            topMargin=21*mm, bottomMargin=17*mm, title='Edited PROMARK Video Wall Quotation')
+
+    def clean_label(value, label):
+        text = str(value or '').strip()
+        if text.startswith(label + ':'):
+            return text
+        return f'<b>{label}:</b> {text}' if text else f'<b>{label}:</b>'
+
+    story = []
+    left_rows = [[Paragraph(clean_label(sheet.cell(1, 1).value, 'Client Name'), styles['ReferenceSmall'])],
+                 [Paragraph(clean_label(sheet.cell(2, 1).value, 'Project Detail'), styles['ReferenceSmall'])],
+                 [Paragraph(clean_label(sheet.cell(3, 1).value, 'Location'), styles['ReferenceSmall'])],
+                 [Paragraph(clean_label(sheet.cell(6, 1).value, 'Sub'), styles['ReferenceSmall'])]]
+    right_rows = [[Paragraph(clean_label(sheet.cell(1, 8).value, 'Date'), styles['ReferenceSmall'])],
+                  [Paragraph(clean_label(sheet.cell(2, 8).value, 'Sales Person'), styles['ReferenceSmall'])],
+                  [Paragraph(clean_label(sheet.cell(3, 8).value, 'Version'), styles['ReferenceSmall'])],
+                  [Paragraph(clean_label(sheet.cell(4, 1).value, 'Contact Details'), styles['ReferenceSmall'])]]
+    info = Table([[Table(left_rows, colWidths=[112*mm]), Table(right_rows, colWidths=[112*mm])]],
+                 colWidths=[112*mm,112*mm], rowHeights=[28*mm])
+    info.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP')]))
+    story += [info, Spacer(1, 2*mm)]
+
+    table_rows = [[Paragraph(html.escape(str(value)), styles['ReferenceBold']) for value in headers]]
+    for row in rows:
+        table_rows.append([
+            Paragraph(html.escape(str(value)).replace('\n', '<br/>'), styles['ReferenceSmall'])
+            for value in row
+        ])
+
+    table = Table(table_rows, repeatRows=1, splitByRow=1, splitInRow=1,
+                  colWidths=[12*mm,27*mm,66*mm,10*mm,12*mm,20*mm,12*mm,20*mm,22*mm,23*mm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#d9e9f4')),
+        ('GRID',(0,0),(-1,-1),0.5,colors.black), ('VALIGN',(0,0),(-1,-1),'TOP'),
+        ('ALIGN',(3,0),(5,-1),'CENTER'), ('ALIGN',(6,0),(-1,-1),'RIGHT'),
+        ('TOPPADDING',(0,0),(-1,-1),2), ('BOTTOMPADDING',(0,0),(-1,-1),2),
+    ]))
+    story.append(table)
+
+    totals = Table([
+        ['', '', '', '', '', '', '', '', Paragraph('<b>Total Amount</b>', styles['ReferenceBold']), Paragraph(indian(total_amount), styles['ReferenceBold'])],
+        ['', '', '', '', '', '', '', '', Paragraph('<b>GST Amount</b>', styles['ReferenceBold']), Paragraph(indian(total_gst), styles['ReferenceBold'])],
+    ], colWidths=[12*mm,27*mm,66*mm,10*mm,12*mm,20*mm,12*mm,20*mm,22*mm,23*mm])
+    totals.setStyle(TableStyle([('GRID',(8,0),(-1,-1),0.5,colors.black), ('ALIGN',(8,0),(-1,-1),'RIGHT')]))
+    story += [totals, Spacer(1, 2*mm), Paragraph('<b>Terms and conditions:</b>', styles['ReferenceBold'])]
+
+    terms = []
+    for row_number in range(19, 28):
+        value = sheet.cell(row_number, 1).value
+        if value:
+            terms.append(Paragraph(html.escape(str(value)), styles['ReferenceSmall']))
+    if not terms:
+        terms = [Paragraph(html.escape(f'{index}) {term}'), styles['ReferenceSmall'])
+                 for index, term in enumerate(TERMS, 1)]
+
+    term_rows = []
+    for index in range(0, len(terms), 2):
+        term_rows.append([terms[index], terms[index + 1] if index + 1 < len(terms) else ''])
+    if term_rows:
+        terms_table = Table(term_rows, colWidths=[112*mm, 112*mm])
+        terms_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+            ('TOPPADDING', (0, 0), (-1, -1), 1), ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+        ]))
+        story.append(terms_table)
+
+    cin = sheet.cell(31, 1).value
+    if cin:
+        story += [Spacer(1,1*mm), Paragraph(str(cin), styles['ReferenceSmall'])]
+    story += [Paragraph('We hope the estimate is in line with your requirements. For any clarifications, please get back to us.', styles['ReferenceSmall']),
+              Paragraph('<b>Thanks & Regards</b>', styles['ReferenceSmall'])]
+
+    doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
+    output.seek(0)
+    return output

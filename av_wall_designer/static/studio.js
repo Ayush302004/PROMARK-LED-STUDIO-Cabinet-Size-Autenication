@@ -12,7 +12,12 @@ function updateStudioSummary(){
   }
  }
  if(controller?.rate_inr!=null){
-  const cost=controller.rate_inr*Number($('q_controller_qty').value||1);total+=cost;lines.push(['Controller cost',amount(cost)]);
+  const quantity=Number($('q_controller_qty').value||1);
+  const cost=controller.rate_inr*quantity;total+=cost;
+  const gst=Number($('q_gst').value||0)/100;
+  lines.push(['Controller cost, before GST',amount(cost)]);
+  lines.push(['Controller GST',amount(cost*gst)]);
+  lines.push(['Controller total, incl. GST',amount(cost*(1+gst))]);
  }else{pending=true;lines.push(['Controller cost','Select a controller']);}
  for(const label of ['Mounting Structure','Installation','UPS','Cabling'])lines.push([label,'Company actual price']);
  pending=true;

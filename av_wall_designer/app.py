@@ -1,5 +1,7 @@
 """LED Wall Designer with MongoDB Authentication."""
 import json
+import re
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request, send_file, g
 from flask_limiter import Limiter
@@ -19,7 +21,7 @@ app = Flask(__name__)
 Config.validate()
 app.config.from_object(Config)
 app.json.sort_keys = False
-app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
 
 # Initialize rate limiting
 limiter = Limiter(
@@ -279,6 +281,43 @@ def admin_get_project(project_id):
     return jsonify(project)
 
 
+def quotation_filename(data):
+    details = data.get("quotation") or {}
+    salesperson = re.sub(r'[\\/:*?"<>|]+', '-', str(details.get("salesperson", "Sales Person")).strip())
+    salesperson = re.sub(r'\s+', ' ', salesperson).strip(' .-') or "Sales Person"
+
+    product = data.get("product") or {}
+    pitch = product.get("pitch_mm")
+    pitch_text = f"{float(pitch):g}mm" if pitch not in (None, "") else "LED"
+    technology = str(product.get("technology") or "SMD").upper()
+    environment = str(product.get("environment") or "Indoor").strip().capitalize()
+
+    calculated = calculate(data)
+    unit = data.get("unit", "m")
+
+    if data.get("mode") == "dimensions":
+        width_value = data.get("screen_width")
+        height_value = data.get("screen_height")
+    else:
+        meter_width = calculated.get("width_m") if isinstance(calculated, dict) else 0
+        meter_height = calculated.get("height_m") if isinstance(calculated, dict) else 0
+        try:
+            width_value = float(meter_width) / 0.3048 if unit == "ft" else float(meter_width)
+            height_value = float(meter_height) / 0.3048 if unit == "ft" else float(meter_height)
+        except (TypeError, ValueError):
+            width_value = height_value = 0
+
+    try:
+        width_value = float(width_value)
+        height_value = float(height_value)
+    except (TypeError, ValueError):
+        width_value = height_value = 0
+
+    size_text = f"{width_value:.3f}W x {height_value:.3f}H {unit}"
+    download_date = datetime.now().strftime("%d-%m-%Y")
+    return f"Quotation of {pitch_text} {technology} {environment} ({size_text}) {download_date} ({salesperson}).xlsx"
+
+
 @app.post("/api/quotation")
 @require_auth
 def quotation():
@@ -298,11 +337,41 @@ def quotation():
     for key in required:
         details[key] = details[key].strip()
     try:
-        output = build_quotation(data, BASE)
-    except (ValueError, TypeError, KeyError) as exc:
+        output_format = request.args.get("format", "xlsx").lower()
+        if output_format == "pdf":
+            from quotation import build_quotation_pdf
+            output = build_quotation_pdf(data, BASE)
+            filename = quotation_filename(data).rsplit('.', 1)[0] + '.pdf'
+            mimetype = 'application/pdf'
+        else:
+            output = build_quotation(data, BASE)
+            filename = quotation_filename(data)
+            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    except (ValueError, TypeError, KeyError, ImportError) as exc:
         return jsonify(error=str(exc)), 400
-    return send_file(output, as_attachment=True, download_name="PROMARK-LED-STUDIO-Quotation.xlsx",
-                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    return send_file(output, as_attachment=True, download_name=filename, mimetype=mimetype)
+
+
+@app.post("/api/quotation/from-excel")
+@require_auth
+def quotation_from_excel():
+    """Convert an edited Excel quotation worksheet into a PDF."""
+    uploaded = request.files.get("quotation")
+    if uploaded is None:
+        return jsonify(error="Select an edited Excel quotation file"), 400
+    filename = uploaded.filename or "Quotation-edited.xlsx"
+    if not filename.lower().endswith(".xlsx"):
+        return jsonify(error="Only .xlsx Excel quotation files are supported"), 400
+    try:
+        from quotation import build_pdf_from_excel
+        output = build_pdf_from_excel(uploaded.stream, Path(filename).stem)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception as exc:
+        return jsonify(error=f"Unable to convert edited Excel: {exc}"), 400
+    pdf_name = re.sub(r'[\\/:*?"<>|]+', '-', Path(filename).stem).strip(' .-') or 'Quotation-edited'
+    pdf_name = pdf_name.replace('.xlsx', '') + '.pdf'
+    return send_file(output, as_attachment=True, download_name=pdf_name, mimetype='application/pdf')
 
 
 if __name__ == "__main__":

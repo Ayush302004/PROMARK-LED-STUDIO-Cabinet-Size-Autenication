@@ -315,9 +315,10 @@
                         <dl class="controller-specs" id="controller-specs"></dl>
                         <details class="controller-pricing">
                             <summary>Quantity &amp; full price</summary><label>Controller quantity<input
-                                    id="q_controller_qty" min="0" step="0.01" type="number"
-                                    value="1" /></label><label>Full controller price · INR, before GST<input
-                                    id="q_controller_total" readonly="" type="text" /></label>
+                                    id="q_controller_qty" min="1" step="1" type="number"
+                                    value="1" /></label><label>Controller GST amount · INR<input
+                                                                        id="q_controller_gst" readonly="" type="text" /></label><label>Full controller price · INR, including GST<input
+                                                                        id="q_controller_total" readonly="" type="text" /></label>
                         </details>
                         <details class="studio-controller-details">
                             <summary>Description &amp; source</summary><label>Controller description<textarea
@@ -362,11 +363,11 @@
                 </section>
             </div>
             <section class="panel">
-                <h2>Excel quotation</h2>
+                <h2>Excel / PDF quotation</h2>
                 <p class="hint">Client name, sales person and contact information (phone or email) are required to
                     download a quotation. Fields marked * are required.</p>
                 <p class="hint">Matches your reference layout. LED price = cabinet rate per sq.ft. × screen area.
-                    Controller pricing is pending revised rates and will not be calculated until updated.
+                    Controller price increases with quantity and is calculated with the editable GST percentage.
                     LED pricing uses the selected screen area. Mounting structure, installation, UPS and cabling have
                     separate rows with blank rates for the company actual prices. Enter those prices in the yellow Rate
                     cells in Excel. Unfilled rates keep the total pending.</p>
@@ -395,7 +396,11 @@
                             type="text" value="U36109PB2010PTC034337" /></label><label>Company GSTIN<input
                             id="q_company_gst" type="text" value="03AAFCP7669C1ZF" /></label><label>Company PAN<input
                             id="q_pan" type="text" value="AAFCP7669C" /></label></div><button class="primary"
-                    id="download-quotation" type="button">Download Excel quotation</button>
+                    id="download-quotation" type="button">Download Excel quotation</button><button class="secondary"
+                    id="download-quotation-pdf" type="button">Download PDF quotation</button>
+                <div style="margin-top:12px"><label>Edit downloaded Excel, add/remove quotation rows, then upload it to create PDF:
+                    <input id="edited-quotation-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" type="file" /></label>
+                    <button class="secondary" id="convert-edited-pdf" type="button">Convert edited Excel to PDF</button></div>
                 <p class="hint">GST starts at the reference’s 18% and is editable. Controller descriptions use the
                     supplied datasheets. Confirm receiving-card compatibility and port mapping. Company registration
                     fields are editable.</p>
@@ -443,8 +448,8 @@
     <script src="{{ url_for('static', filename='auth-debug.js') }}"></script>
     <script src="{{ url_for('static', filename='admin-dashboard.js') }}"></script>
     <script src="{{ url_for('static', filename='controller-matching.js', v='1') }}"></script>
-    <script src="{{ url_for('static', filename='app.js', v='71') }}"></script>
-    <script src="{{ url_for('static', filename='studio.js', v='66') }}"></script>
+    <script src="{{ url_for('static', filename='app.js', v='83') }}"></script>
+    <script src="{{ url_for('static', filename='studio.js', v='67') }}"></script>
     <script src="{{ url_for('static', filename='reference.js', v='66') }}"></script>
 </body>
 

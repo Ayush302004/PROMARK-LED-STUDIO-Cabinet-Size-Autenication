@@ -450,26 +450,140 @@ function validateQuotationDetails() {
     const first = $(missing[0][0]); first.scrollIntoView({ block: 'center' }); first.focus(); first.reportValidity();
     return false;
 }
-$('download-quotation').onclick = async () => {
+async function downloadQuotation(format = 'xlsx') {
     if (!validateQuotationDetails()) return;
-    const button = $('download-quotation'); if (!product) return message('Select a cabinet model first.', true);
-    button.disabled = true; button.textContent = 'Preparing Excel…';
+    const button = $(format === 'pdf' ? 'download-quotation-pdf' : 'download-quotation');
+    if (!product) return message('Select a cabinet model first.', true);
+    if (!button) return;
+    button.disabled = true;
+    button.textContent = format === 'pdf' ? 'Preparing PDF…' : 'Preparing Excel…';
+
     try {
-        const token = localStorage.getItem('access_token');
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        const response = await fetch('/api/quotation', { method: 'POST', headers, body: JSON.stringify(state()), credentials: 'include' });
-        if (!response.ok) { const error = await response.json(); throw Error(error.error || 'Quotation could not be created'); }
-        const blob = await response.blob(), url = URL.createObjectURL(blob), link = document.createElement('a');
+        const payload = state();
+        let token = localStorage.getItem('access_token');
+        const makeHeaders = () => {
+            const headers = { 'Content-Type': 'application/json' };
+            headers['Authorization'] = `Bearer ${token}`;
+            return headers;
+        };
+
+        let response = await fetch(`/api/quotation?format=${format}`, {
+            method: 'POST', headers: makeHeaders(), body: JSON.stringify(payload), credentials: 'include'
+        });
+
+        if (response.status === 401 && window.AUTH?.refreshToken) {
+            const refreshed = await window.AUTH.refreshToken();
+            if (refreshed) {
+                token = localStorage.getItem('access_token');
+                response = await fetch(`/api/quotation?format=${format}`, {
+                    method: 'POST', headers: makeHeaders(), body: JSON.stringify(payload), credentials: 'include'
+                });
+            }
+        }
+
+        if (!response.ok) {
+            let errorText = 'Quotation could not be created';
+            const contentType = response.headers.get('Content-Type') || '';
+            if (contentType.includes('application/json')) {
+                const error = await response.json();
+                errorText = error.error || errorText;
+            }
+            throw Error(errorText);
+        }
+
+        const blob = await response.blob();
+        if (!blob.size) throw Error('The server returned an empty quotation file.');
+
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const utf8Name = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+        const normalName = disposition.match(/filename="([^"]+)"/i)?.[1];
+        let downloadName = utf8Name ? decodeURIComponent(utf8Name) : normalName;
+        if (!downloadName) {
+            const cleanSalesperson = $('q_salesperson').value.trim().replace(/[\\/:*?"<>|]+/g, '-');
+            let widthValue, heightValue;
+            if ($('mode').value === 'dimensions') {
+                widthValue = Number($('screen_width').value);
+                heightValue = Number($('screen_height').value);
+            } else if (result) {
+                const design = $('preview_mode').value === 'exact' ? result.design : result;
+                const widthMeters = Number(design?.width_m ?? result.width_m ?? 0);
+                const heightMeters = Number(design?.height_m ?? result.height_m ?? 0);
+                widthValue = unit === 'ft' ? widthMeters / 0.3048 : widthMeters;
+                heightValue = unit === 'ft' ? heightMeters / 0.3048 : heightMeters;
+            }
+            const pitch = product?.pitch_mm != null ? `${Number(product.pitch_mm)}mm` : 'LED';
+            const technology = String(product?.technology || 'SMD').toUpperCase();
+            const environment = String(product?.environment || 'indoor');
+            if (!widthValue && result?.width_m != null) widthValue = unit === 'ft' ? Number(result.width_m) / 0.3048 : Number(result.width_m);
+            if (!heightValue && result?.height_m != null) heightValue = unit === 'ft' ? Number(result.height_m) / 0.3048 : Number(result.height_m);
+            const formatSize = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3) : '0.000';
+            const sizeText = `${formatSize(widthValue)}W x ${formatSize(heightValue)}H ${unit}`;
+            const date = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date()).replaceAll('/', '-');
+            downloadName = `Quotation of ${pitch} ${technology} ${environment.charAt(0).toUpperCase() + environment.slice(1)} (${sizeText}) ${date} (${cleanSalesperson}).${format}`;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
         link.href = url;
-        link.download = 'PROMARK-LED-STUDIO-Quotation.xlsx';
+        link.download = downloadName;
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
         link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        message('Excel quotation downloaded. Enter any remaining rates in its yellow cells.');
-    } catch (error) { message(error.message, true); } finally { button.disabled = false; button.textContent = 'Download Excel quotation'; }
+        message(`Quotation downloaded: ${downloadName}`);
+    } catch (error) {
+        message(error.message, true);
+    } finally {
+        button.disabled = false;
+        button.textContent = format === 'pdf' ? 'Download PDF quotation' : 'Download Excel quotation';
+    }
+}
+
+$('download-quotation').onclick = () => downloadQuotation('xlsx');
+$('download-quotation-pdf').onclick = () => downloadQuotation('pdf');
+$('convert-edited-pdf').onclick = async () => {
+    const file = $('edited-quotation-file').files?.[0];
+    if (!file) return message('Select the edited Excel quotation first.', true);
+    const button = $('convert-edited-pdf');
+    button.disabled = true;
+    button.textContent = 'Converting…';
+    try {
+        const form = new FormData();
+        form.append('quotation', file);
+        const token = localStorage.getItem('access_token');
+        const headers = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+        let response = await fetch('/api/quotation/from-excel', { method: 'POST', headers, body: form, credentials: 'include' });
+        if (response.status === 401 && window.AUTH?.refreshToken) {
+            const refreshed = await window.AUTH.refreshToken();
+            if (refreshed) {
+                headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
+                response = await fetch('/api/quotation/from-excel', { method: 'POST', headers, body: form, credentials: 'include' });
+            }
+        }
+        if (!response.ok) {
+            const contentType = response.headers.get('Content-Type') || '';
+            if (contentType.includes('application/json')) throw Error((await response.json()).error || 'PDF conversion failed');
+            throw Error('PDF conversion failed');
+        }
+        const blob = await response.blob();
+        if (!blob.size) throw Error('The converted PDF is empty.');
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="([^"]+)"/i);
+        const downloadName = match?.[1] || file.name.replace(/\.xlsx$/i, '-edited.pdf');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url; link.download = downloadName; link.style.display = 'none';
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        message(`Edited PDF downloaded: ${downloadName}`);
+    } catch (error) {
+        message(error.message, true);
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Convert edited Excel to PDF';
+    }
 };
 
 function selectedArea() {
@@ -484,22 +598,30 @@ function updateFullPrices() {
     $('q_install_total').value = 'Company actual price'; $('q_structure_total').value = 'Company actual price';
     const controller = controllers.find(c => c.id === $('controller').value);
     const quantity = Number($('q_controller_qty').value || 1);
-    $('q_controller_total').value = controller?.rate_inr != null && Number.isFinite(quantity) && quantity >= 0
-        ? money(controller.rate_inr * quantity)
-        : controller ? 'Rate unavailable' : 'Select a controller';
+    const gst = Number($('q_gst').value || 0) / 100;
+    if (controller?.rate_inr != null && Number.isFinite(quantity) && quantity >= 0) {
+        const beforeGst = controller.rate_inr * quantity;
+        const controllerGst = beforeGst * gst;
+        $('q_controller_gst').value = money(controllerGst);
+        $('q_controller_total').value = money(beforeGst + controllerGst);
+    } else {
+        $('q_controller_gst').value = controller ? 'Rate unavailable' : 'Select a controller';
+        $('q_controller_total').value = controller ? 'Rate unavailable' : 'Select a controller';
+    }
     if (result) {
         for (const [input, output, factor] of [['q_wall_rate', 'q_led_total', 1]]) {
             const raw = $(input).value; $(output).value = raw === '' ? 'Rate required' : (Number(raw) * factor * area).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
     }
 }
-for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_controller_qty']) $(id).addEventListener('input', updateFullPrices);
+for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_controller_qty', 'q_gst']) $(id).addEventListener('input', updateFullPrices);
 
 // Use model-specific paragraph wording; switching models clears the previous price.
 function applyControllerSelection() {
     const c = controllers.find(c => c.id === $('controller').value);
     $('q_controller_description').value = c?.description || '';
-    $('q_controller_total').value = c?.rate_inr != null ? money(c.rate_inr * Number($('q_controller_qty').value || 1)) : c ? 'Rate unavailable' : 'Select a controller';
+    $('q_controller_gst').value = c?.rate_inr != null ? money(c.rate_inr * Number($('q_controller_qty').value || 1) * (Number($('q_gst').value || 0) / 100)) : c ? 'Rate unavailable' : 'Select a controller';
+    $('q_controller_total').value = c?.rate_inr != null ? money(c.rate_inr * Number($('q_controller_qty').value || 1) * (1 + Number($('q_gst').value || 0) / 100)) : c ? 'Rate unavailable' : 'Select a controller';
     $('controller-source').textContent = c ? `Source: ${c.source} · RMB ${Number(c.rmb_rate).toLocaleString('en-IN')} · Final rate: ${money(c.rate_inr)} each before GST.` : 'Controller pricing is unavailable until a controller is selected.';
 }
 $('controller').addEventListener('change', () => { $('controller-auto').checked = false; applyControllerSelection(); updateControllerRecommendation(); updateFullPrices(); schedule(); });
