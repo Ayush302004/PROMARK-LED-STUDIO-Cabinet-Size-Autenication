@@ -455,9 +455,20 @@ $('download-quotation').onclick = async () => {
     const button = $('download-quotation'); if (!product) return message('Select a cabinet model first.', true);
     button.disabled = true; button.textContent = 'Preparing Excel…';
     try {
-        const response = await fetch('/api/quotation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state()) });
+        const token = localStorage.getItem('access_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const response = await fetch('/api/quotation', { method: 'POST', headers, body: JSON.stringify(state()), credentials: 'include' });
         if (!response.ok) { const error = await response.json(); throw Error(error.error || 'Quotation could not be created'); }
-        const blob = await response.blob(), url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = 'PROMARK-LED-STUDIO-Quotation.xlsx'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); message('Excel quotation downloaded. Enter any remaining rates in its yellow cells.');
+        const blob = await response.blob(), url = URL.createObjectURL(blob), link = document.createElement('a');
+        link.href = url;
+        link.download = 'PROMARK-LED-STUDIO-Quotation.xlsx';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        message('Excel quotation downloaded. Enter any remaining rates in its yellow cells.');
     } catch (error) { message(error.message, true); } finally { button.disabled = false; button.textContent = 'Download Excel quotation'; }
 };
 

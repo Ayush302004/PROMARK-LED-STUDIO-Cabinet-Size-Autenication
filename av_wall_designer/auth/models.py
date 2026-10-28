@@ -416,4 +416,4 @@ def initialize_database():
     User.ensure_indexes()
     Session.ensure_indexes()
     Project.ensure_indexes()
-    print("✓ MongoDB indexes created")
+    print("[OK] MongoDB indexes created")

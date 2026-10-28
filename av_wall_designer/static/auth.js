@@ -195,7 +195,7 @@ const AUTH = {
     getAuthHeaders() {
         return {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.token}`
+            'Authorization': `Bearer ${this.token}`,
         };
     },
     
