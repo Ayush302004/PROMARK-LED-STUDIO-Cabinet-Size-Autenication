@@ -2,12 +2,13 @@
 import json
 import math
 import re
+from html import escape
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 import xml.etree.ElementTree as ET
 from datetime import date
 from pathlib import Path
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.drawing.image import Image
@@ -336,6 +337,55 @@ def build_quotation(data,base):
     final.seek(0);return final
 
 
+def draw_quotation_page(canvas, doc, base):
+    """Use the same logo and complete, updated footer for both PDF exports."""
+    from reportlab.lib import colors
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph
+
+    page_width, page_height = doc.pagesize
+    blue = colors.HexColor('#0878c9')
+    canvas.saveState()
+    logo_path = Path(base) / 'static' / 'logo.png'
+    if logo_path.exists():
+        canvas.drawImage(str(logo_path), 18*mm, page_height-28*mm,
+                         width=48*mm, height=14*mm, preserveAspectRatio=True, mask='auto')
+    canvas.setFillColor(colors.white)
+    canvas.rect(0, 0, page_width, 38*mm, fill=1, stroke=0)
+    canvas.setFillColor(blue)
+    canvas.rect(0, 29*mm, page_width, 9*mm, fill=1, stroke=0)
+    canvas.setFillColor(colors.white)
+    canvas.setFont('Helvetica-Bold', 13)
+    canvas.drawCentredString(page_width/2, 32.4*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+
+    address_style = ParagraphStyle('FooterAddress', fontName='Helvetica', fontSize=7.2,
+                                   leading=8.5, alignment=1)
+    column_width = page_width / 3
+    for index, (label, key, tax_label, tax_key) in enumerate([
+        ('CORPORATE OFFICE', 'corporate', 'CIN', 'cin'),
+        ('FACTORY', 'factory', 'GSTIN', 'gstin'),
+        ('SALES OFFICE', 'sales', 'PAN', 'pan'),
+    ]):
+        center = column_width * (index + 0.5)
+        canvas.setFillColor(blue)
+        canvas.setFont('Helvetica-Bold', 8.5)
+        canvas.drawCentredString(center, 25.5*mm, label)
+        address = Paragraph(escape(COMPANY_FOOTER[key]), address_style)
+        width, height = address.wrap(column_width - 12*mm, 16*mm)
+        address.drawOn(canvas, center - width/2, 23*mm - height)
+        canvas.setFillColor(blue)
+        canvas.setFont('Helvetica-Bold', 8.5)
+        canvas.drawCentredString(center, 8.5*mm, f'{tax_label}: {COMPANY_FOOTER[tax_key]}')
+    canvas.setStrokeColor(blue)
+    canvas.setLineWidth(1)
+    for x in (column_width, 2*column_width):
+        canvas.line(x, 14.5*mm, x, 28*mm)
+    canvas.setFillColor(colors.HexColor('#111111'))
+    canvas.rect(0, 0, page_width, 2*mm, fill=1, stroke=0)
+    canvas.restoreState()
+
+
 def build_quotation_pdf(data, base):
     """Build a landscape PROMARK quotation matching the supplied reference layout."""
     from reportlab.lib import colors
@@ -397,44 +447,7 @@ def build_quotation_pdf(data, base):
     styles.add(ParagraphStyle(name='Center', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=8, alignment=1))
 
     def page_decor(canvas, doc):
-        import textwrap
-        canvas.saveState()
-        logo_path = Path(base) / 'static' / 'logo.png'
-        if logo_path.exists():
-            canvas.drawImage(str(logo_path), 18*mm, page_height-28*mm, width=48*mm, height=14*mm, preserveAspectRatio=True, mask='auto')
-        canvas.setFillColor(colors.white)
-        canvas.rect(0, 0, page_width, 38*mm, fill=1, stroke=0)
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.rect(0, 29*mm, page_width, 9*mm, fill=1, stroke=0)
-        canvas.setFillColor(colors.white)
-        canvas.setFont('Helvetica-Bold', 13)
-        canvas.drawCentredString(page_width/2, 32.4*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.setFont('Helvetica-Bold', 8.5)
-        column_centers = [page_width*0.167, page_width*0.5, page_width*0.833]
-        for center, label in zip(column_centers, ('CORPORATE OFFICE', 'FACTORY', 'SALES OFFICE')):
-            canvas.drawCentredString(center, 25.5*mm, label)
-        canvas.setFillColor(colors.black)
-        canvas.setFont('Helvetica', 7.2)
-        address_values = (COMPANY_FOOTER['corporate'], COMPANY_FOOTER['factory'], COMPANY_FOOTER['sales'])
-        for center, address in zip(column_centers, address_values):
-            wrapped = textwrap.wrap(address, width=38, break_long_words=False, break_on_hyphens=False)
-            y = 22.2*mm
-            for line in wrapped[:4]:
-                canvas.drawCentredString(center, y, line)
-                y -= 3.0*mm
-        canvas.setStrokeColor(colors.HexColor('#0878c9'))
-        canvas.setLineWidth(1.0)
-        canvas.line(page_width/3, 14.5*mm, page_width/3, 28*mm)
-        canvas.line(2*page_width/3, 14.5*mm, 2*page_width/3, 28*mm)
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.setFont('Helvetica-Bold', 8.5)
-        ids = [f"CIN: {COMPANY_FOOTER['cin']}", f"GSTIN: {COMPANY_FOOTER['gstin']}", f"PAN: {COMPANY_FOOTER['pan']}"]
-        for center, value in zip(column_centers, ids):
-            canvas.drawCentredString(center, 8.5*mm, value)
-        canvas.setFillColor(colors.HexColor('#111111'))
-        canvas.rect(0, 0, page_width, 2*mm, fill=1, stroke=0)
-        canvas.restoreState()
+        draw_quotation_page(canvas, doc, base)
 
     doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
                             rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
@@ -535,238 +548,232 @@ def build_quotation_pdf(data, base):
     return output
 
 
+def read_excel_quotation(sheet):
+    """Read sections by their labels so inserted/deleted Excel rows stay intact."""
+    def label(value):
+        return re.sub(r'[^a-z0-9]', '', str(value or '').lower())
+
+    def decimal(value):
+        if value in (None, ''):
+            return None
+        try:
+            result = Decimal(str(value).replace(',', '').replace('₹', '').strip())
+        except InvalidOperation:
+            return None
+        return result if result.is_finite() else None
+
+    def money(value):
+        return value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+    def display(value):
+        return f'{value:,.2f}'
+
+    header_row = next((
+        row for row in range(1, sheet.max_row + 1)
+        if label(sheet.cell(row, 1).value) in ('srno', 'sr', 'serialno', 'serialnumber')
+        and label(sheet.cell(row, 2).value) == 'item'
+        and label(sheet.cell(row, 3).value) == 'description'
+    ), None)
+    if header_row is None:
+        raise ValueError('The Quotation worksheet must contain the item table headings.')
+
+    metadata = {}
+    for row in sheet.iter_rows(max_row=header_row - 1, max_col=10):
+        for cell in row:
+            name, separator, value = str(cell.value or '').partition(':')
+            if separator:
+                metadata[label(name)] = value.strip()
+    date_value = metadata.get('date', '')
+    try:
+        metadata['date'] = date.fromisoformat(date_value).strftime('%d-%m-%Y')
+    except ValueError:
+        pass
+
+    footer_labels = ('corporateoffice', 'factory', 'salesoffice', 'cin', 'gstin',
+                     'pan', 'wehopetheestimate', 'thanksregards', 'promark')
+    total_labels = ('totalamount', 'gstamount', 'grandtotal', 'subtotal', 'total')
+    terms = []
+    terms_found = False
+    in_terms = False
+    in_items = True
+    rows = []
+    total_amount = Decimal('0')
+    total_gst = Decimal('0')
+
+    for values in sheet.iter_rows(min_row=header_row + 1, max_col=10, values_only=True):
+        nonempty = [str(value).strip() for value in values if value not in (None, '')]
+        if not nonempty:
+            continue
+        first_label = label(nonempty[0])
+        if first_label.startswith(('termsandconditions', 'termsconditions')):
+            in_items = False
+            terms_found = in_terms = True
+            continue
+        if in_terms:
+            if first_label.startswith(footer_labels):
+                in_terms = False
+            else:
+                term = ' '.join(nonempty)
+                term = re.sub(r'^\d+\s*(?:\.\)|[.)])\s*', '', term)
+                terms.append(term)
+            continue
+        if any(label(value) in total_labels for value in values[:3]) or (
+            not values[1] and label(values[8]) in total_labels
+        ):
+            in_items = False
+            continue
+        if not in_items:
+            continue
+        if not values[1] and not values[2]:
+            # Merged section titles and footer rows are not quotation items.
+            if first_label.startswith(footer_labels):
+                in_items = False
+            continue
+        item = str(values[1] or '').strip()
+        if not item:
+            continue
+
+        serial = decimal(values[0])
+        serial_text = f'{serial:g}' if serial is not None else str(len(rows) + 1)
+        qty = decimal(values[3]) if values[3] not in (None, '') else Decimal('1')
+        if qty is None or qty < 0:
+            raise ValueError(f'Enter a valid quantity for {item}.')
+        gst_cell = values[6]
+        gst_text = str(gst_cell or '').strip()
+        gst = decimal(gst_text.rstrip('%')) if gst_text else Decimal('0')
+        if gst is None or gst < 0:
+            raise ValueError(f'Enter a valid GST percentage for {item}.')
+        if gst_text.endswith('%') or gst > 1:
+            gst /= 100
+        if gst > 1:
+            raise ValueError(f'GST cannot exceed 100% for {item}.')
+
+        rate = decimal(values[5])
+        if rate is not None:
+            if rate < 0:
+                raise ValueError(f'Enter a non-negative rate for {item}.')
+            rate = money(rate)
+            # Excel stores per-unit GST in H, tax-inclusive rate in I and
+            # quantity * inclusive rate in J. Preserve saved Excel edits.
+            tax = decimal(values[7])
+            tax = money(tax if tax is not None else rate * gst)
+            inclusive = decimal(values[8])
+            inclusive = money(inclusive if inclusive is not None else rate + tax)
+            amount = decimal(values[9])
+            amount = money(amount if amount is not None else qty * inclusive)
+            total_gst += money(tax * qty)
+            total_amount += amount
+            pricing = [display(rate), f'{gst * 100:g}%', display(tax),
+                       display(inclusive), display(amount)]
+        else:
+            pricing = [str(values[5] or 'As per actual'), f'{gst * 100:g}%', '-', '-', '-']
+
+        rows.append([serial_text, item, str(values[2] or ''), f'{qty:g}',
+                     str(values[4] or 'Nos'), *pricing])
+
+    if not rows:
+        raise ValueError('The Quotation worksheet does not contain any quotation items.')
+    if not terms_found:
+        terms = list(TERMS)
+    return metadata, rows, terms, total_amount, total_gst
+
+
 def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
-    """Convert an edited quotation worksheet into the branded reference PDF layout."""
+    """Render edited Excel items, totals and terms in the reference PDF layout."""
     from openpyxl import load_workbook
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.styles import ParagraphStyle
     from reportlab.lib.units import mm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+    from reportlab.platypus import (
+        BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, Table, TableStyle,
+    )
 
     workbook = load_workbook(file_stream, data_only=True)
-    if 'Quotation' not in workbook.sheetnames:
-        raise ValueError('The Excel file must contain a Quotation worksheet.')
-    sheet = workbook['Quotation']
-    controllers=json.loads((Path(__file__).parent/'controllers.json').read_text(encoding='utf-8'))
-    white_fill = PatternFill('solid', fgColor='FFFFFFFF')
-    for worksheet in workbook.worksheets:
-        for row in worksheet.iter_rows():
-            for cell in row:
-                cell.fill = white_fill
-
-    def merged_value(row, start_col, end_col):
-        for col in range(start_col, end_col + 1):
-            value = sheet.cell(row, col).value
-            if value not in (None, ''):
-                return str(value)
-        return ''
-
-    def number(value):
-        if isinstance(value, (int, float)):
-            return float(value)
-        if value in (None, ''):
-            return 0.0
-        try:
-            return float(str(value).replace(',', '').replace('₹', '').strip())
-        except ValueError:
-            return 0.0
-
-    def indian(value):
-        return f'{number(value):,.2f}'
-
-    import html
-
-    header_row = 8
-    for candidate in range(1, 15):
-        first_cell = str(sheet.cell(candidate, 1).value or '').strip().lower()
-        second_cell = str(sheet.cell(candidate, 2).value or '').strip().lower()
-        if first_cell in ('sr. no.', 'sr no.', 'sr.') and second_cell == 'item':
-            header_row = candidate
-            break
-
-    headers = [sheet.cell(header_row, col).value or '' for col in range(1, 11)]
-    rows = []
-    total_amount = 0.0
-    total_gst = 0.0
-
-    for item_row, serial_number in ((10, 1), (11, 2), (12, 3), (13, 4)):
-        sr = sheet.cell(item_row, 1).value
-        item = sheet.cell(item_row, 2).value
-        description = sheet.cell(item_row, 3).value
-        item_text = str(item or '').strip()
-        if not item_text:
-            continue
-
-        try:
-            serial_number = int(float(str(sr))) if sr not in (None, '') else serial_number
-        except (TypeError, ValueError):
-            serial_number = serial_number
-
-        if serial_number not in (1, 2, 3, 4):
-            continue
-        item_key = item_text.lower()
-        if 'mounting structure' in item_key:
-            item_text = 'UniPole'
-        if 'controller' in item_key:
-            description = canonical_controller_description(description, controllers)
-
-        qty_value = sheet.cell(item_row, 4).value
-        qty = number(qty_value)
-        unit = sheet.cell(item_row, 5).value or 'Nos'
-        rate_cell = sheet.cell(item_row, 6).value
-        rate = number(rate_cell)
-        gst_value = number(sheet.cell(item_row, 7).value)
-        gst_fraction = gst_value / 100 if gst_value > 1 else gst_value
-
-        has_rate = rate_cell not in (None, '') and str(rate_cell).strip() != ''
-        if has_rate:
-            gst_amount = rate * gst_fraction * qty
-            inclusive_rate = rate * (1 + gst_fraction)
-            amount = qty * inclusive_rate
-            total_gst += gst_amount
-            total_amount += amount
-            rate_display = indian(rate)
-            gst_display = indian(gst_amount)
-            inclusive_display = indian(inclusive_rate)
-            amount_display = indian(amount)
-        else:
-            gst_amount = Decimal('0')
-            inclusive_rate = Decimal('0')
-            amount = Decimal('0')
-            rate_display = 'As per actual'
-            gst_display = '-'
-            inclusive_display = '-'
-            amount_display = '-'
-
-        description_text = str(description or '')[:900]
-        rows.append([
-            serial_number,
-            item_text,
-            description_text,
-            qty if qty else '',
-            unit,
-            rate_display,
-            f'{gst_fraction:.0%}' if gst_fraction else '0%',
-            gst_display,
-            inclusive_display,
-            amount_display,
-        ])
+    try:
+        if 'Quotation' not in workbook.sheetnames:
+            raise ValueError('The Excel file must contain a Quotation worksheet.')
+        metadata, rows, terms, total_amount, total_gst = read_excel_quotation(workbook['Quotation'])
+    finally:
+        workbook.close()
 
     output = BytesIO()
     page_width, page_height = landscape(A4)
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='ReferenceSmall', parent=styles['BodyText'], fontName='Helvetica', fontSize=5.7, leading=6.2))
-    styles.add(ParagraphStyle(name='ReferenceBold', parent=styles['BodyText'], fontName='Helvetica-Bold', fontSize=5.7, leading=6.2))
+    small = ParagraphStyle('QuotationSmall', fontName='Helvetica', fontSize=7, leading=7.5)
+    bold = ParagraphStyle('QuotationBold', parent=small, fontName='Helvetica-Bold')
+    term_style = ParagraphStyle('QuotationTerm', parent=small, leading=8, spaceBefore=3)
+    heading_style = ParagraphStyle('QuotationHeading', parent=bold, spaceBefore=6,
+                                   spaceAfter=2, keepWithNext=True)
+    closing_style = ParagraphStyle('QuotationClosing', parent=bold, spaceBefore=6)
+
+    def paragraph(value, style=small):
+        return Paragraph(escape(str(value)).replace('\n', '<br/>'), style)
+
+    def field(name, key):
+        value = escape(metadata.get(key, ''))
+        return Paragraph(f'<b>{name}:</b> {value}', small)
 
     def page_decor(canvas, doc):
-        import textwrap
-        canvas.saveState()
-        logo_path = Path(__file__).parent / 'static' / 'logo.png'
-        if logo_path.exists():
-            canvas.drawImage(str(logo_path), 12*mm, page_height-27*mm, width=55*mm, height=17*mm, preserveAspectRatio=True, mask='auto')
-        canvas.setFillColor(colors.white)
-        canvas.rect(0, 0, page_width, 38*mm, fill=1, stroke=0)
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.rect(0, 29*mm, page_width, 9*mm, fill=1, stroke=0)
-        canvas.setFillColor(colors.white)
-        canvas.setFont('Helvetica-Bold', 13)
-        canvas.drawCentredString(page_width/2, 32.4*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.setFont('Helvetica-Bold', 8.5)
-        column_centers = [page_width*0.167, page_width*0.5, page_width*0.833]
-        for center, label in zip(column_centers, ('CORPORATE OFFICE', 'FACTORY', 'SALES OFFICE')):
-            canvas.drawCentredString(center, 25.5*mm, label)
-        canvas.setFillColor(colors.black)
-        canvas.setFont('Helvetica', 7.2)
-        address_values = (COMPANY_FOOTER['corporate'], COMPANY_FOOTER['factory'], COMPANY_FOOTER['sales'])
-        for center, address in zip(column_centers, address_values):
-            wrapped = textwrap.wrap(address, width=38, break_long_words=False, break_on_hyphens=False)
-            y = 22.2*mm
-            for line in wrapped[:4]:
-                canvas.drawCentredString(center, y, line)
-                y -= 3.0*mm
-        canvas.setStrokeColor(colors.HexColor('#0878c9'))
-        canvas.setLineWidth(1.0)
-        canvas.line(page_width/3, 14.5*mm, page_width/3, 28*mm)
-        canvas.line(2*page_width/3, 14.5*mm, 2*page_width/3, 28*mm)
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.setFont('Helvetica-Bold', 8.5)
-        ids = [f"CIN: {COMPANY_FOOTER['cin']}", f"GSTIN: {COMPANY_FOOTER['gstin']}", f"PAN: {COMPANY_FOOTER['pan']}"]
-        for center, value in zip(column_centers, ids):
-            canvas.drawCentredString(center, 8.5*mm, value)
-        canvas.setFillColor(colors.HexColor('#111111'))
-        canvas.rect(0, 0, page_width, 2*mm, fill=1, stroke=0)
-        canvas.restoreState()
+        draw_quotation_page(canvas, doc, Path(__file__).parent)
 
-    doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm, rightMargin=12*mm,
-                            topMargin=21*mm, bottomMargin=40*mm, title='Edited PROMARK Video Wall Quotation')
+    doc = BaseDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
+                          rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
+                          title=filename or 'Edited PROMARK Video Wall Quotation')
+    # Continuation tables start below the logo. The first page has client details
+    # between the logo and the item table, like the reference quotation.
+    first_frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='first')
+    next_frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height - 8*mm, id='later')
+    doc.addPageTemplates([
+        PageTemplate(id='First', frames=[first_frame], onPage=page_decor, autoNextPageTemplate='Later'),
+        PageTemplate(id='Later', frames=[next_frame], onPage=page_decor),
+    ])
 
-    def clean_label(value, label):
-        text = str(value or '').strip()
-        if text.startswith(label + ':'):
-            return text
-        return f'<b>{label}:</b> {text}' if text else f'<b>{label}:</b>'
+    left_rows = [[field(name, key)] for name, key in [
+        ('Client Name', 'clientname'), ('Project Detail', 'projectdetail'),
+        ('Location', 'location'), ('Sub', 'sub'),
+    ]]
+    right_rows = [[field(name, key)] for name, key in [
+        ('Date', 'date'), ('Sales Person', 'salesperson'), ('Version', 'version'),
+    ]]
+    if metadata.get('contactdetails'):
+        right_rows.append([field('Contact Details', 'contactdetails')])
+    info = Table([[Table(left_rows, colWidths=[112*mm]),
+                   Table(right_rows, colWidths=[112*mm])]], colWidths=[112*mm, 112*mm],
+                 minRowHeights=[24*mm])
+    info.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP')]))
+    story = [info, Spacer(1, 2*mm)]
 
-    story = []
-    left_rows = [[Paragraph(clean_label(sheet.cell(1, 1).value, 'Client Name'), styles['ReferenceSmall'])],
-                 [Paragraph(clean_label(sheet.cell(2, 1).value, 'Project Detail'), styles['ReferenceSmall'])],
-                 [Paragraph(clean_label(sheet.cell(3, 1).value, 'Location'), styles['ReferenceSmall'])],
-                 [Paragraph(clean_label(sheet.cell(6, 1).value, 'Sub'), styles['ReferenceSmall'])]]
-    right_rows = [[Paragraph(clean_label(sheet.cell(1, 8).value, 'Date'), styles['ReferenceSmall'])],
-                  [Paragraph(clean_label(sheet.cell(2, 8).value, 'Sales Person'), styles['ReferenceSmall'])],
-                  [Paragraph(clean_label(sheet.cell(3, 8).value, 'Version'), styles['ReferenceSmall'])]]
-    contact_value = str(sheet.cell(4, 1).value or '').strip()
-    if contact_value:
-        right_rows.append([Paragraph(clean_label(contact_value, 'Contact Details'), styles['ReferenceSmall'])])
-    info = Table([[Table(left_rows, colWidths=[112*mm]), Table(right_rows, colWidths=[112*mm])]],
-                 colWidths=[112*mm,112*mm], rowHeights=[28*mm])
-    info.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP')]))
-    story += [info, Spacer(1, 2*mm)]
-
-    table_rows = [[Paragraph(html.escape(str(value)), styles['ReferenceBold']) for value in headers]]
-    for row in rows:
-        table_rows.append([
-            Paragraph(html.escape(str(value)).replace('\n', '<br/>'), styles['ReferenceSmall'])
-            for value in row
-        ])
-
-    table = Table(table_rows, repeatRows=1, splitByRow=1, splitInRow=1,
-                  colWidths=[12*mm,27*mm,66*mm,10*mm,12*mm,20*mm,12*mm,20*mm,22*mm,23*mm])
+    widths = [value*mm for value in (12, 26, 66, 10, 12, 19, 12, 20, 22, 25)]
+    headers = ['Sr. No.', 'Item', 'Description', 'Qty', 'Unit', 'Rate', 'GST',
+               'GST amount', 'Rate incl.\ntaxes', 'Amount']
+    table_rows = [[paragraph(value) for value in headers]]
+    table_rows.extend([[paragraph(value) for value in row] for row in rows])
+    table = Table(table_rows, colWidths=widths, repeatRows=1, splitByRow=1, splitInRow=1)
     table.setStyle(TableStyle([
-        ('BACKGROUND',(0,1),(-1,-1),colors.white),
-        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#d9e9f4')),
-        ('GRID',(0,0),(-1,-1),0.5,colors.black), ('VALIGN',(0,0),(-1,-1),'TOP'),
-        ('ALIGN',(3,0),(5,-1),'CENTER'), ('ALIGN',(6,0),(-1,-1),'RIGHT'),
-        ('TOPPADDING',(0,0),(-1,-1),2), ('BOTTOMPADDING',(0,0),(-1,-1),2),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d9e9f4')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
     ]))
     story.append(table)
 
     totals = Table([
-        ['', '', '', '', '', '', '', '', Paragraph('<b>Total Amount</b>', styles['ReferenceBold']), Paragraph(indian(total_amount), styles['ReferenceBold'])],
-        ['', '', '', '', '', '', '', '', Paragraph('<b>GST Amount</b>', styles['ReferenceBold']), Paragraph(indian(total_gst), styles['ReferenceBold'])],
-    ], colWidths=[12*mm,27*mm,66*mm,10*mm,12*mm,20*mm,12*mm,20*mm,22*mm,23*mm])
-    totals.setStyle(TableStyle([('GRID',(8,0),(-1,-1),0.5,colors.black), ('ALIGN',(8,0),(-1,-1),'RIGHT')]))
-    story += [totals, Spacer(1, 2*mm), Paragraph('<b>Terms and conditions:</b>', styles['ReferenceBold'])]
+        [''] * 8 + [paragraph('Total Amount', bold), paragraph(f'{total_amount:,.2f}')],
+        [''] * 8 + [paragraph('GST Amount', bold), paragraph(f'{total_gst:,.2f}')],
+    ], colWidths=widths)
+    totals.setStyle(TableStyle([
+        ('GRID', (8, 0), (-1, -1), 0.5, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    story.append(totals)
+    if terms:
+        story.append(paragraph('Terms and conditions:', heading_style))
+        story.extend(paragraph(f'{index}) {term}', term_style) for index, term in enumerate(terms, 1))
+    story.append(paragraph('Promark Techsolutions Pvt. Ltd.', closing_style))
 
-    terms = []
-    for row_number in range(19, 28):
-        value = sheet.cell(row_number, 1).value
-        if value:
-            term_text = str(value).strip()
-            if term_text and not term_text.lower().startswith('terms and conditions'):
-                terms.append(Paragraph(html.escape(term_text), styles['ReferenceSmall']))
-    if not terms:
-        terms = []
-        for index, term in enumerate(TERMS, 1):
-            term_text = html.escape(f'{index}) {term}')
-            terms.append(Paragraph(term_text, styles['ReferenceSmall']))
-
-    for term in terms:
-        story.append(term)
-
-    story.append(Spacer(1, 1*mm))
-
-    doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
+    doc.build(story)
     output.seek(0)
     return output
