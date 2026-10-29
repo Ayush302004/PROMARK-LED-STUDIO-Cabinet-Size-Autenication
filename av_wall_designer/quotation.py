@@ -13,7 +13,7 @@ from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.drawing.image import Image
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.workbook.properties import CalcProperties
-from engine import calculate
+from engine import calculate 
 
 # Quotation wording supplied in the user's four reference screenshots.
 # Kept separate from native cabinet geometry and catalogue specifications.
@@ -106,10 +106,7 @@ def build_quotation(data,base):
     controller=next((c for c in controllers if c['id']==data.get('controller')),None)
     if data.get('controller') and not controller:
         raise ValueError('This controller is no longer available. Select a current PROMARK controller before downloading.')
-    controller_desc=' '.join(str(q.get('controller_description') or (controller or {}).get('description') or f"Supply of video wall controller: {data.get('controller') or 'To be selected'}. Capacity and compatibility to be confirmed.").split())
-    if controller:
-        for old_name in controller.get('legacy_names', ['Huidu '+controller['id'], controller['id']]):
-            controller_desc=controller_desc.replace(old_name,controller['name'])
+    controller_desc='Supply of LED wall controller. Capacity and compatibility to be confirmed.'
     q.pop('controller_rate', None)
     if 'wall_rate' not in q:q['wall_rate']=p.get('base_rate_sqft')
     gst=numeric(q.get('gst'),'GST',18,100)/100
@@ -179,10 +176,8 @@ def build_quotation(data,base):
         return description if actual_price.lower() in description.lower() else description.rstrip('. ') + '. ' + actual_price
     lines=[('Videowall',description,1,'Nos',q.get('wall_rate')),
       ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',(controller or {}).get('rate_inr')),
-      ('Mounting Structure',manual_description(q.get('mount_description'),'Mounting structure'),1,'Nos',None),
-      ('Installation',manual_description(q.get('installation_description'),'Installation charges'),1,'Nos',None),
-      ('UPS',manual_description(None,'UPS'),1,'Nos',None),
-      ('Cabling',manual_description(None,'Cabling'),1,'Nos',None)]
+      ('UniPole',manual_description(q.get('mount_description'),'Supply of Uni-Pole.'),1,'Nos',None),
+      ('Installation',manual_description(q.get('installation_description'),'Installation charges'),1,'Nos',None)]
     last_item_row=9+len(lines)
     total_row=last_item_row+1
     for rn,(item,desc,qty,unit,rate) in enumerate(lines,10):
@@ -191,7 +186,8 @@ def build_quotation(data,base):
         ws.cell(rn,9,f'=IF(F{rn}="","",ROUND(F{rn}+H{rn},2))')
         ws.cell(rn,10,f'=IF(F{rn}="","",ROUND(D{rn}*I{rn},2))')
         ws.row_dimensions[rn].height=max(180, 15 * (len(desc) // 75 + desc.count('\n') + 2)) if rn==10 else (max(100, 15 * (math.ceil(len(desc) / 70) + 2)) if rn==11 else 35)
-        for col in [4,6,7]:ws.cell(rn,col).fill=PatternFill('solid',fgColor='FFF2CC')
+        for col in [1,2,3,4,5,6,7,8,9,10]:
+            ws.cell(rn,col).fill=PatternFill(fill_type=None)
         ws.cell(rn,7).number_format='0%'
         for col in [6,8,9,10]:ws.cell(rn,col).number_format='#,##0.00'
     for row, source in ((10,2),):
@@ -199,7 +195,7 @@ def build_quotation(data,base):
         ws.cell(row,6,f'=IF(\'Design & Specifications\'!B{source}="","",ROUND(\'Design & Specifications\'!B{source}{factor}*\'Design & Specifications\'!B3,2))')
         ws.cell(row,4).number_format='0'
     merged(total_row,1,9,'Total Amount',True)
-    ws.cell(total_row,10,f'=IF(COUNT(F10:F{last_item_row})<{len(lines)},"Rates pending",ROUND(SUM(J10:J{last_item_row}),2))')
+    ws.cell(total_row,10,f'=IFERROR(ROUND(SUM(J10:J{last_item_row}),2),0)')
     ws.cell(total_row,10).number_format='#,##0.00'
     merged(18,1,10,'Terms and conditions:',True)
     for row,term in enumerate(TERMS,19):merged(row,1,10,f'{row-18}.) {term}');ws.row_dimensions[row].height=22
@@ -208,9 +204,11 @@ def build_quotation(data,base):
     merged(31,1,10,'CIN: '+str(q.get('cin','U36109PB2010PTC034337'))+'    GST: '+str(q.get('company_gst','03AAFCP7669C1ZF'))+'    PAN: '+str(q.get('pan','AAFCP7669C')) ,True)
     merged(33,1,10,'We hope the estimate is in line with your requirements. For any clarifications, please get back to us.')
     merged(34,1,10,'Thanks & Regards')
-    merged(36,1,10,'Editable yellow cells: quantities, rates and GST. LED total = cabinet rate × screen sq.ft. Controller rates use the selected model final INR rate and are editable. Mounting structure, installation, UPS and cabling are not priced automatically. Enter the company actual prices directly in Rate cells F12:F15. Enter 0 for an included / no-charge item. Blank rates keep the final total pending.')
-    ws.row_dimensions[36].height=44
     thin=Side(style='thin',color='000000')
+    white_fill=PatternFill('solid',fgColor='FFFFFFFF')
+    for row in ws.iter_rows(min_row=1,max_row=34,max_col=10):
+        for cell in row:
+            cell.fill=white_fill
     for row in ws.iter_rows(min_row=8,max_row=total_row,max_col=10):
         for cell in row:
             cell.border=Border(left=thin,right=thin,top=thin,bottom=thin)
@@ -219,10 +217,10 @@ def build_quotation(data,base):
     ws.row_dimensions[8].height=34
     for cells,maxval in [(f'F10:F{last_item_row}',1e12),(f'D10:D{last_item_row}',100000),(f'G10:G{last_item_row}',1)]:
         dv=DataValidation(type='decimal',operator='between',formula1=0,formula2=maxval,allow_blank=True);dv.showErrorMessage=True;dv.error='Enter a non-negative number within the allowed range.';ws.add_data_validation(dv);dv.add(cells)
-    ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J36'
+    ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J34'
     ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=1;ws.sheet_properties.pageSetUpPr.fitToPage=True
     specs=wb.create_sheet('Design & Specifications');specs.column_dimensions['A'].width=42;specs.column_dimensions['B'].width=100
-    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('Mounting structure rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller',((controller or {}).get('name') or data.get('controller') or 'To be selected')),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
+    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('UniPole rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller',((controller or {}).get('name') or data.get('controller') or 'To be selected')),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
     if p.get('id') in REFERENCE_QUOTES:
         rows.append(('Quotation specification source','User-supplied quotation screenshot for this video wall type. Quotation wording is separate from configured cabinet geometry.'))
         rows.append(('Quotation technical description',description))
@@ -245,7 +243,10 @@ def build_quotation(data,base):
     for row in specs:
         for cell in row:cell.alignment=Alignment(wrap_text=True,vertical='top')
         specs.row_dimensions[row[0].row].height=180 if row[0].value in ('Quotation technical description','Controller technical description') else 32
-    for cell in ('B2','B3'):specs[cell].fill=PatternFill('solid',fgColor='FFF2CC')
+    specs_white=PatternFill('solid',fgColor='FFFFFFFF')
+    for row in specs.iter_rows(min_row=1,max_row=max(specs.max_row,34),max_col=2):
+        for cell in row:
+            cell.fill=specs_white
     specs['B2'].number_format='#,##0.00'
     for cell in ('B3', 'B12'):
         specs[cell].number_format='0.000'
@@ -273,7 +274,7 @@ def build_quotation(data,base):
         cached[f'F{row}']=full
         tax=money(full*gst);gross=money(full+tax)
         cached[f'H{row}']=tax;cached[f'I{row}']=gross;cached[f'J{row}']=money(float(ws.cell(row,4).value)*gross)
-    cached[f'J{total_row}']='Rates pending' if any(v is None for v in unit_rates) else money(sum(cached[f'J{r}'] for r in range(10,last_item_row+1)))
+    cached[f'J{total_row}']=money(sum(cached[f'J{r}'] for r in range(10,last_item_row+1) if isinstance(cached.get(f'J{r}'), (int,float))))
     ns={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
     final=BytesIO()
     with ZipFile(output) as src, ZipFile(final,'w',ZIP_DEFLATED) as dst:
@@ -415,7 +416,7 @@ def build_quotation_pdf(data, base):
         controller_gross = controller_base + controller_gst
         subtotal += controller_gross
         gst_total += controller_gst
-        controller_description = ' '.join(str(quotation.get('controller_description') or controller.get('description') or controller.get('name','')).split())
+        controller_description = 'Supply of LED wall controller. Capacity and compatibility to be confirmed.'
         pdf_rows.append(['2', 'LED Wall\nController', controller_description, f'{controller_quantity:g}', 'Nos', indian(controller_rate), f'{gst_percent:g}%', indian(controller_gst), indian(controller_rate * (1 + gst)), indian(controller_gross)])
 
     mount_rate = numeric(quotation.get('mount_rate'), 'Mounting rate', 0)
@@ -498,38 +499,81 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
 
     import html
 
-    headers = [sheet.cell(8, col).value or '' for col in range(1, 11)]
+    header_row = 8
+    for candidate in range(1, 15):
+        first_cell = str(sheet.cell(candidate, 1).value or '').strip().lower()
+        second_cell = str(sheet.cell(candidate, 2).value or '').strip().lower()
+        if first_cell in ('sr. no.', 'sr no.', 'sr.') and second_cell == 'item':
+            header_row = candidate
+            break
+
+    headers = [sheet.cell(header_row, col).value or '' for col in range(1, 11)]
     rows = []
     total_amount = 0.0
     total_gst = 0.0
 
-    for row_number in range(10, 37):
-        sr = sheet.cell(row_number, 1).value
-        item = sheet.cell(row_number, 2).value
-        description = sheet.cell(row_number, 3).value
-        if sr in (None, '') and item in (None, ''):
-            continue
+    for item_row, serial_number in ((10, 1), (11, 2), (12, 3), (13, 4)):
+        sr = sheet.cell(item_row, 1).value
+        item = sheet.cell(item_row, 2).value
+        description = sheet.cell(item_row, 3).value
         item_text = str(item or '').strip()
-        if item_text.lower() == 'total amount':
+        if not item_text:
             continue
 
-        qty = number(sheet.cell(row_number, 4).value)
-        unit = sheet.cell(row_number, 5).value or 'Nos'
-        rate = number(sheet.cell(row_number, 6).value)
-        gst_value = number(sheet.cell(row_number, 7).value)
+        try:
+            serial_number = int(float(str(sr))) if sr not in (None, '') else serial_number
+        except (TypeError, ValueError):
+            serial_number = serial_number
+
+        if serial_number not in (1, 2, 3, 4):
+            continue
+        item_key = item_text.lower()
+        if 'mounting structure' in item_key:
+            item_text = 'UniPole'
+        if 'controller' in item_key:
+            description = 'Supply of LED wall controller. Capacity and compatibility to be confirmed.'
+
+        qty_value = sheet.cell(item_row, 4).value
+        qty = number(qty_value)
+        unit = sheet.cell(item_row, 5).value or 'Nos'
+        rate_cell = sheet.cell(item_row, 6).value
+        rate = number(rate_cell)
+        gst_value = number(sheet.cell(item_row, 7).value)
         gst_fraction = gst_value / 100 if gst_value > 1 else gst_value
-        gst_amount = rate * gst_fraction * qty
-        inclusive_rate = rate * (1 + gst_fraction)
-        amount = qty * inclusive_rate
-        total_gst += gst_amount
-        total_amount += amount
+
+        has_rate = rate_cell not in (None, '') and str(rate_cell).strip() != ''
+        if has_rate:
+            gst_amount = rate * gst_fraction * qty
+            inclusive_rate = rate * (1 + gst_fraction)
+            amount = qty * inclusive_rate
+            total_gst += gst_amount
+            total_amount += amount
+            rate_display = indian(rate)
+            gst_display = indian(gst_amount)
+            inclusive_display = indian(inclusive_rate)
+            amount_display = indian(amount)
+        else:
+            gst_amount = Decimal('0')
+            inclusive_rate = Decimal('0')
+            amount = Decimal('0')
+            rate_display = 'As per actual'
+            gst_display = '-'
+            inclusive_display = '-'
+            amount_display = '-'
 
         description_text = str(description or '')[:900]
-        converted = [sr or '', item or '', description_text, qty if qty else '', unit,
-                     indian(rate) if rate else ('-' if sheet.cell(row_number, 6).value is None else '0.00'),
-                     f'{gst_fraction:.0%}', indian(gst_amount) if rate else '-',
-                     indian(inclusive_rate) if rate else '-', indian(amount) if rate else '-']
-        rows.append(converted)
+        rows.append([
+            serial_number,
+            item_text,
+            description_text,
+            qty if qty else '',
+            unit,
+            rate_display,
+            f'{gst_fraction:.0%}' if gst_fraction else '0%',
+            gst_display,
+            inclusive_display,
+            amount_display,
+        ])
 
     output = BytesIO()
     page_width, page_height = landscape(A4)
@@ -565,8 +609,10 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
                  [Paragraph(clean_label(sheet.cell(6, 1).value, 'Sub'), styles['ReferenceSmall'])]]
     right_rows = [[Paragraph(clean_label(sheet.cell(1, 8).value, 'Date'), styles['ReferenceSmall'])],
                   [Paragraph(clean_label(sheet.cell(2, 8).value, 'Sales Person'), styles['ReferenceSmall'])],
-                  [Paragraph(clean_label(sheet.cell(3, 8).value, 'Version'), styles['ReferenceSmall'])],
-                  [Paragraph(clean_label(sheet.cell(4, 1).value, 'Contact Details'), styles['ReferenceSmall'])]]
+                  [Paragraph(clean_label(sheet.cell(3, 8).value, 'Version'), styles['ReferenceSmall'])]]
+    contact_value = str(sheet.cell(4, 1).value or '').strip()
+    if contact_value:
+        right_rows.append([Paragraph(clean_label(contact_value, 'Contact Details'), styles['ReferenceSmall'])])
     info = Table([[Table(left_rows, colWidths=[112*mm]), Table(right_rows, colWidths=[112*mm])]],
                  colWidths=[112*mm,112*mm], rowHeights=[28*mm])
     info.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP')]))
@@ -600,28 +646,20 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     for row_number in range(19, 28):
         value = sheet.cell(row_number, 1).value
         if value:
-            terms.append(Paragraph(html.escape(str(value)), styles['ReferenceSmall']))
+            term_text = str(value).strip()
+            if term_text and not term_text.lower().startswith('terms and conditions'):
+                terms.append(Paragraph(html.escape(term_text), styles['ReferenceSmall']))
     if not terms:
-        terms = [Paragraph(html.escape(f'{index}) {term}'), styles['ReferenceSmall'])
-                 for index, term in enumerate(TERMS, 1)]
+        terms = []
+        for index, term in enumerate(TERMS, 1):
+            term_text = html.escape(f'{index}) {term}')
+            terms.append(Paragraph(term_text, styles['ReferenceSmall']))
 
-    term_rows = []
-    for index in range(0, len(terms), 2):
-        term_rows.append([terms[index], terms[index + 1] if index + 1 < len(terms) else ''])
-    if term_rows:
-        terms_table = Table(term_rows, colWidths=[112*mm, 112*mm])
-        terms_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 2),
-            ('TOPPADDING', (0, 0), (-1, -1), 1), ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-        ]))
-        story.append(terms_table)
+    for term in terms:
+        story.append(term)
 
-    cin = sheet.cell(31, 1).value
-    if cin:
-        story += [Spacer(1,1*mm), Paragraph(str(cin), styles['ReferenceSmall'])]
-    story += [Paragraph('We hope the estimate is in line with your requirements. For any clarifications, please get back to us.', styles['ReferenceSmall']),
-              Paragraph('<b>Thanks & Regards</b>', styles['ReferenceSmall'])]
+    story.append(Spacer(1, 1*mm))
+    story.append(Paragraph('<b>Promark Techsolutions Pvt. Ltd.</b>', styles['ReferenceSmall']))
 
     doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
     output.seek(0)

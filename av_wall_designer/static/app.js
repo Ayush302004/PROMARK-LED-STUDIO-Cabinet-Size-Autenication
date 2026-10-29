@@ -614,12 +614,12 @@ function updateFullPrices() {
         }
     }
 }
-for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_controller_qty', 'q_gst']) $(id).addEventListener('input', updateFullPrices);
+for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_mount_qty', 'q_controller_qty', 'q_gst']) $(id).addEventListener('input', updateFullPrices);
 
 // Use model-specific paragraph wording; switching models clears the previous price.
 function applyControllerSelection() {
     const c = controllers.find(c => c.id === $('controller').value);
-    $('q_controller_description').value = c?.description || '';
+    $('q_controller_description').value = 'Supply of LED wall controller. Capacity and compatibility to be confirmed.';
     $('q_controller_gst').value = c?.rate_inr != null ? money(c.rate_inr * Number($('q_controller_qty').value || 1) * (Number($('q_gst').value || 0) / 100)) : c ? 'Rate unavailable' : 'Select a controller';
     $('q_controller_total').value = c?.rate_inr != null ? money(c.rate_inr * Number($('q_controller_qty').value || 1) * (1 + Number($('q_gst').value || 0) / 100)) : c ? 'Rate unavailable' : 'Select a controller';
     $('controller-source').textContent = c ? `Source: ${c.source} · RMB ${Number(c.rmb_rate).toLocaleString('en-IN')} · Final rate: ${money(c.rate_inr)} each before GST.` : 'Controller pricing is unavailable until a controller is selected.';
