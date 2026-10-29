@@ -7,7 +7,7 @@
     "max_width": 3840,
     "max_height": 2500,
     "ethernet_outputs": 4,
-    "description": "Supply of LED Wall Controller PROMARK PMC-100PRO, supporting a maximum loading capacity of 2.6 million pixels, with maximum width of 3,840 pixels and maximum height of 2,500 pixels, subject to the total pixel capacity. It features 2 HDMI inputs, together with 4 Gigabit Ethernet outputs. USB media playback and HDMI audio are supported. The unit uses DC 12V, 1.5A power, consumes 14W and has a 1U Mini chassis. Its operating temperature range is -20°C to 55°C.",
+    "description": "Supply of LED Wall Controller, supporting a maximum loading capacity of 2.6 million pixels, with maximum width of 3,840 pixels and maximum height of 2,500 pixels, subject to the total pixel capacity. It features 2 HDMI inputs, together with 4 Gigabit Ethernet outputs. USB media playback and HDMI audio are supported. The unit uses DC 12V, 1.5A power, consumes 14W and has a 1U Mini chassis. Its operating temperature range is -20°C to 55°C.",
     "source": "HD-KV410 Specification v1.1.pdf",
     "brand": "PROMARK",
     "model": "PMC-100PRO",

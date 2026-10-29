@@ -39,6 +39,15 @@ def reference_description(product, width, height, unit, area):
             f'Contrast Ratio: {contrast}. Refresh Rate: 3840Hz.\n'
             'Video Support: 2K, 4K. Life Span (hrs): 100000hrs.')
 
+COMPANY_FOOTER = {
+    'corporate': 'Promark Corporate Mansion, Plot No E-250, Industrial Area 8-B, Mohali, Punjab, India-160071',
+    'factory': 'Village Baddi Madouli, Morinda By-Pass. Adjoining Preet Palace, Ludhiana Highway (NH-95), Morinda, Distt Ropar, Punjab, India -140101',
+    'sales': 'Tower-5, Office No-414, RPS 12th Avenue, Adjoining Sarai Metro Station, Faridabad (NCR)-121001 India',
+    'cin': 'U3109PB2010PTC034337',
+    'gstin': '03AAFCP7669C1Z5',
+    'pan': 'AAFCP7669C',
+}
+
 TERMS = [
 'Order should be placed in the name of M/s Promark Techsolutions Pvt. Ltd.',
 'Prices are for supply and installation including taxes.',
@@ -51,6 +60,36 @@ TERMS = [
 def text(value):
     s=str(value or '')[:16000]
     return "'"+s if s.startswith(('=','+','-','@')) else s
+
+
+def strip_controller_names(description, controllers):
+    """Remove known controller names/models while preserving all specifications."""
+    cleaned = ' '.join(str(description or '').split())
+    names = set()
+    for controller in controllers:
+        for key in ('name', 'model', 'id'):
+            value = str(controller.get(key, '')).strip()
+            if value and len(value) >= 3:
+                names.add(value)
+        names.update(str(value).strip() for value in controller.get('legacy_names', []) if str(value).strip())
+    for name in sorted(names, key=len, reverse=True):
+        cleaned = re.sub(re.escape(name) + r'\s*,?\s*', '', cleaned, flags=re.I)
+    cleaned = re.sub(r'Controller\s+supporting', 'Controller, supporting', cleaned, flags=re.I)
+    cleaned = re.sub(r'Controller\s*,\s*,+', 'Controller,', cleaned, flags=re.I)
+    cleaned = re.sub(r'Controller\s*,?\s+(?=[Ss]upporting)', 'Controller, ', cleaned)
+    return re.sub(r'\s{2,}', ' ', cleaned).strip()
+
+
+def canonical_controller_description(description, controllers):
+    """Use the selected controller's exact specification text when a known name appears."""
+    text_value = ' '.join(str(description or '').split())
+    for controller in controllers:
+        identifiers = [controller.get('name'), controller.get('model'), controller.get('id')]
+        identifiers += controller.get('legacy_names', [])
+        if any(str(identifier).strip() and re.search(re.escape(str(identifier).strip()), text_value, re.I)
+               for identifier in identifiers if identifier):
+            return strip_controller_names(controller.get('description'), controllers)
+    return strip_controller_names(text_value, controllers)
 
 def numeric(value,label,default=None,maximum=1e12):
     if value in ('',None):return default
@@ -106,7 +145,8 @@ def build_quotation(data,base):
     controller=next((c for c in controllers if c['id']==data.get('controller')),None)
     if data.get('controller') and not controller:
         raise ValueError('This controller is no longer available. Select a current PROMARK controller before downloading.')
-    controller_desc='Supply of LED wall controller. Capacity and compatibility to be confirmed.'
+    controller_desc=' '.join(str((controller or {}).get('description') or q.get('controller_description') or 'Supply of LED Wall Controller. Capacity and compatibility to be confirmed.').split())
+    controller_desc=strip_controller_names(controller_desc, controllers)
     q.pop('controller_rate', None)
     if 'wall_rate' not in q:q['wall_rate']=p.get('base_rate_sqft')
     gst=numeric(q.get('gst'),'GST',18,100)/100
@@ -187,7 +227,7 @@ def build_quotation(data,base):
         ws.cell(rn,10,f'=IF(F{rn}="","",ROUND(D{rn}*I{rn},2))')
         ws.row_dimensions[rn].height=max(180, 15 * (len(desc) // 75 + desc.count('\n') + 2)) if rn==10 else (max(100, 15 * (math.ceil(len(desc) / 70) + 2)) if rn==11 else 35)
         for col in [1,2,3,4,5,6,7,8,9,10]:
-            ws.cell(rn,col).fill=PatternFill(fill_type=None)
+            ws.cell(rn,col).fill=PatternFill('solid',fgColor='FFFFFFFF')
         ws.cell(rn,7).number_format='0%'
         for col in [6,8,9,10]:ws.cell(rn,col).number_format='#,##0.00'
     for row, source in ((10,2),):
@@ -199,14 +239,15 @@ def build_quotation(data,base):
     ws.cell(total_row,10).number_format='#,##0.00'
     merged(18,1,10,'Terms and conditions:',True)
     for row,term in enumerate(TERMS,19):merged(row,1,10,f'{row-18}.) {term}');ws.row_dimensions[row].height=22
-    merged(29,1,10,'You may kindly raise the Purchase Order & Cheque / DD for advance amount in favour of:')
-    merged(30,1,10,'Promark Techsolutions Pvt. Ltd.',True)
-    merged(31,1,10,'CIN: '+str(q.get('cin','U36109PB2010PTC034337'))+'    GST: '+str(q.get('company_gst','03AAFCP7669C1ZF'))+'    PAN: '+str(q.get('pan','AAFCP7669C')) ,True)
+    merged(29,1,10,'Corporate Office: '+COMPANY_FOOTER['corporate'])
+    merged(30,1,10,'Factory: '+COMPANY_FOOTER['factory'])
+    merged(31,1,10,'Sales Office: '+COMPANY_FOOTER['sales'],True)
+    merged(32,1,10,f"CIN: {COMPANY_FOOTER['cin']}    GSTIN: {COMPANY_FOOTER['gstin']}    PAN: {COMPANY_FOOTER['pan']}",True)
     merged(33,1,10,'We hope the estimate is in line with your requirements. For any clarifications, please get back to us.')
     merged(34,1,10,'Thanks & Regards')
     thin=Side(style='thin',color='000000')
     white_fill=PatternFill('solid',fgColor='FFFFFFFF')
-    for row in ws.iter_rows(min_row=1,max_row=34,max_col=10):
+    for row in ws.iter_rows(min_row=1,max_row=max(34,ws.max_row),max_col=max(10,ws.max_column)):
         for cell in row:
             cell.fill=white_fill
     for row in ws.iter_rows(min_row=8,max_row=total_row,max_col=10):
@@ -220,7 +261,7 @@ def build_quotation(data,base):
     ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J34'
     ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=1;ws.sheet_properties.pageSetUpPr.fitToPage=True
     specs=wb.create_sheet('Design & Specifications');specs.column_dimensions['A'].width=42;specs.column_dimensions['B'].width=100
-    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('UniPole rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller',((controller or {}).get('name') or data.get('controller') or 'To be selected')),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
+    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('UniPole rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller','LED Wall Controller' if controller else 'To be selected'),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
     if p.get('id') in REFERENCE_QUOTES:
         rows.append(('Quotation specification source','User-supplied quotation screenshot for this video wall type. Quotation wording is separate from configured cabinet geometry.'))
         rows.append(('Quotation technical description',description))
@@ -356,19 +397,47 @@ def build_quotation_pdf(data, base):
     styles.add(ParagraphStyle(name='Center', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=8, alignment=1))
 
     def page_decor(canvas, doc):
+        import textwrap
         canvas.saveState()
         logo_path = Path(base) / 'static' / 'logo.png'
         if logo_path.exists():
             canvas.drawImage(str(logo_path), 18*mm, page_height-28*mm, width=48*mm, height=14*mm, preserveAspectRatio=True, mask='auto')
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.rect(0, 0, page_width, 22*mm, fill=1, stroke=0)
         canvas.setFillColor(colors.white)
-        canvas.setFont('Helvetica-Bold', 9)
-        canvas.drawCentredString(page_width/2, 7*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+        canvas.rect(0, 0, page_width, 38*mm, fill=1, stroke=0)
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.rect(0, 29*mm, page_width, 9*mm, fill=1, stroke=0)
+        canvas.setFillColor(colors.white)
+        canvas.setFont('Helvetica-Bold', 13)
+        canvas.drawCentredString(page_width/2, 32.4*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.setFont('Helvetica-Bold', 8.5)
+        column_centers = [page_width*0.167, page_width*0.5, page_width*0.833]
+        for center, label in zip(column_centers, ('CORPORATE OFFICE', 'FACTORY', 'SALES OFFICE')):
+            canvas.drawCentredString(center, 25.5*mm, label)
+        canvas.setFillColor(colors.black)
+        canvas.setFont('Helvetica', 7.2)
+        address_values = (COMPANY_FOOTER['corporate'], COMPANY_FOOTER['factory'], COMPANY_FOOTER['sales'])
+        for center, address in zip(column_centers, address_values):
+            wrapped = textwrap.wrap(address, width=38, break_long_words=False, break_on_hyphens=False)
+            y = 22.2*mm
+            for line in wrapped[:4]:
+                canvas.drawCentredString(center, y, line)
+                y -= 3.0*mm
+        canvas.setStrokeColor(colors.HexColor('#0878c9'))
+        canvas.setLineWidth(1.0)
+        canvas.line(page_width/3, 14.5*mm, page_width/3, 28*mm)
+        canvas.line(2*page_width/3, 14.5*mm, 2*page_width/3, 28*mm)
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.setFont('Helvetica-Bold', 8.5)
+        ids = [f"CIN: {COMPANY_FOOTER['cin']}", f"GSTIN: {COMPANY_FOOTER['gstin']}", f"PAN: {COMPANY_FOOTER['pan']}"]
+        for center, value in zip(column_centers, ids):
+            canvas.drawCentredString(center, 8.5*mm, value)
+        canvas.setFillColor(colors.HexColor('#111111'))
+        canvas.rect(0, 0, page_width, 2*mm, fill=1, stroke=0)
         canvas.restoreState()
 
     doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
-                            rightMargin=12*mm, topMargin=24*mm, bottomMargin=25*mm,
+                            rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
                             title='Promark Video Wall Quotation')
     story = [Spacer(1, 0*mm)]
 
@@ -416,7 +485,9 @@ def build_quotation_pdf(data, base):
         controller_gross = controller_base + controller_gst
         subtotal += controller_gross
         gst_total += controller_gst
-        controller_description = 'Supply of LED wall controller. Capacity and compatibility to be confirmed.'
+        controller_description = ' '.join(str(controller.get('description') or 'Supply of LED Wall Controller. Capacity and compatibility to be confirmed.').split())
+        all_controllers=json.loads((Path(base)/'controllers.json').read_text(encoding='utf-8')) if 'base' in locals() else []
+        controller_description=strip_controller_names(controller_description, all_controllers)
         pdf_rows.append(['2', 'LED Wall\nController', controller_description, f'{controller_quantity:g}', 'Nos', indian(controller_rate), f'{gst_percent:g}%', indian(controller_gst), indian(controller_rate * (1 + gst)), indian(controller_gross)])
 
     mount_rate = numeric(quotation.get('mount_rate'), 'Mounting rate', 0)
@@ -440,6 +511,7 @@ def build_quotation_pdf(data, base):
                   [[Paragraph(str(v).replace('\n','<br/>'), styles['Small']) for v in row] for row in pdf_rows[1:]],
                   repeatRows=1, colWidths=[12*mm,26*mm,66*mm,10*mm,12*mm,19*mm,12*mm,20*mm,22*mm,25*mm])
     table.setStyle(TableStyle([
+        ('BACKGROUND',(0,1),(-1,-1),colors.white),
         ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#d9e9f4')),
         ('TEXTCOLOR',(0,0),(-1,0),colors.black), ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
         ('GRID',(0,0),(-1,-1),0.5,colors.black), ('VALIGN',(0,0),(-1,-1),'TOP'),
@@ -456,7 +528,7 @@ def build_quotation_pdf(data, base):
     story += [Spacer(1, 2*mm), Paragraph('<b>Terms and conditions:</b>', styles['SmallBold'])]
     for index, term in enumerate(TERMS, 1):
         story.append(Paragraph(f'{index}) {term}', styles['Small']))
-    story += [Spacer(1, 1*mm), Paragraph('<b>Promark Techsolutions Pvt. Ltd.</b>', styles['Small'])]
+    story += [Spacer(1, 1*mm)]
 
     doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
     output.seek(0)
@@ -476,6 +548,12 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     if 'Quotation' not in workbook.sheetnames:
         raise ValueError('The Excel file must contain a Quotation worksheet.')
     sheet = workbook['Quotation']
+    controllers=json.loads((Path(__file__).parent/'controllers.json').read_text(encoding='utf-8'))
+    white_fill = PatternFill('solid', fgColor='FFFFFFFF')
+    for worksheet in workbook.worksheets:
+        for row in worksheet.iter_rows():
+            for cell in row:
+                cell.fill = white_fill
 
     def merged_value(row, start_col, end_col):
         for col in range(start_col, end_col + 1):
@@ -531,7 +609,7 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
         if 'mounting structure' in item_key:
             item_text = 'UniPole'
         if 'controller' in item_key:
-            description = 'Supply of LED wall controller. Capacity and compatibility to be confirmed.'
+            description = canonical_controller_description(description, controllers)
 
         qty_value = sheet.cell(item_row, 4).value
         qty = number(qty_value)
@@ -582,19 +660,47 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     styles.add(ParagraphStyle(name='ReferenceBold', parent=styles['BodyText'], fontName='Helvetica-Bold', fontSize=5.7, leading=6.2))
 
     def page_decor(canvas, doc):
+        import textwrap
         canvas.saveState()
         logo_path = Path(__file__).parent / 'static' / 'logo.png'
         if logo_path.exists():
             canvas.drawImage(str(logo_path), 12*mm, page_height-27*mm, width=55*mm, height=17*mm, preserveAspectRatio=True, mask='auto')
-        canvas.setFillColor(colors.HexColor('#0878c9'))
-        canvas.rect(0, 0, page_width, 14*mm, fill=1, stroke=0)
         canvas.setFillColor(colors.white)
-        canvas.setFont('Helvetica-Bold', 8)
-        canvas.drawCentredString(page_width/2, 5*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+        canvas.rect(0, 0, page_width, 38*mm, fill=1, stroke=0)
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.rect(0, 29*mm, page_width, 9*mm, fill=1, stroke=0)
+        canvas.setFillColor(colors.white)
+        canvas.setFont('Helvetica-Bold', 13)
+        canvas.drawCentredString(page_width/2, 32.4*mm, 'PROMARK TECHNOLOGIES PRIVATE LIMITED')
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.setFont('Helvetica-Bold', 8.5)
+        column_centers = [page_width*0.167, page_width*0.5, page_width*0.833]
+        for center, label in zip(column_centers, ('CORPORATE OFFICE', 'FACTORY', 'SALES OFFICE')):
+            canvas.drawCentredString(center, 25.5*mm, label)
+        canvas.setFillColor(colors.black)
+        canvas.setFont('Helvetica', 7.2)
+        address_values = (COMPANY_FOOTER['corporate'], COMPANY_FOOTER['factory'], COMPANY_FOOTER['sales'])
+        for center, address in zip(column_centers, address_values):
+            wrapped = textwrap.wrap(address, width=38, break_long_words=False, break_on_hyphens=False)
+            y = 22.2*mm
+            for line in wrapped[:4]:
+                canvas.drawCentredString(center, y, line)
+                y -= 3.0*mm
+        canvas.setStrokeColor(colors.HexColor('#0878c9'))
+        canvas.setLineWidth(1.0)
+        canvas.line(page_width/3, 14.5*mm, page_width/3, 28*mm)
+        canvas.line(2*page_width/3, 14.5*mm, 2*page_width/3, 28*mm)
+        canvas.setFillColor(colors.HexColor('#0878c9'))
+        canvas.setFont('Helvetica-Bold', 8.5)
+        ids = [f"CIN: {COMPANY_FOOTER['cin']}", f"GSTIN: {COMPANY_FOOTER['gstin']}", f"PAN: {COMPANY_FOOTER['pan']}"]
+        for center, value in zip(column_centers, ids):
+            canvas.drawCentredString(center, 8.5*mm, value)
+        canvas.setFillColor(colors.HexColor('#111111'))
+        canvas.rect(0, 0, page_width, 2*mm, fill=1, stroke=0)
         canvas.restoreState()
 
     doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm, rightMargin=12*mm,
-                            topMargin=21*mm, bottomMargin=17*mm, title='Edited PROMARK Video Wall Quotation')
+                            topMargin=21*mm, bottomMargin=40*mm, title='Edited PROMARK Video Wall Quotation')
 
     def clean_label(value, label):
         text = str(value or '').strip()
@@ -628,6 +734,7 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     table = Table(table_rows, repeatRows=1, splitByRow=1, splitInRow=1,
                   colWidths=[12*mm,27*mm,66*mm,10*mm,12*mm,20*mm,12*mm,20*mm,22*mm,23*mm])
     table.setStyle(TableStyle([
+        ('BACKGROUND',(0,1),(-1,-1),colors.white),
         ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#d9e9f4')),
         ('GRID',(0,0),(-1,-1),0.5,colors.black), ('VALIGN',(0,0),(-1,-1),'TOP'),
         ('ALIGN',(3,0),(5,-1),'CENTER'), ('ALIGN',(6,0),(-1,-1),'RIGHT'),
@@ -659,7 +766,6 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
         story.append(term)
 
     story.append(Spacer(1, 1*mm))
-    story.append(Paragraph('<b>Promark Techsolutions Pvt. Ltd.</b>', styles['ReferenceSmall']))
 
     doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
     output.seek(0)
