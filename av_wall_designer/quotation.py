@@ -686,7 +686,7 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.lib.units import mm
     from reportlab.platypus import (
-        BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, Table, TableStyle,
+        BaseDocTemplate, Frame, KeepInFrame, PageTemplate, Paragraph, Spacer, Table, TableStyle,
     )
 
     workbook = load_workbook(file_stream, data_only=True)
@@ -704,7 +704,6 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     term_style = ParagraphStyle('QuotationTerm', parent=small, leading=8, spaceBefore=3)
     heading_style = ParagraphStyle('QuotationHeading', parent=bold, spaceBefore=6,
                                    spaceAfter=2, keepWithNext=True)
-    closing_style = ParagraphStyle('QuotationClosing', parent=bold, spaceBefore=6)
 
     def paragraph(value, style=small):
         return Paragraph(escape(str(value)).replace('\n', '<br/>'), style)
@@ -719,13 +718,9 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     doc = BaseDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
                           rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
                           title=filename or 'Edited PROMARK Video Wall Quotation')
-    # Continuation tables start below the logo. The first page has client details
-    # between the logo and the item table, like the reference quotation.
-    first_frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='first')
-    next_frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height - 8*mm, id='later')
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='quotation')
     doc.addPageTemplates([
-        PageTemplate(id='First', frames=[first_frame], onPage=page_decor, autoNextPageTemplate='Later'),
-        PageTemplate(id='Later', frames=[next_frame], onPage=page_decor),
+        PageTemplate(id='Quotation', frames=[frame], onPage=page_decor),
     ])
 
     left_rows = [[field(name, key)] for name, key in [
@@ -772,8 +767,9 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     if terms:
         story.append(paragraph('Terms and conditions:', heading_style))
         story.extend(paragraph(f'{index}) {term}', term_style) for index, term in enumerate(terms, 1))
-    story.append(paragraph('Promark Techsolutions Pvt. Ltd.', closing_style))
 
-    doc.build(story)
+    # Fit edited content into the space above the footer without dropping rows
+    # or terms, or creating an extra page when a few lines overflow.
+    doc.build([KeepInFrame(0, 0, story, mode='shrink', hAlign='CENTER', vAlign='TOP')])
     output.seek(0)
     return output
