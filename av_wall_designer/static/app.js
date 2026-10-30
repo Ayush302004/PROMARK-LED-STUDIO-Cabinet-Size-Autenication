@@ -65,22 +65,22 @@ const display = m => m / (unit === 'ft' ? 0.3048 : 1);
 function message(text, error = false) { $('status').textContent = text; $('status').classList.toggle('error', error); }
 async function api(url, body) {
     const headers = { 'Content-Type': 'application/json' };
-    
+
     // Add authentication token if available
     const token = localStorage.getItem('access_token');
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
-    
-    const response = await fetch(url, body === undefined ? { headers } : { 
-        method: 'POST', 
-        headers, 
+
+    const response = await fetch(url, body === undefined ? { headers } : {
+        method: 'POST',
+        headers,
         body: JSON.stringify(body),
         credentials: 'include'
     });
-    
+
     const data = await response.json();
-    
+
     // If unauthorized, redirect to login
     if (response.status === 401) {
         localStorage.removeItem('access_token');
@@ -88,7 +88,7 @@ async function api(url, body) {
         window.location.href = '/login';
         throw Error('Authentication required');
     }
-    
+
     if (!response.ok) throw Error(data.error || 'Request failed');
     return data;
 }
@@ -358,10 +358,13 @@ function renderCatalogue() {
 function restore(data) {
     const mountType = data.q_mount_type ?? data.quotation?.mount_type ?? 'none';
     const mountOption = MOUNTING_OPTIONS[mountType];
-    data = { ...data, q_mount_type: mountOption ? mountType : 'none',
+    data = {
+        ...data, q_mount_type: mountOption ? mountType : 'none',
         q_mount_rate: mountOption ? (data.q_mount_rate ?? data.quotation?.mount_rate ?? mountOption.rate) : '',
-        q_mount_description: mountOption ? (data.q_mount_description ?? data.quotation?.mount_description ?? mountOption.description) : '' };
-    $('controller-auto').checked = data.auto_controller === true; if (['pm-1-5-smd', 'umate-sf4', 'pm-2-5-smd'].includes(data.product?.id)) { data = { ...data, product: catalogue.find(p => p.environment === (data.environment || 'indoor')), technology: 'all' }; message('This saved model has been removed. Review the replacement model before continuing.'); } $('controller').value = data.controller || ''; fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; }); const restoredController = controllers.find(c => c.id === $('controller').value); if (restoredController) { $('q_controller_description').value = controllerDescription(restoredController, $('q_controller_description').value); } else { $('controller-auto').checked = true; $('q_controller_description').value = ''; } unit = data.unit || 'ft'; $('dimension_step').value = data.dimension_step || 'unit'; $('preview_mode').value = data.preview_mode || 'exact'; environment = data.environment || 'indoor'; if (data.product) { product = { ...data.product }; const current = familyFor(product); if (current) { product = resolveCabinet(current, product.cabinet_option_id || product.id); } else { catalogue.push(product); } } wallPhoto = ''; screenPhoto = ''; document.querySelectorAll('.unit').forEach(el => el.textContent = unit); document.querySelectorAll('#units button').forEach(b => b.classList.toggle('active', b.dataset.value === unit)); $('resolution').value = 'custom'; $('human_height').max = unit === 'ft' ? 10 : 3; formatDimensionInputs(); selectScene(data.scene || 'Conference'); selectEnvironment(environment, true); updateVisibility(); updateFullPrices(); showTab('designer'); }
+        q_mount_description: mountOption ? (data.q_mount_description ?? data.quotation?.mount_description ?? mountOption.description) : ''
+    };
+    $('controller-auto').checked = data.auto_controller === true; if (['pm-1-5-smd', 'umate-sf4', 'pm-2-5-smd'].includes(data.product?.id)) { data = { ...data, product: catalogue.find(p => p.environment === (data.environment || 'indoor')), technology: 'all' }; message('This saved model has been removed. Review the replacement model before continuing.'); } $('controller').value = data.controller || ''; fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; }); const restoredController = controllers.find(c => c.id === $('controller').value); if (restoredController) { $('q_controller_description').value = controllerDescription(restoredController, $('q_controller_description').value); } else { $('controller-auto').checked = true; $('q_controller_description').value = ''; } unit = data.unit || 'ft'; $('dimension_step').value = data.dimension_step || 'unit'; $('preview_mode').value = data.preview_mode || 'exact'; environment = data.environment || 'indoor'; if (data.product) { product = { ...data.product }; const current = familyFor(product); if (current) { product = resolveCabinet(current, product.cabinet_option_id || product.id); } else { catalogue.push(product); } } wallPhoto = ''; screenPhoto = ''; document.querySelectorAll('.unit').forEach(el => el.textContent = unit); document.querySelectorAll('#units button').forEach(b => b.classList.toggle('active', b.dataset.value === unit)); $('resolution').value = 'custom'; $('human_height').max = unit === 'ft' ? 10 : 3; formatDimensionInputs(); selectScene(data.scene || 'Conference'); selectEnvironment(environment, true); updateVisibility(); updateFullPrices(); showTab('designer');
+}
 async function initialise() {
     controllers = await api('/api/controllers');
     for (const c of controllers) { const option = document.createElement('option'); option.value = c.id; option.textContent = c.name + (c.kind === 'LED Wall Controller' ? '' : ' · ' + c.kind); $('controller').append(option); }
