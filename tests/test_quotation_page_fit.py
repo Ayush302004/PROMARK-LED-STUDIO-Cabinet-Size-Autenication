@@ -51,7 +51,8 @@ class QuotationPageFitTests(unittest.TestCase):
         self.assertEqual(len(re.findall(rb'/Type\s*/Page\b', output.getvalue())), 1)
         content = pdf_content(output)
         self.assertIn('Total Amount', content)
-        self.assertIn('GST Amount', content)
+        self.assertNotIn('GST Amount', content)
+        self.assertIn('GST amount', content)
         self.assertIn('LAN ports for AV System', content)
         self.assertIn('Cable and speaker quantities', content)
         self.assertEqual(content.count('PROMARK TECHNOLOGIES PRIVATE LIMITED'), 1)
@@ -65,7 +66,7 @@ class QuotationPageFitTests(unittest.TestCase):
             with self.subTest(added_rows=count, description_repeats=repeats):
                 source = edited_workbook(count, repeats, extra_terms=3)
                 workbook = load_workbook(source, data_only=True)
-                _, rows, terms, total, gst = read_excel_quotation(workbook['Quotation'])
+                _, rows, terms, total, _ = read_excel_quotation(workbook['Quotation'])
                 self.assertEqual(len(rows), 4 + count)
                 self.assertEqual(len(terms), len(TERMS) + 3)
                 workbook.close()
@@ -77,7 +78,6 @@ class QuotationPageFitTests(unittest.TestCase):
                 for index in range(3):
                     self.assertIn(f'Additional condition {index + 1}', content)
                 self.assertIn(f'{total:,.2f}', content)
-                self.assertIn(f'{gst:,.2f}', content)
 
     def test_long_existing_row_fits_without_splitting(self):
         source = edited_workbook(0)

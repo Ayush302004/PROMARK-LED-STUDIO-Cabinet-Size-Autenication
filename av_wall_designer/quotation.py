@@ -523,13 +523,11 @@ def build_quotation_pdf(data, base):
     headers = ['Sr. No.', 'Item', 'Description', 'Qty', 'Unit', 'Rate', 'GST', 'GST amount', 'Rate incl.\ntaxes', 'Amount']
     pdf_rows = [headers]
     subtotal = Decimal('0')
-    gst_total = Decimal('0')
 
     wall_base = Decimal(str(area_sqft)) * Decimal(str(wall_rate or 0))
     wall_gst_amount = wall_base * Decimal(str(gst))
     wall_gross = wall_base + wall_gst_amount
     subtotal += wall_gross
-    gst_total += wall_gst_amount
     pdf_rows.append(['1', 'Videowall', wall_description.replace('\n','<br/>'), '1', 'Nos', indian(wall_base), f'{gst_percent:g}%', indian(wall_gst_amount), indian(wall_gross), indian(wall_gross)])
 
     if controller:
@@ -537,7 +535,6 @@ def build_quotation_pdf(data, base):
         controller_gst = controller_base * Decimal(str(gst))
         controller_gross = controller_base + controller_gst
         subtotal += controller_gross
-        gst_total += controller_gst
         controller_description = ' '.join(str(controller.get('description') or 'Supply of LED Wall Controller. Capacity and compatibility to be confirmed.').split())
         all_controllers=json.loads((Path(base)/'controllers.json').read_text(encoding='utf-8')) if 'base' in locals() else []
         controller_description=strip_controller_names(controller_description, all_controllers)
@@ -556,7 +553,6 @@ def build_quotation_pdf(data, base):
         gross = rate + gst_amount
         if rate:
             subtotal += gross
-            gst_total += gst_amount
         priced = bool(rate) or (mount is not None and item_name == mount['name'])
         pdf_rows.append([str(number), item_name, desc, '1', 'Nos', indian(rate) if priced else 'As per actual', f'{gst_percent:g}%', indian(gst_amount) if priced else '-', indian(gross) if priced else '-', indian(gross) if priced else '-'])
 
@@ -575,7 +571,6 @@ def build_quotation_pdf(data, base):
 
     story.append(Table([
         ['', '', '', '', '', '', '', '', Paragraph('<b>Total Amount</b>', styles['Small']), Paragraph(indian(subtotal), styles['Small'])],
-        ['', '', '', '', '', '', '', '', Paragraph('<b>GST Amount</b>', styles['Small']), Paragraph(indian(gst_total), styles['Small'])],
     ], colWidths=[12*mm,26*mm,66*mm,10*mm,12*mm,19*mm,12*mm,20*mm,22*mm,25*mm], style=[
         ('GRID',(8,0),(-1,-1),0.5,colors.black), ('ALIGN',(8,0),(-1,-1),'RIGHT'), ('VALIGN',(0,0),(-1,-1),'MIDDLE')]))
     story += [Spacer(1, 2*mm), Paragraph('<b>Terms and conditions:</b>', styles['SmallBold'])]
@@ -728,7 +723,7 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     try:
         if 'Quotation' not in workbook.sheetnames:
             raise ValueError('The Excel file must contain a Quotation worksheet.')
-        metadata, rows, terms, total_amount, total_gst = read_excel_quotation(workbook['Quotation'])
+        metadata, rows, terms, total_amount, _ = read_excel_quotation(workbook['Quotation'])
     finally:
         workbook.close()
 
@@ -777,7 +772,6 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
 
     totals = Table([
         [''] * 8 + [paragraph('Total Amount', bold), paragraph(f'{total_amount:,.2f}')],
-        [''] * 8 + [paragraph('GST Amount', bold), paragraph(f'{total_gst:,.2f}')],
     ], colWidths=widths)
     totals.setStyle(TableStyle([
         ('GRID', (8, 0), (-1, -1), 0.5, colors.black),
