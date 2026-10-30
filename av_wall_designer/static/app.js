@@ -1,6 +1,10 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const fields = ['controller', 'technology', 'q_client', 'q_project', 'q_location', 'q_contact', 'q_date', 'q_salesperson', 'q_version', 'q_subject', 'q_wall_rate', 'q_controller_qty', 'q_mount_rate', 'q_mount_qty', 'q_installation_rate', 'q_gst', 'q_controller_description', 'q_mount_description', 'q_installation_description', 'q_cin', 'q_company_gst', 'q_pan', 'dimension_step', 'preview_mode', 'size_preset', 'wall_width', 'wall_height', 'screen_width', 'screen_height', 'columns', 'rows', 'target_pixels_w', 'target_pixels_h', 'mode', 'policy', 'position', 'left', 'bottom', 'installation', 'finish', 'wall_colour', 'human_height', 'content'];
+const fields = ['controller', 'technology', 'q_client', 'q_project', 'q_location', 'q_contact', 'q_date', 'q_salesperson', 'q_version', 'q_subject', 'q_wall_rate', 'q_controller_qty', 'q_mount_type', 'q_mount_rate', 'q_mount_qty', 'q_installation_rate', 'q_gst', 'q_controller_description', 'q_mount_description', 'q_installation_description', 'q_cin', 'q_company_gst', 'q_pan', 'dimension_step', 'preview_mode', 'size_preset', 'wall_width', 'wall_height', 'screen_width', 'screen_height', 'columns', 'rows', 'target_pixels_w', 'target_pixels_h', 'mode', 'policy', 'position', 'left', 'bottom', 'installation', 'finish', 'wall_colour', 'human_height', 'content'];
+const MOUNTING_OPTIONS = {
+    unipole: { name: 'Uni-pole', rate: 175000, description: 'Supply of Uni-pole.' },
+    structure: { name: 'Mounting structure', rate: 800, description: 'Supply of mounting structure for the LED video wall.' },
+};
 let controllers = [], catalogue = [], product = null, result = null, lastGoodResult = null, unit = 'ft', environment = 'indoor', scene = 'Video wall', zoom = 1, wallPhoto = '', screenPhoto = '', revision = 0, timer = null;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const resolutionText = p => p && p.pixels_w != null && p.pixels_h != null ? `${Number(p.pixels_w).toLocaleString('en-IN')} × ${Number(p.pixels_h).toLocaleString('en-IN')} px` : 'Not provided';
@@ -180,7 +184,7 @@ function schedule() {
     document.querySelectorAll('[data-pixel-axis]').forEach(button => button.disabled = true); clearTimeout(timer); revision++; result = null; $('results-btn').disabled = true; $('fit-status').textContent = 'Updating design…'; $('drawing').setAttribute('aria-busy', 'true'); $('size-feedback').hidden = true; liveExactPreview(); timer = setTimeout(() => recalculate(revision), 80);
 }
 async function recalculate(version) { try { const data = await api('/api/calculate', state()); if (version !== revision) return; if (autoExpandWallFromResult(data)) { schedule(); return; } result = data; lastGoodResult = data; $('metrics').setAttribute('aria-busy', 'false'); $('drawing').setAttribute('aria-busy', 'false'); message(''); $('results-btn').disabled = false; render(); } catch (e) { if (version !== revision) return; result = null; $('drawing').setAttribute('aria-busy', 'false'); $('size-feedback').hidden = true; message(e.message, true); $('wall-svg').replaceChildren(); $('metrics').replaceChildren(); $('fit-status').textContent = 'Invalid design'; $('warnings').textContent = 'Correct the input values to calculate this design.'; $('materials').replaceChildren(); updatePixelControls(null); $('result-summary').textContent = 'No valid calculated design.'; $('result-drawing').replaceChildren(); } }
-function render() { updateControllerRecommendation(); updateFullPrices(); $("q_mount_qty").value = String(quotationAreaSqft()); updatePixelControls(result); draw(); const r = result, d = $('preview_mode').value === 'exact' ? r.design : r; const exact = $('preview_mode').value === 'exact'; const metric = (title, value, note) => `<div class="metric"><span>${title}</span><strong>${value}</strong><small>${note}</small></div>`; $('metrics').innerHTML = metric(exact ? 'Exact design size' : 'Buildable screen size', `${exact && $('mode').value === 'dimensions' ? esc(dimensionFormat($('screen_width').value)) : dimensionFormat(display(d.width_m))} × ${exact && $('mode').value === 'dimensions' ? esc(heightFormat($('screen_height').value)) : heightFormat(display(d.height_m))}`, unit) + metric('Video resolution', resolutionText(r), totalPixelsText(r)) + metric('Cabinet option', `${r.columns} × ${r.rows}`, `${fmt(r.count)} cabinets`) + metric(exact ? 'Design area' : 'Cabinet area', exactArea(exact && $('mode').value === 'dimensions' ? $('screen_width').value : dimensionFormat(display(d.width_m)), exact && $('mode').value === 'dimensions' ? $('screen_height').value : heightFormat(display(d.height_m))), unit === 'ft' ? 'ft²' : 'm²'); $('warnings').replaceChildren(...r.warnings.map(w => { const p = document.createElement('p'); p.textContent = w; return p; })); $('fit-status').textContent = d.fits ? '✓ Fits within wall' : '⚠ Exceeds wall'; $('fit-status').style.color = d.fits ? '#087d79' : '#a43b34'; renderSizeFeedback(); renderResults(); }
+function render() { updateControllerRecommendation(); updateFullPrices(); updatePixelControls(result); draw(); const r = result, d = $('preview_mode').value === 'exact' ? r.design : r; const exact = $('preview_mode').value === 'exact'; const metric = (title, value, note) => `<div class="metric"><span>${title}</span><strong>${value}</strong><small>${note}</small></div>`; $('metrics').innerHTML = metric(exact ? 'Exact design size' : 'Buildable screen size', `${exact && $('mode').value === 'dimensions' ? esc(dimensionFormat($('screen_width').value)) : dimensionFormat(display(d.width_m))} × ${exact && $('mode').value === 'dimensions' ? esc(heightFormat($('screen_height').value)) : heightFormat(display(d.height_m))}`, unit) + metric('Video resolution', resolutionText(r), totalPixelsText(r)) + metric('Cabinet option', `${r.columns} × ${r.rows}`, `${fmt(r.count)} cabinets`) + metric(exact ? 'Design area' : 'Cabinet area', exactArea(exact && $('mode').value === 'dimensions' ? $('screen_width').value : dimensionFormat(display(d.width_m)), exact && $('mode').value === 'dimensions' ? $('screen_height').value : heightFormat(display(d.height_m))), unit === 'ft' ? 'ft²' : 'm²'); $('warnings').replaceChildren(...r.warnings.map(w => { const p = document.createElement('p'); p.textContent = w; return p; })); $('fit-status').textContent = d.fits ? '✓ Fits within wall' : '⚠ Exceeds wall'; $('fit-status').style.color = d.fits ? '#087d79' : '#a43b34'; renderSizeFeedback(); renderResults(); }
 function draw(r = result) {
     if (!r) return; const exact = $('preview_mode').value === 'exact', d = exact ? r.design : r; const W = r.wall_width_m, H = r.wall_height_m, sw = d.width_m, sh = d.height_m, l = d.margins_m.left, b = d.margins_m.bottom, t = H - sh - b; $('show-grid').disabled = false; const req = !exact && r.requested && r.requested.width_m !== undefined ? r.requested : null, rw = req ? req.width_m : sw, rh = req ? req.height_m : sh, rl = $('position').value === 'centre' ? (W - rw) / 2 : l, rt = $('position').value === 'centre' ? (H - rh) / 2 : H - b - rh; const minX = Math.min(0, l, rl), maxX = Math.max(W, l + sw, rl + rw), minY = Math.min(0, t, rt), maxY = Math.max(H, t + sh, rt + rh); const scale = Math.min(730 / (maxX - minX), 350 / (maxY - minY)), x = 145 - minX * scale, y = 80 - minY * scale, ww = W * scale, hh = H * scale, sx = x + l * scale, sy = y + t * scale, sww = sw * scale, shh = sh * scale; const svg = $('wall-svg'); svg.setAttribute('viewBox', '0 0 1030 530'); svg.style.width = `${zoom * 100}%`; $('zoom-value').textContent = `${Math.round(zoom * 100)}%`; const colour = /^#[a-f0-9]{6}$/i.test($('wall_colour').value) ? $('wall_colour').value : '#dce3e4'; let texture = ''; switch ($('finish').value) { case 'brick': texture = '<pattern id="finish-pattern" width="60" height="30" patternUnits="userSpaceOnUse"><path d="M0 0H60M0 15H60M0 30H60M0 0V15M30 15V30M60 0V15" fill="none" stroke="#647571" stroke-opacity=".22"/></pattern>'; break; case 'wood': texture = '<pattern id="finish-pattern" width="34" height="100" patternUnits="userSpaceOnUse"><path d="M0 0V100M6 0Q17 30 8 65T8 100" fill="none" stroke="#705d45" stroke-opacity=".25"/></pattern>'; break; case 'concrete': texture = '<pattern id="finish-pattern" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="1" fill="#677976" opacity=".18"/><circle cx="9" cy="10" r=".6" fill="#677976" opacity=".2"/></pattern>'; break; }
     const image = (url, px, py, pw, ph) => `<image href="${esc(url)}" x="${px}" y="${py}" width="${pw}" height="${ph}" preserveAspectRatio="xMidYMid slice"/>`;
@@ -351,7 +355,13 @@ function renderCatalogue() {
     }));
 }
 
-function restore(data) { $('controller-auto').checked = data.auto_controller === true; if (['pm-1-5-smd', 'umate-sf4', 'pm-2-5-smd'].includes(data.product?.id)) { data = { ...data, product: catalogue.find(p => p.environment === (data.environment || 'indoor')), technology: 'all' }; message('This saved model has been removed. Review the replacement model before continuing.'); } $('controller').value = data.controller || ''; fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; }); const restoredController = controllers.find(c => c.id === $('controller').value); if (restoredController) { $('q_controller_description').value = controllerDescription(restoredController, $('q_controller_description').value); } else { $('controller-auto').checked = true; $('q_controller_description').value = ''; } unit = data.unit || 'ft'; $('dimension_step').value = data.dimension_step || 'unit'; $('preview_mode').value = data.preview_mode || 'exact'; environment = data.environment || 'indoor'; if (data.product) { product = { ...data.product }; const current = familyFor(product); if (current) { product = resolveCabinet(current, product.cabinet_option_id || product.id); } else { catalogue.push(product); } } wallPhoto = ''; screenPhoto = ''; document.querySelectorAll('.unit').forEach(el => el.textContent = unit); document.querySelectorAll('#units button').forEach(b => b.classList.toggle('active', b.dataset.value === unit)); $('resolution').value = 'custom'; $('human_height').max = unit === 'ft' ? 10 : 3; formatDimensionInputs(); selectScene(data.scene || 'Conference'); selectEnvironment(environment, true); updateVisibility(); updateFullPrices(); showTab('designer'); }
+function restore(data) {
+    const mountType = data.q_mount_type ?? data.quotation?.mount_type ?? 'none';
+    const mountOption = MOUNTING_OPTIONS[mountType];
+    data = { ...data, q_mount_type: mountOption ? mountType : 'none',
+        q_mount_rate: mountOption ? (data.q_mount_rate ?? data.quotation?.mount_rate ?? mountOption.rate) : '',
+        q_mount_description: mountOption ? (data.q_mount_description ?? data.quotation?.mount_description ?? mountOption.description) : '' };
+    $('controller-auto').checked = data.auto_controller === true; if (['pm-1-5-smd', 'umate-sf4', 'pm-2-5-smd'].includes(data.product?.id)) { data = { ...data, product: catalogue.find(p => p.environment === (data.environment || 'indoor')), technology: 'all' }; message('This saved model has been removed. Review the replacement model before continuing.'); } $('controller').value = data.controller || ''; fields.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; }); const restoredController = controllers.find(c => c.id === $('controller').value); if (restoredController) { $('q_controller_description').value = controllerDescription(restoredController, $('q_controller_description').value); } else { $('controller-auto').checked = true; $('q_controller_description').value = ''; } unit = data.unit || 'ft'; $('dimension_step').value = data.dimension_step || 'unit'; $('preview_mode').value = data.preview_mode || 'exact'; environment = data.environment || 'indoor'; if (data.product) { product = { ...data.product }; const current = familyFor(product); if (current) { product = resolveCabinet(current, product.cabinet_option_id || product.id); } else { catalogue.push(product); } } wallPhoto = ''; screenPhoto = ''; document.querySelectorAll('.unit').forEach(el => el.textContent = unit); document.querySelectorAll('#units button').forEach(b => b.classList.toggle('active', b.dataset.value === unit)); $('resolution').value = 'custom'; $('human_height').max = unit === 'ft' ? 10 : 3; formatDimensionInputs(); selectScene(data.scene || 'Conference'); selectEnvironment(environment, true); updateVisibility(); updateFullPrices(); showTab('designer'); }
 async function initialise() {
     controllers = await api('/api/controllers');
     for (const c of controllers) { const option = document.createElement('option'); option.value = c.id; option.textContent = c.name + (c.kind === 'LED Wall Controller' ? '' : ' · ' + c.kind); $('controller').append(option); }
@@ -593,9 +603,33 @@ function selectedArea() {
     return exactArea(w, h);
 }
 function quotationAreaSqft() { const area = Number(selectedArea()); return unit === 'ft' ? area : area / 0.09290304; }
+function selectedMounting() {
+    const type = $('q_mount_type').value, option = MOUNTING_OPTIONS[type];
+    if (!option) return null;
+    const raw = $('q_mount_rate').value;
+    const rate = raw === '' ? option.rate : Number(raw);
+    const quantity = type === 'structure' ? (result ? quotationAreaSqft() : null) : 1;
+    const price = Number.isFinite(rate) && rate >= 0 && quantity !== null ? Math.round((rate * quantity + Number.EPSILON) * 100) / 100 : null;
+    return { ...option, type, rate, price };
+}
+function updateMountingSelection(reset = false) {
+    const type = $('q_mount_type').value, option = MOUNTING_OPTIONS[type];
+    for (const id of ['q_mount_rate_field', 'q_mount_total_field', 'q_mount_description_field']) $(id).hidden = !option;
+    $('q_mount_rate').disabled = !option;
+    $('q_mount_description').disabled = !option;
+    if (reset) {
+        $('q_mount_rate').value = option ? option.rate : '';
+        $('q_mount_description').value = option ? option.description : '';
+    }
+    $('q_mount_rate_label').textContent = type === 'structure' ? 'Structure rate · INR / sq.ft.' : 'Uni-pole unit price · INR';
+    const mount = selectedMounting();
+    $('q_structure_total').value = !mount ? '' : mount.price === null ? 'Enter a valid rate and screen size' : money(mount.price);
+}
 function updateFullPrices() {
     const area = result ? quotationAreaSqft() : null;
-    $('q_install_total').value = 'Company actual price'; $('q_structure_total').value = 'Company actual price';
+    $('q_install_total').value = 'Company actual price';
+    $('q_mount_qty').value = area === null ? '' : String(area);
+    updateMountingSelection();
     const controller = controllers.find(c => c.id === $('controller').value);
     const quantity = Number($('q_controller_qty').value || 1);
     const gst = Number($('q_gst').value || 0) / 100;
@@ -614,7 +648,8 @@ function updateFullPrices() {
         }
     }
 }
-for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_mount_qty', 'q_controller_qty', 'q_gst']) $(id).addEventListener('input', updateFullPrices);
+for (const id of ['q_wall_rate', 'q_installation_rate', 'q_mount_rate', 'q_mount_qty', 'q_controller_qty', 'q_gst']) $(id).addEventListener('input', () => updateFullPrices());
+$('q_mount_type').addEventListener('change', () => { updateMountingSelection(true); updateFullPrices(); });
 
 // Use model-specific paragraph wording; switching models clears the previous price.
 function applyControllerSelection() {

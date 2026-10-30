@@ -16,7 +16,12 @@ function updateStudioSummary(){
   const cost=controller.rate_inr*quantity;total+=cost*(1+gst);hasPricedRate=true;
   lines.push(['LED Wall Controller, incl. GST',amount(cost*(1+gst))]);
  }
- for(const [label,id,quantityId] of [['UniPole','q_mount_rate','q_mount_qty'],['Installation','q_installation_rate',null]]){
+ const mount=selectedMounting();
+ if(mount && mount.price!==null){
+  const cost=mount.price+Math.round((mount.price*gst+Number.EPSILON)*100)/100;
+  total+=cost;hasPricedRate=true;lines.push([mount.name+', incl. GST',amount(cost)]);
+ }
+ for(const [label,id,quantityId] of [['Installation','q_installation_rate',null]]){
   const raw=$(id).value;
   if(raw!==''&&Number.isFinite(Number(raw))){
    const cost=Number(raw)*(quantityId?Number($(quantityId).value||1):1);

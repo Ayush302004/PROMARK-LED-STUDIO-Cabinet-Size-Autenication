@@ -138,6 +138,45 @@ def sheet_quotation_details(product):
             lines.append(f'{label}: {value if value is not None else "Not provided"}.')
     return '\n'.join(lines)
 
+def quotation_dimensions(data, result):
+    """Use the displayed pricing dimensions for both quotation formats."""
+    product = data['product']
+    exact = data.get('preview_mode', 'exact') == 'exact'
+    unit = data.get('unit', 'm')
+    if exact and data.get('mode', 'dimensions') == 'dimensions':
+        width = Decimal(str(data['screen_width']))
+        height = Decimal(str(data['screen_height']))
+    else:
+        dimensions = result['design'] if exact else result
+        divisor = Decimal('0.3048') if unit == 'ft' else Decimal(1)
+        width = Decimal(str(dimensions['width_m'])) / divisor
+        height = Decimal(str(dimensions['height_m'])) / divisor
+    outdoor = product.get('environment') == 'outdoor' or Decimal(str(product.get('pitch_mm', 0))) == 4
+    rounding = 'ROUND_DOWN' if outdoor else ROUND_HALF_UP
+    return tuple(value.quantize(Decimal('0.001'), rounding=rounding) for value in (width, height))
+
+
+def mounting_item(quotation, area_sqft):
+    """Return an optional mounting line with its price before GST."""
+    mount_type = quotation.get('mount_type') or 'none'
+    if mount_type == 'none':
+        return None
+    options = {
+        'unipole': ('Uni-pole', 'Supply of Uni-pole.', 175000),
+        'structure': ('Mounting structure', 'Supply of mounting structure for the LED video wall.', 800),
+    }
+    if mount_type not in options:
+        raise ValueError('Select None, Uni-pole or Mounting structure.')
+    name, description, default_rate = options[mount_type]
+    unit_rate = Decimal(str(numeric(quotation.get('mount_rate'), 'Mounting rate', default_rate)))
+    price = unit_rate * area_sqft if mount_type == 'structure' else unit_rate
+    price = price.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    return {
+        'name': name, 'description': str(quotation.get('mount_description') or description),
+        'unit_rate': unit_rate, 'price': price, 'type': mount_type,
+    }
+
+
 def build_quotation(data,base):
     result=calculate(data);p=data['product'];q=data.get('quotation') or {}
     if not isinstance(q,dict):raise ValueError('Invalid quotation details')
@@ -172,21 +211,8 @@ def build_quotation(data,base):
     for i,h in enumerate(headers,1):ws.cell(8,i,h)
     merged(9,1,10,'LED Video Wall System',True)
     sw=result['width_m'];sh=result['height_m']
-    exact=data.get('preview_mode','exact')=='exact'
     unit=data.get('unit','m')
-    if exact and data.get('mode','dimensions')=='dimensions':
-        width=Decimal(str(data['screen_width']));height=Decimal(str(data['screen_height']))
-    else:
-        dimensions=result['design'] if exact else result
-        divisor=Decimal('0.3048') if unit=='ft' else Decimal(1)
-        outdoor=p.get('environment')=='outdoor' or Decimal(str(p.get('pitch_mm',0)))==4
-        width=(Decimal(str(dimensions['width_m']))/divisor).quantize(Decimal('0.001'),rounding='ROUND_DOWN' if outdoor else 'ROUND_HALF_UP')
-        height=(Decimal(str(dimensions['height_m']))/divisor).quantize(Decimal('0.001'),rounding='ROUND_DOWN' if outdoor else 'ROUND_HALF_UP')
-    if p.get('environment')=='outdoor' or Decimal(str(p.get('pitch_mm',0)))==4:
-        width=width.quantize(Decimal('0.001'),rounding='ROUND_DOWN')
-        height=height.quantize(Decimal('0.001'),rounding='ROUND_DOWN')
-    width=width.quantize(Decimal('0.001'),rounding='ROUND_DOWN' if p.get('environment')=='outdoor' or Decimal(str(p.get('pitch_mm',0)))==4 else 'ROUND_HALF_UP')
-    height=height.quantize(Decimal('0.001'),rounding='ROUND_DOWN' if p.get('environment')=='outdoor' or Decimal(str(p.get('pitch_mm',0)))==4 else 'ROUND_HALF_UP')
+    width,height=quotation_dimensions(data,result)
     area=width*height
     sqft_decimal=area if unit=='ft' else area/Decimal('0.09290304')
     width_display = format(width.quantize(Decimal("0.001"), rounding="ROUND_HALF_UP"), ".3f")
@@ -215,10 +241,12 @@ def build_quotation(data,base):
     def manual_description(value, fallback):
         description=str(value or fallback).strip()
         return description if actual_price.lower() in description.lower() else description.rstrip('. ') + '. ' + actual_price
+    mount=mounting_item(q,sqft_decimal)
     lines=[('Videowall',description,1,'Nos',q.get('wall_rate')),
-      ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',(controller or {}).get('rate_inr')),
-      ('UniPole',manual_description(q.get('mount_description'),'Supply of Uni-Pole.'),1,'Nos',None),
-      ('Installation',manual_description(q.get('installation_description'),'Installation charges'),1,'Nos',None)]
+      ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',(controller or {}).get('rate_inr'))]
+    if mount:
+        lines.append((mount['name'],mount['description'],1,'Nos',mount['price']))
+    lines.append(('Installation',manual_description(q.get('installation_description'),'Installation charges'),1,'Nos',None))
     last_item_row=9+len(lines)
     total_row=last_item_row+1
     for rn,(item,desc,qty,unit,rate) in enumerate(lines,10):
@@ -235,6 +263,9 @@ def build_quotation(data,base):
         factor=''
         ws.cell(row,6,f'=IF(\'Design & Specifications\'!B{source}="","",ROUND(\'Design & Specifications\'!B{source}{factor}*\'Design & Specifications\'!B3,2))')
         ws.cell(row,4).number_format='0'
+    if mount:
+        factor="*'Design & Specifications'!B3" if mount['type']=='structure' else ''
+        ws.cell(12,6,f"=ROUND('Design & Specifications'!B4{factor},2)")
     merged(total_row,1,9,'Total Amount',True)
     ws.cell(total_row,10,f'=IFERROR(ROUND(SUM(J10:J{last_item_row}),2),0)')
     ws.cell(total_row,10).number_format='#,##0.00'
@@ -262,7 +293,8 @@ def build_quotation(data,base):
     ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J34'
     ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=1;ws.sheet_properties.pageSetUpPr.fitToPage=True
     specs=wb.create_sheet('Design & Specifications');specs.column_dimensions['A'].width=42;specs.column_dimensions['B'].width=100
-    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),('UniPole rate (enter in Quotation!F12)',None),('Installation rate (enter in Quotation!F13)',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller','LED Wall Controller' if controller else 'To be selected'),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
+    mount_rate_label = ('Mounting structure rate (INR / sq.ft.)' if mount['type']=='structure' else 'Uni-pole unit rate (INR)') if mount else 'Mounting option: None'
+    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),(mount_rate_label,float(mount['unit_rate']) if mount else None),(f'Installation rate (enter in Quotation!F{last_item_row})',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller','LED Wall Controller' if controller else 'To be selected'),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
     if p.get('id') in REFERENCE_QUOTES:
         rows.append(('Quotation specification source','User-supplied quotation screenshot for this video wall type. Quotation wording is separate from configured cabinet geometry.'))
         rows.append(('Quotation technical description',description))
@@ -290,6 +322,7 @@ def build_quotation(data,base):
         for cell in row:
             cell.fill=specs_white
     specs['B2'].number_format='#,##0.00'
+    specs['B4'].number_format='#,##0.00'
     for cell in ('B3', 'B12'):
         specs[cell].number_format='0.000'
     image_path=(Path(base)/'static'/str(p.get('image',''))).resolve();allowed=(Path(base)/'static/models').resolve()
@@ -306,7 +339,7 @@ def build_quotation(data,base):
     # Store formula results for viewers that do not recalculate on opening.
     def money(value):return float(Decimal(str(value)).quantize(Decimal('0.01'),rounding='ROUND_HALF_UP'))
     cached={}
-    unit_rates=[numeric(q.get('wall_rate'),'LED rate'),numeric((controller or {}).get('rate_inr'),'Controller rate')]+[None]*4
+    unit_rates=[numeric(line[4],line[0]+' rate') for line in lines]
     for row,rate in zip(range(10,last_item_row+1),unit_rates):
         if rate is None:
             for col in ('F','H','I','J'):
@@ -386,13 +419,35 @@ def draw_quotation_page(canvas, doc, base):
     canvas.restoreState()
 
 
+def build_single_page_quotation(story, base, title):
+    """Shrink the complete quotation body to fit above the fixed company footer."""
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.units import mm
+    from reportlab.platypus import BaseDocTemplate, Frame, KeepInFrame, PageTemplate
+
+    output = BytesIO()
+    doc = BaseDocTemplate(output, pagesize=landscape(A4), leftMargin=12*mm,
+                          rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
+                          allowSplitting=0, title=title)
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='quotation')
+
+    def page_decor(canvas, document):
+        draw_quotation_page(canvas, document, base)
+
+    doc.addPageTemplates([PageTemplate(id='Quotation', frames=[frame], onPage=page_decor)])
+    # Keep items, totals and every term together. Content that already fits stays
+    # at its original size; longer quotations scale down without losing rows.
+    doc.build([KeepInFrame(0, 0, story, mode='shrink', hAlign='CENTER', vAlign='TOP')])
+    output.seek(0)
+    return output
+
+
 def build_quotation_pdf(data, base):
     """Build a landscape PROMARK quotation matching the supplied reference layout."""
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+    from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 
     result = calculate(data)
     product = data['product']
@@ -406,14 +461,7 @@ def build_quotation_pdf(data, base):
     if data.get('controller') and not controller:
         raise ValueError('This controller is no longer available. Select a current PROMARK controller before downloading.')
 
-    if data.get('preview_mode', 'exact') == 'exact' and data.get('mode') == 'dimensions':
-        width = Decimal(str(data['screen_width']))
-        height = Decimal(str(data['screen_height']))
-    else:
-        dimensions = result.get('design') or result
-        divisor = Decimal('0.3048') if unit == 'ft' else Decimal(1)
-        width = Decimal(str(dimensions['width_m'])) / divisor
-        height = Decimal(str(dimensions['height_m'])) / divisor
+    width, height = quotation_dimensions(data, result)
 
     area = width * height
     area_sqft = area if unit == 'ft' else area / Decimal('0.09290304')
@@ -439,19 +487,11 @@ def build_quotation_pdf(data, base):
         except Exception:
             return date.today().strftime('%d-%m-%Y')
 
-    output = BytesIO()
-    page_width, page_height = landscape(A4)
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name='Small', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=7))
     styles.add(ParagraphStyle(name='SmallBold', parent=styles['BodyText'], fontName='Helvetica-Bold', fontSize=7, leading=8))
     styles.add(ParagraphStyle(name='Center', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=8, alignment=1))
 
-    def page_decor(canvas, doc):
-        draw_quotation_page(canvas, doc, base)
-
-    doc = SimpleDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
-                            rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
-                            title='Promark Video Wall Quotation')
     story = [Spacer(1, 0*mm)]
 
     reference_name = 'Quotations of Video Wall'
@@ -503,22 +543,22 @@ def build_quotation_pdf(data, base):
         controller_description=strip_controller_names(controller_description, all_controllers)
         pdf_rows.append(['2', 'LED Wall\nController', controller_description, f'{controller_quantity:g}', 'Nos', indian(controller_rate), f'{gst_percent:g}%', indian(controller_gst), indian(controller_rate * (1 + gst)), indian(controller_gross)])
 
-    mount_rate = numeric(quotation.get('mount_rate'), 'Mounting rate', 0)
-    mount_qty = numeric(quotation.get('mount_qty'), 'Mounting quantity', 1)
+    mount = mounting_item(quotation, area_sqft)
     install_rate = numeric(quotation.get('installation_rate'), 'Installation rate', 0)
-    mount_base = Decimal(str(mount_rate)) * Decimal(str(mount_qty))
     install_base = Decimal(str(install_rate))
-    for number, (item_name, desc, rate_base) in enumerate([
-        ('UniPole', str(quotation.get('mount_description') or 'Supply of Uni-Pole.'), mount_base),
-        ('Installation', str(quotation.get('installation_description') or 'Supply of Installation charges.'), install_base),
-    ], start=len(pdf_rows)-1):
+    optional_rows = []
+    if mount:
+        optional_rows.append((mount['name'], escape(mount['description']), mount['price']))
+    optional_rows.append(('Installation', str(quotation.get('installation_description') or 'Supply of Installation charges.'), install_base))
+    for number, (item_name, desc, rate_base) in enumerate(optional_rows, start=len(pdf_rows)):
         rate = rate_base
-        gst_amount = rate * Decimal(str(gst))
+        gst_amount = (rate * Decimal(str(gst))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         gross = rate + gst_amount
         if rate:
             subtotal += gross
             gst_total += gst_amount
-        pdf_rows.append([str(number+1), item_name, desc, '1', 'Nos', indian(rate) if rate else 'As per actual', f'{gst_percent:g}%', indian(gst_amount) if rate else '-', indian(gross) if rate else '-', indian(gross) if rate else '-'])
+        priced = bool(rate) or (mount is not None and item_name == mount['name'])
+        pdf_rows.append([str(number), item_name, desc, '1', 'Nos', indian(rate) if priced else 'As per actual', f'{gst_percent:g}%', indian(gst_amount) if priced else '-', indian(gross) if priced else '-', indian(gross) if priced else '-'])
 
     table = Table([[Paragraph(str(v).replace('\n','<br/>'), styles['Small']) for v in pdf_rows[0]]] +
                   [[Paragraph(str(v).replace('\n','<br/>'), styles['Small']) for v in row] for row in pdf_rows[1:]],
@@ -543,9 +583,7 @@ def build_quotation_pdf(data, base):
         story.append(Paragraph(f'{index}) {term}', styles['Small']))
     story += [Spacer(1, 1*mm)]
 
-    doc.build(story, onFirstPage=page_decor, onLaterPages=page_decor)
-    output.seek(0)
-    return output
+    return build_single_page_quotation(story, base, 'Promark Video Wall Quotation')
 
 
 def read_excel_quotation(sheet):
@@ -682,12 +720,9 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     """Render edited Excel items, totals and terms in the reference PDF layout."""
     from openpyxl import load_workbook
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.lib.units import mm
-    from reportlab.platypus import (
-        BaseDocTemplate, Frame, KeepInFrame, PageTemplate, Paragraph, Spacer, Table, TableStyle,
-    )
+    from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 
     workbook = load_workbook(file_stream, data_only=True)
     try:
@@ -697,8 +732,6 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     finally:
         workbook.close()
 
-    output = BytesIO()
-    page_width, page_height = landscape(A4)
     small = ParagraphStyle('QuotationSmall', fontName='Helvetica', fontSize=7, leading=7.5)
     bold = ParagraphStyle('QuotationBold', parent=small, fontName='Helvetica-Bold')
     term_style = ParagraphStyle('QuotationTerm', parent=small, leading=8, spaceBefore=3)
@@ -711,17 +744,6 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     def field(name, key):
         value = escape(metadata.get(key, ''))
         return Paragraph(f'<b>{name}:</b> {value}', small)
-
-    def page_decor(canvas, doc):
-        draw_quotation_page(canvas, doc, Path(__file__).parent)
-
-    doc = BaseDocTemplate(output, pagesize=(page_width, page_height), leftMargin=12*mm,
-                          rightMargin=12*mm, topMargin=24*mm, bottomMargin=40*mm,
-                          title=filename or 'Edited PROMARK Video Wall Quotation')
-    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='quotation')
-    doc.addPageTemplates([
-        PageTemplate(id='Quotation', frames=[frame], onPage=page_decor),
-    ])
 
     left_rows = [[field(name, key)] for name, key in [
         ('Client Name', 'clientname'), ('Project Detail', 'projectdetail'),
@@ -768,8 +790,5 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
         story.append(paragraph('Terms and conditions:', heading_style))
         story.extend(paragraph(f'{index}) {term}', term_style) for index, term in enumerate(terms, 1))
 
-    # Fit edited content into the space above the footer without dropping rows
-    # or terms, or creating an extra page when a few lines overflow.
-    doc.build([KeepInFrame(0, 0, story, mode='shrink', hAlign='CENTER', vAlign='TOP')])
-    output.seek(0)
-    return output
+    return build_single_page_quotation(story, Path(__file__).parent,
+                                       filename or 'Edited PROMARK Video Wall Quotation')

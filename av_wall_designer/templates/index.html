@@ -368,8 +368,8 @@
                     download a quotation. Fields marked * are required.</p>
                 <p class="hint">Matches your reference layout. LED price = cabinet rate per sq.ft. × screen area.
                     Controller price increases with quantity and is calculated with the editable GST percentage.
-                    LED pricing uses the selected screen area. UniPole and installation have separate rows with blank
-                    rates for company actual prices. The total updates immediately for every available rate and quantity.</p>
+                    Mounting is optional: Uni-pole starts at INR 175,000 per unit, or mounting structure at INR 800
+                    per sq.ft. of video wall, before GST. Select None to exclude mounting. Installation is priced separately.</p>
                 <div class="planning-grid"><label>Client name *<input aria-required="true" id="q_client" required=""
                             type="text" value="" /></label><label>Project detail<input id="q_project" type="text"
                             value="Quotation of Video Wall" /></label><label>Location<input id="q_location" type="text"
@@ -382,14 +382,17 @@
                         (automatic)<input id="q_wall_rate" min="0" step="0.01" type="number"
                             value="" /></label><label>Full LED price · INR, before GST<input id="q_led_total"
                             readonly="" type="text" /></label><label hidden>Full installation price · INR, before
-                        GST<input id="q_install_total" readonly="" type="text" /></label><label hidden>Full structure
-                        price · INR, before GST<input id="q_structure_total" readonly="" type="text" /></label><label
-                        hidden>Structure rate · INR / sq.ft.<input id="q_mount_rate" min="0" step="0.01" type="number"
-                            value="" /></label><label>Screen area · sq.ft.<input id="q_mount_qty" readonly="" step="any"
+                        GST<input id="q_install_total" readonly="" type="text" /></label><label>Mounting option
+                        <select id="q_mount_type"><option value="none">None</option><option value="unipole">Uni-pole</option>
+                            <option value="structure">Mounting structure</option></select></label>
+                    <label id="q_mount_rate_field" hidden><span id="q_mount_rate_label">Mounting rate · INR</span>
+                        <input id="q_mount_rate" min="0" step="0.01" type="number" value="" /></label>
+                    <label id="q_mount_total_field" hidden>Full mounting price · INR, before GST
+                        <input id="q_structure_total" readonly="" type="text" /></label><label>Screen area · sq.ft.<input id="q_mount_qty" readonly="" step="any"
                             type="number" value="1" /></label><label hidden>Installation rate · INR / sq.ft.<input
                             id="q_installation_rate" min="0" step="0.01" type="number" value="" /></label><label>GST
                         percentage<input id="q_gst" min="0" step="0.01" type="number"
-                            value="18" /></label><label>Mounting description<input id="q_mount_description" type="text"
+                            value="18" /></label><label id="q_mount_description_field" hidden>Mounting description<input id="q_mount_description" type="text"
                             value="" /></label><label>Installation description<input id="q_installation_description"
                             type="text" value="Installation Charges." /></label><label>Company CIN<input id="q_cin"
                             type="text" value="U36109PB2010PTC034337" /></label><label>Company GSTIN<input
@@ -447,8 +450,8 @@
     <script src="{{ url_for('static', filename='auth-debug.js') }}"></script>
     <script src="{{ url_for('static', filename='admin-dashboard.js') }}"></script>
     <script src="{{ url_for('static', filename='controller-matching.js', v='1') }}"></script>
-    <script src="{{ url_for('static', filename='app.js', v='83') }}"></script>
-    <script src="{{ url_for('static', filename='studio.js', v='67') }}"></script>
+    <script src="{{ url_for('static', filename='app.js', v='84') }}"></script>
+    <script src="{{ url_for('static', filename='studio.js', v='68') }}"></script>
     <script src="{{ url_for('static', filename='reference.js', v='66') }}"></script>
 </body>
 
