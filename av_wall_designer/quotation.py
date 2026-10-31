@@ -6,7 +6,7 @@ from html import escape
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 import xml.etree.ElementTree as ET
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from openpyxl import Workbook
@@ -61,6 +61,21 @@ TERMS = [
 def text(value):
     s=str(value or '')[:16000]
     return "'"+s if s.startswith(('=','+','-','@')) else s
+
+
+def format_quotation_date(value=None):
+    """Display quotation dates consistently, including saved ISO-format dates."""
+    if isinstance(value, date):
+        return value.strftime('%d-%m-%Y')
+    value = str(value or '').strip()
+    if not value:
+        return date.today().strftime('%d-%m-%Y')
+    for date_format in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y'):
+        try:
+            return datetime.strptime(value, date_format).strftime('%d-%m-%Y')
+        except ValueError:
+            continue
+    raise ValueError('Enter a valid quotation date in DD-MM-YYYY format.')
 
 
 def strip_controller_names(description, controllers):
@@ -241,7 +256,7 @@ def build_quotation(data,base):
         ws.merge_cells(start_row=row,start_column=start,end_row=row,end_column=end)
         cell=ws.cell(row,start,text(value));cell.font=Font(name='Calibri',size=11,bold=bold);cell.alignment=Alignment(vertical='center',wrap_text=True)
     merged(1,1,7,'Client Name: '+str(q.get('client','')))
-    merged(1,8,10,'Date: '+str(q.get('date') or date.today().isoformat()))
+    merged(1,8,10,'Date: '+format_quotation_date(q.get('date')))
     merged(2,1,7,'Project Detail: '+str(q.get('project') or 'Quotation of Video Wall'))
     merged(2,8,10,'Sales Person: '+str(q.get('salesperson','')))
     merged(3,1,7,'Location: '+str(q.get('location','')));merged(3,8,10,'Version: '+str(q.get('version','1')))
@@ -504,12 +519,6 @@ def build_quotation_pdf(data, base):
         except Exception:
             return '0.00'
 
-    def parsed_date(value):
-        try:
-            return date.fromisoformat(str(value)).strftime('%d-%m-%Y')
-        except Exception:
-            return date.today().strftime('%d-%m-%Y')
-
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name='Small', parent=styles['BodyText'], fontName='Helvetica', fontSize=7, leading=7))
     styles.add(ParagraphStyle(name='SmallBold', parent=styles['BodyText'], fontName='Helvetica-Bold', fontSize=7, leading=8))
@@ -530,7 +539,7 @@ def build_quotation_pdf(data, base):
         [Paragraph('<b>Sub:</b> '+str(quotation.get('subject') or f"Quotation of {reference_name}"), styles['Small'])],
     ]
     right_info = [
-        [Paragraph('<b>Date:</b> '+parsed_date(quotation.get('date')), styles['Small'])],
+        [Paragraph('<b>Date:</b> '+format_quotation_date(quotation.get('date')), styles['Small'])],
         [Paragraph('<b>Sales Person:</b> '+str(quotation.get('salesperson','')), styles['Small'])],
         [Paragraph('<b>Version:</b> '+str(quotation.get('version','1')), styles['Small'])],
         ['',],
@@ -637,10 +646,8 @@ def read_excel_quotation(sheet):
             if separator:
                 metadata[label(name)] = value.strip()
     date_value = metadata.get('date', '')
-    try:
-        metadata['date'] = date.fromisoformat(date_value).strftime('%d-%m-%Y')
-    except ValueError:
-        pass
+    if date_value:
+        metadata['date'] = format_quotation_date(date_value)
 
     footer_labels = ('corporateoffice', 'factory', 'salesoffice', 'cin', 'gstin',
                      'pan', 'wehopetheestimate', 'thanksregards', 'promark')

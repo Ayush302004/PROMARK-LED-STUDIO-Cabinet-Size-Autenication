@@ -360,8 +360,10 @@ function renderCatalogue() {
 function restore(data) {
     const mountType = data.q_mount_type ?? data.quotation?.mount_type ?? 'none';
     const mountOption = MOUNTING_OPTIONS[mountType];
+    const savedDate = data.q_date ?? data.quotation?.date ?? $('q_date').value;
     data = {
         ...data, q_mount_type: mountOption ? mountType : 'none',
+        q_date: formatQuotationDate(savedDate) || savedDate,
         q_mount_rate: mountOption ? (data.q_mount_rate ?? data.quotation?.mount_rate ?? mountOption.rate) : '',
         q_mount_description: mountOption ? (data.q_mount_description ?? data.quotation?.mount_description ?? mountOption.description) : ''
     };
@@ -449,7 +451,26 @@ $('show-spaces').onchange = () => draw();
 
 // Technology and editable Excel quotation controls.
 document.querySelectorAll('#technology-buttons button').forEach(button => button.onclick = () => { $('technology').value = button.dataset.value; selectEnvironment(environment); });
-$('q_date').value = new Date().toLocaleDateString('en-CA');
+function formatQuotationDate(value = new Date()) {
+    let year, month, day;
+    if (value instanceof Date) {
+        year = value.getFullYear(); month = value.getMonth() + 1; day = value.getDate();
+    } else {
+        const text = String(value || '').trim();
+        const iso = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        const display = text.match(/^(\d{1,2})([-/])(\d{1,2})\2(\d{4})$/);
+        if (iso) [, year, month, day] = iso;
+        else if (display) [, day, , month, year] = display;
+        else return '';
+    }
+    year = Number(year); month = Number(month); day = Number(day);
+    const parsed = new Date(0); parsed.setFullYear(year, month - 1, day);
+    if (year < 1 || year > 9999 || parsed.getFullYear() !== year || parsed.getMonth() + 1 !== month || parsed.getDate() !== day) return '';
+    return `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${String(year).padStart(4, '0')}`;
+}
+$('q_date').value = formatQuotationDate();
+$('q_date').addEventListener('input', () => { $('q_date').setCustomValidity(''); $('q_date').removeAttribute('aria-invalid'); });
+$('q_date').addEventListener('blur', () => { const formatted = formatQuotationDate($('q_date').value); if (formatted) $('q_date').value = formatted; });
 const requiredQuotationDetails = [['q_client', 'Client name'], ['q_salesperson', 'Sales person'], ['q_contact', 'Contact information']];
 for (const [id] of requiredQuotationDetails) $(id).addEventListener('input', () => { $(id).setCustomValidity(''); $(id).removeAttribute('aria-invalid'); });
 function validateQuotationDetails() {
@@ -459,7 +480,16 @@ function validateQuotationDetails() {
         $(id).setCustomValidity(empty ? `Enter ${label.toLowerCase()} before downloading the quotation.` : '');
         if (empty) $(id).setAttribute('aria-invalid', 'true'); else { $(id).removeAttribute('aria-invalid'); $(id).value = $(id).value.trim(); }
     }
-    if (!missing.length) return true;
+    if (!missing.length) {
+        const input = $('q_date');
+        const formatted = input.value.trim() ? formatQuotationDate(input.value) : formatQuotationDate();
+        if (formatted) { input.value = formatted; input.setCustomValidity(''); input.removeAttribute('aria-invalid'); return true; }
+        const error = 'Enter a valid quotation date in DD-MM-YYYY format.';
+        input.setCustomValidity(error); input.setAttribute('aria-invalid', 'true');
+        showTab('results'); message(error, true);
+        input.scrollIntoView({ block: 'center' }); input.focus(); input.reportValidity();
+        return false;
+    }
     showTab('results');
     message(`Enter ${missing.map(([, label]) => label.toLowerCase()).join(', ')} before downloading the quotation.`, true);
     const first = $(missing[0][0]); first.scrollIntoView({ block: 'center' }); first.focus(); first.reportValidity();
