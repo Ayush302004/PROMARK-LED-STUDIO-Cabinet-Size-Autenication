@@ -287,7 +287,7 @@ def quotation_filename(data):
     salesperson = re.sub(r'\s+', ' ', salesperson).strip(' .-') or "Sales Person"
 
     product = data.get("product") or {}
-    pitch = product.get("pitch_mm")
+    pitch = product.get("model_pitch_mm", product.get("pitch_mm"))
     pitch_text = f"{float(pitch):g}mm" if pitch not in (None, "") else "LED"
     technology = str(product.get("technology") or "SMD").upper()
     environment = str(product.get("environment") or "Indoor").strip().capitalize()

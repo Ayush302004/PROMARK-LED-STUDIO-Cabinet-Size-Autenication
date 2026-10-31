@@ -25,6 +25,8 @@ function updateControllerRecommendation() {
     }
     $('controller-recommendation').textContent = text;
 }
+// Model labels use the nominal pitch; calculations and technical specs use pitch_mm.
+const modelPitch = p => p?.model_pitch_mm ?? p?.pitch_mm;
 const cabinetDimensions = p => `${fmt(p.width_mm)} × ${fmt(p.height_mm)}${p.depth_mm != null ? ' × ' + fmt(p.depth_mm) : ''} mm`;
 function exactArea(width, height) {
     const parts = value => { const s = String(value).trim(); if (!/^\d+(\.\d*)?$/.test(s)) return null; const [whole, frac = ''] = s.split('.'); return [BigInt(whole + frac), frac.length]; };
@@ -114,7 +116,7 @@ function renderCabinetSizes() {
 function filteredProducts(value = environment) { return catalogue.filter(p => p.environment === value && ($('technology').value === 'all' || p.technology === $('technology').value)); }
 function renderTechnology() { document.querySelectorAll('#technology-buttons button').forEach(b => { b.classList.toggle('active', b.dataset.value === $('technology').value); b.setAttribute('aria-pressed', String(b.dataset.value === $('technology').value)); b.disabled = b.dataset.value !== 'all' && !catalogue.some(p => p.environment === environment && p.technology === b.dataset.value); }); $('technology-hint').textContent = environment === 'outdoor' ? 'Outdoor · SMD available' : 'Filter by SMD or COB, or browse all models.'; }
 function selectEnvironment(value, retain = false) { environment = value; $('environment').value = value; if (!filteredProducts(value).length) $('technology').value = 'all'; const options = filteredProducts(value); if (!retain || !product || !options.some(p => p.id === familyId(product))) product = resolveCabinet(options[0]); if (!retain) resetScreenDefaults(); renderProducts(); schedule(); }
-function renderProducts() { $("q_wall_rate").value = product?.base_rate_sqft ?? ""; renderTechnology(); const options = filteredProducts(); $('product').replaceChildren(...options.map(p => new Option(p.name, p.id))); if (product) $('product').value = familyId(product); renderCabinetSizes(); $('product-summary').innerHTML = product ? [["Cabinet", cabinetDimensions(product)], ["Pitch", `P${product.pitch_mm}`], ["Brightness", `${product.brightness_nits ?? '—'} nits`], ["Refresh", `${product.refresh_hz ?? '—'} Hz`], ["Service", product.maintenance || '—']].map(([label, value]) => `<span class="cabinet-stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></span>`).join('') : 'No models available'; const fig = $('product-figure'), src = product && modelImage(product, 'x'); if (src) { $('product-image').src = '/static/' + product.image; $('product-image').alt = product.name; $('product-caption').textContent = (product.image_caption || '').split(' · ')[0]; fig.hidden = false; } else fig.hidden = true; renderCatalogue(); updateVisibility(); }
+function renderProducts() { $("q_wall_rate").value = product?.base_rate_sqft ?? ""; renderTechnology(); const options = filteredProducts(); $('product').replaceChildren(...options.map(p => new Option(p.name, p.id))); if (product) $('product').value = familyId(product); renderCabinetSizes(); $('product-summary').innerHTML = product ? [["Cabinet", cabinetDimensions(product)], ["Pitch", `P${modelPitch(product)}`], ["Brightness", `${product.brightness_nits ?? '—'} nits`], ["Refresh", `${product.refresh_hz ?? '—'} Hz`], ["Service", product.maintenance || '—']].map(([label, value]) => `<span class="cabinet-stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></span>`).join('') : 'No models available'; const fig = $('product-figure'), src = product && modelImage(product, 'x'); if (src) { $('product-image').src = '/static/' + product.image; $('product-image').alt = product.name; $('product-caption').textContent = (product.image_caption || '').split(' · ')[0]; fig.hidden = false; } else fig.hidden = true; renderCatalogue(); updateVisibility(); }
 function selectScene(name) { scene = 'Video wall'; }
 function modelDefaults(which = unit) {
     if (product && product.design_defaults && product.design_defaults[which]) return product.design_defaults[which];
@@ -344,7 +346,7 @@ function renderCatalogue() {
     $('catalogue-cards').replaceChildren(...catalogue.map(p => {
         const card = document.createElement('div'); card.className = 'catalogue-card';
         const options = p.cabinet_options || [p], selected = familyId(product) === p.id ? product.id : p.default_cabinet_id;
-        card.innerHTML = `${modelImage(p, 'model-thumb')}<div class="card-text"><h3>${esc(p.name)}</h3><p>${esc(p.environment)} · P${esc(p.pitch_mm)}</p><p>${specValue(p.brightness_nits, ' nits')} · ${specValue(p.refresh_hz, ' Hz')} · ${specValue(p.maintenance)}</p></div>`;
+        card.innerHTML = `${modelImage(p, 'model-thumb')}<div class="card-text"><h3>${esc(p.name)}</h3><p>${esc(p.environment)} · P${esc(modelPitch(p))}</p><p>${specValue(p.brightness_nits, ' nits')} · ${specValue(p.refresh_hz, ' Hz')} · ${specValue(p.maintenance)}</p></div>`;
         const text = card.querySelector('.card-text'), label = document.createElement('label'); label.textContent = 'Cabinet size'; const size = document.createElement('select'); size.setAttribute('aria-label', p.name + ' cabinet size');
         size.replaceChildren(...options.map(option => new Option(cabinetDimensions(option), option.id))); if (selected) size.value = selected; size.disabled = options.length < 2; label.append(size); text.append(label);
         const current = () => resolveCabinet(p, size.value);
@@ -524,7 +526,7 @@ async function downloadQuotation(format = 'xlsx') {
                 widthValue = unit === 'ft' ? widthMeters / 0.3048 : widthMeters;
                 heightValue = unit === 'ft' ? heightMeters / 0.3048 : heightMeters;
             }
-            const pitch = product?.pitch_mm != null ? `${Number(product.pitch_mm)}mm` : 'LED';
+            const pitch = modelPitch(product) != null ? `${Number(modelPitch(product))}mm` : 'LED';
             const technology = String(product?.technology || 'SMD').toUpperCase();
             const environment = String(product?.environment || 'indoor');
             if (!widthValue && result?.width_m != null) widthValue = unit === 'ft' ? Number(result.width_m) / 0.3048 : Number(result.width_m);

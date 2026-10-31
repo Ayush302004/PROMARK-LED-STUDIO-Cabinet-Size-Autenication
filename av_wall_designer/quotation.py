@@ -116,27 +116,67 @@ def selected_specification_sheets(product):
 def sheet_quotation_details(product):
     """Use matching supplied sheets; indoor references cannot rate outdoor models."""
     aliases = {
-        'Module Resolution': ('Module Resolution', 'Module Resolution (W×H)', 'Module Pixels'),
-        'Pixel Density': ('Pixel Density', 'Pixel Density (Pixels/Sq.m.)', 'Pixel density (dot/m²)'),
+        'Module Resolution (WxH)': ('Module Resolution', 'Module Resolution (W×H)', 'Module Pixels'),
+        'Pixel density (pixels/sq.m.)': ('Pixel Density', 'Pixel Density (Pixels/Sq.m.)', 'Pixel density (dot/m²)'),
         'Module Size': ('Module Size (W×H)', 'Module Dimension (W×H×D)', 'Module — Size (mm)'),
+        'Ingress Protection': ('Ingress Protection', 'IP Rating', 'IP protection level'),
+        'Brightness': (),
         'Contrast Ratio': ('Contrast Ratio', 'Contrast (illumination 10 Lux)'),
+        'Refresh Rate': (),
         'Video Support': ('Video Support',),
-        'Life Span': ('Life Span', 'Life Span (hrs)', 'Lifetime Typical Value'),
+        'Life Span (hrs)': ('Life Span', 'Life Span (hrs)', 'Lifetime Typical Value'),
     }
     specs = {}
     for sheet in selected_specification_sheets(product):
         if product.get('environment') == 'outdoor' and 'indoor' in sheet.get('model', '').lower():
             continue
         specs.update(sheet.get('specs', {}))
-    if not product.get('ip_rating'):
-        aliases['Ingress Protection'] = ('Ingress Protection', 'IP Rating', 'IP protection level')
+    configured = {
+        'Ingress Protection': product.get('ip_rating'),
+        'Brightness': f"{product['brightness_nits']} cd/m²" if product.get('brightness_nits') is not None else None,
+        'Refresh Rate': f"{product['refresh_hz']}Hz" if product.get('refresh_hz') is not None else None,
+    }
     lines = []
-    required = {'Pixel Density', 'Contrast Ratio', 'Video Support', 'Life Span'}
+    required = {'Pixel density (pixels/sq.m.)', 'Ingress Protection', 'Brightness',
+                'Contrast Ratio', 'Refresh Rate', 'Video Support', 'Life Span (hrs)'}
     for label, keys in aliases.items():
-        value = next((specs[k] for k in keys if specs.get(k)), None)
+        source_key = next((key for key in keys if specs.get(key)), None)
+        value = configured.get(label) or specs.get(source_key)
+        if value is not None and label == 'Module Size':
+            label = 'Module Size (WxHxD)' if source_key == 'Module Dimension (W×H×D)' else 'Module Size (WxH)'
+            if 'mm' not in str(value).lower():
+                value = f'{value} mm'
+        if value is not None and label == 'Module Resolution (WxH)' and not re.search(r'pixels|dots', str(value), re.I):
+            value = f'{value} Pixels'
         if value is not None or label in required:
             lines.append(f'{label}: {value if value is not None else "Not provided"}.')
     return '\n'.join(lines)
+
+
+def quotation_description(product, width, height, unit, area_sqft):
+    """Use the reference's bracketed description in both Excel and PDF exports."""
+    display = lambda value: format(Decimal(str(value)).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP), '.3f')
+    width, height, area = (display(value) for value in (width, height, area_sqft))
+    description = reference_description(product, width, height, unit, area)
+    if description is None:
+        technology = product.get('technology') or 'LED'
+        location = str(product.get('environment') or '').title()
+        pitch = product.get('model_pitch_mm', product.get('pitch_mm'))
+        pitch_text = f'{pitch}mm' if pitch is not None else 'Not provided'
+        description = (f'Supply of {technology} {location} LED video wall '
+                       f'({width}W x {height}H {unit} = {area} sq.feet). '
+                       f'Pixel Pitch: {pitch_text}.\n'
+                       + sheet_quotation_details(product))
+        if product.get('pixels_w') is not None and product.get('pixels_h') is not None:
+            description += f"\nCabinet resolution (WxH): {product['pixels_w']} × {product['pixels_h']} Pixels."
+    dimensions = f"{product['width_mm']} × {product['height_mm']}"
+    axes = 'W × H'
+    if product.get('depth_mm') is not None:
+        dimensions += f" × {product['depth_mm']}"
+        axes += ' × D'
+    description += f'\nCabinet dimensions ({axes}): {dimensions} mm.'
+    return ' '.join(description.split())
+
 
 def quotation_dimensions(data, result):
     """Use the displayed pricing dimensions for both quotation formats."""
@@ -215,28 +255,10 @@ def build_quotation(data,base):
     width,height=quotation_dimensions(data,result)
     area=width*height
     sqft_decimal=area if unit=='ft' else area/Decimal('0.09290304')
-    width_display = format(width.quantize(Decimal("0.001"), rounding="ROUND_HALF_UP"), ".3f")
     sqft=float(sqft_decimal)
-    sqft_display = format(sqft_decimal.quantize(Decimal("0.001"), rounding="ROUND_HALF_UP"), ".3f")
-    known=lambda key,unit='':str(p[key])+unit if p.get(key) is not None else 'Not provided'
     resolution=lambda item: f"{item['pixels_w']} × {item['pixels_h']}" if item.get('pixels_w') is not None and item.get('pixels_h') is not None else 'Not provided'
     dimensions=f"{p['width_mm']} × {p['height_mm']}" + (f" × {p['depth_mm']}" if p.get('depth_mm') is not None else '')
-    description=(f"Supply of {p['environment']} LED video wall — {p['name']}; technology: {p.get('technology','Not specified')}. "
-        f"Pricing dimensions: {width_display} × {height} {unit}; pricing area: {sqft_display} sq.ft. "
-        f"Buildable cabinet dimensions: {sw} W × {sh} H m. "
-        f"Layout: {result['columns']} × {result['rows']} = {result['count']} cabinets. "
-        f"Total resolution: {resolution(result)}. "
-        f"Pixel pitch: {p['pitch_mm']} mm. Cabinet dimensions: {dimensions} mm. "
-        f"Cabinet resolution: {resolution(p)}. Brightness: {known('brightness_nits',' nits')}; "
-        f"refresh: {known('refresh_hz',' Hz')}; IP rating: {known('ip_rating')}; maintenance: {known('maintenance')}.")
-    reference = reference_description(p,width_display,height,unit,sqft_display)
-    if reference:
-        description = reference + f" Cabinet dimensions (W × H × D): {dimensions} mm."
-    else:
-        details = sheet_quotation_details(p)
-        if details:
-            description += '\n' + details
-    description = ' '.join(description.split())
+    description = quotation_description(p, width, height, unit, sqft_decimal)
     actual_price='As per the company actual price.'
     def manual_description(value, fallback):
         description=str(value or fallback).strip()
@@ -451,6 +473,7 @@ def build_quotation_pdf(data, base):
 
     result = calculate(data)
     product = data['product']
+    model_pitch = product.get('model_pitch_mm', product.get('pitch_mm'))
     quotation = dict(data.get('quotation') or {})
     gst_percent = numeric(quotation.get('gst'), 'GST', 18, 100)
     gst = gst_percent / 100
@@ -495,13 +518,10 @@ def build_quotation_pdf(data, base):
     story = [Spacer(1, 0*mm)]
 
     reference_name = 'Quotations of Video Wall'
-    if product.get('environment') and product.get('pitch_mm') is not None:
-        reference_name = f"{float(product['pitch_mm']):g}mm {product.get('technology', 'SMD')} {str(product['environment']).title()} Video Wall"
+    if product.get('environment') and model_pitch is not None:
+        reference_name = f"{float(model_pitch):g}mm {product.get('technology', 'SMD')} {str(product['environment']).title()} Video Wall"
 
-    wall_description = reference_description(product, indian(width), indian(height), unit, indian(area_sqft)) if reference_description(product, width, height, unit, area_sqft) else None
-    if not wall_description:
-        wall_description = (f"Supply of {product.get('technology', 'LED')} LED video wall ({indian(width)}W x {indian(height)}H {unit}). "
-                            f"Pixel Pitch: {product.get('pitch_mm', '—')}mm. Cabinet layout: {result.get('columns', 0)}W x {result.get('rows', 0)}H.")
+    wall_description = quotation_description(product, width, height, unit, area_sqft)
 
     left_info = [
         [Paragraph('<b>Client Name:</b> '+str(quotation.get('client','')), styles['Small'])],
