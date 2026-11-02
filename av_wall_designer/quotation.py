@@ -11,7 +11,6 @@ from pathlib import Path
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
-from openpyxl.drawing.image import Image
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.workbook.properties import CalcProperties
 from engine import calculate 
@@ -265,21 +264,21 @@ def build_quotation(data,base):
     headers=['Sr. No.','Item','Description','Qty','Unit','Rate','GST','GST amount','Rate incl. taxes','Amount']
     for i,h in enumerate(headers,1):ws.cell(8,i,h)
     merged(9,1,10,'LED Video Wall System',True)
-    sw=result['width_m'];sh=result['height_m']
     unit=data.get('unit','m')
     width,height=quotation_dimensions(data,result)
     area=width*height
     sqft_decimal=area if unit=='ft' else area/Decimal('0.09290304')
-    sqft=float(sqft_decimal)
-    resolution=lambda item: f"{item['pixels_w']} × {item['pixels_h']}" if item.get('pixels_w') is not None and item.get('pixels_h') is not None else 'Not provided'
-    dimensions=f"{p['width_mm']} × {p['height_mm']}" + (f" × {p['depth_mm']}" if p.get('depth_mm') is not None else '')
     description = quotation_description(p, width, height, unit, sqft_decimal)
     actual_price='As per the company actual price.'
     def manual_description(value, fallback):
         description=str(value or fallback).strip()
         return description if actual_price.lower() in description.lower() else description.rstrip('. ') + '. ' + actual_price
     mount=mounting_item(q,sqft_decimal)
-    lines=[('Videowall',description,1,'Nos',q.get('wall_rate')),
+    wall_rate = numeric(q.get('wall_rate'), 'Videowall rate')
+    wall_price = None if wall_rate is None else (Decimal(str(wall_rate)) * sqft_decimal).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    # Store each complete rate on the quotation itself. GST and totals remain
+    # editable formulas, with no dependency on another worksheet.
+    lines=[('Videowall',description,1,'Nos',wall_price),
       ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',(controller or {}).get('rate_inr'))]
     if mount:
         lines.append((mount['name'],mount['description'],1,'Nos',mount['price']))
@@ -296,13 +295,7 @@ def build_quotation(data,base):
             ws.cell(rn,col).fill=PatternFill('solid',fgColor='FFFFFFFF')
         ws.cell(rn,7).number_format='0%'
         for col in [6,8,9,10]:ws.cell(rn,col).number_format='#,##0.00'
-    for row, source in ((10,2),):
-        factor=''
-        ws.cell(row,6,f'=IF(\'Design & Specifications\'!B{source}="","",ROUND(\'Design & Specifications\'!B{source}{factor}*\'Design & Specifications\'!B3,2))')
-        ws.cell(row,4).number_format='0'
-    if mount:
-        factor="*'Design & Specifications'!B3" if mount['type']=='structure' else ''
-        ws.cell(12,6,f"=ROUND('Design & Specifications'!B4{factor},2)")
+    ws.cell(10,4).number_format='0'
     merged(total_row,1,9,'Total Amount',True)
     ws.cell(total_row,10,f'=IFERROR(ROUND(SUM(J10:J{last_item_row}),2),0)')
     ws.cell(total_row,10).number_format='#,##0.00'
@@ -329,49 +322,6 @@ def build_quotation(data,base):
         dv=DataValidation(type='decimal',operator='between',formula1=0,formula2=maxval,allow_blank=True);dv.showErrorMessage=True;dv.error='Enter a non-negative number within the allowed range.';ws.add_data_validation(dv);dv.add(cells)
     ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J34'
     ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=1;ws.sheet_properties.pageSetUpPr.fitToPage=True
-    specs=wb.create_sheet('Design & Specifications');specs.column_dimensions['A'].width=42;specs.column_dimensions['B'].width=100
-    mount_rate_label = ('Mounting structure rate (INR / sq.ft.)' if mount['type']=='structure' else 'Uni-pole unit rate (INR)') if mount else 'Mounting option: None'
-    rows=[('LED rate calculation','Cabinet rate per sq.ft. × screen area'),('LED base rate',numeric(q.get('wall_rate'),'LED base rate')),('Screen area (sq.ft.)',sqft),(mount_rate_label,float(mount['unit_rate']) if mount else None),(f'Installation rate (enter in Quotation!F{last_item_row})',None),('Controller pricing',f"RMB {(controller or {}).get('rmb_rate', 'Not provided')} × 15 × 2 = INR {(controller or {}).get('rate_inr', 'Not provided')}" if controller else 'Select a controller to calculate its price.'),('Selected model',p['name']),('Selected cabinet dimensions (mm)',dimensions),('Technology',p.get('technology','Not specified')),('Cabinet quantity',result['count']),('Columns × rows',f"{result['columns']} × {result['rows']}"),('Buildable dimensions (m)',f'{sw} × {sh}'),('Pricing area (sq.ft.)',sqft),('Video resolution',resolution(result)),('Total pixels',result['total_pixels'] if result['total_pixels'] is not None else 'Not provided'),('Controller','LED Wall Controller' if controller else 'To be selected'),('Controller verification','Supplied model specifications; receiving-card compatibility and port mapping require confirmation' if controller else 'Capacity and compatibility pending'),('Specification notes',p.get('notes',''))]
-    if p.get('id') in REFERENCE_QUOTES:
-        rows.append(('Quotation specification source','User-supplied quotation screenshot for this video wall type. Quotation wording is separate from configured cabinet geometry.'))
-        rows.append(('Quotation technical description',description))
-    if controller:
-        rows.extend([('Controller specification source',controller['source']),('Controller technical description',controller_desc)])
-        rows.extend(('Controller '+key,value) for key,value in controller.get('specifications',{}).items())
-    catalogue_path=Path(base)/'catalogue.json'
-    canonical_products=json.loads(catalogue_path.read_text(encoding='utf-8')) if catalogue_path.exists() else []
-    canonical_options=[option for item in canonical_products for option in item.get('cabinet_options',[item])]
-    canonical_product=next((item for item in canonical_options if item.get('id')==p.get('id')), {})
-    canonical_sheets={sheet.get('model'):sheet for sheet in canonical_product.get('supplied_specifications',[])}
-    for sheet in selected_specification_sheets(p):
-        rows.append(('Supplied specification reference',sheet['model']))
-        values=sheet.get('specs',{})
-        reference=canonical_sheets.get(sheet.get('model'),{})
-        order=sheet.get('specification_order') or reference.get('specification_order') or []
-        keys=list(dict.fromkeys([key for key in order if key in values]+list(values)))
-        rows.extend((key,values[key]) for key in keys)
-    for row in rows:specs.append([text(v) if isinstance(v,str) else v for v in row])
-    for row in specs:
-        for cell in row:cell.alignment=Alignment(wrap_text=True,vertical='top')
-        specs.row_dimensions[row[0].row].height=180 if row[0].value in ('Quotation technical description','Controller technical description') else 32
-    specs_white=PatternFill('solid',fgColor='FFFFFFFF')
-    for row in specs.iter_rows(min_row=1,max_row=max(specs.max_row,34),max_col=2):
-        for cell in row:
-            cell.fill=specs_white
-    specs['B2'].number_format='#,##0.00'
-    specs['B4'].number_format='#,##0.00'
-    for cell in ('B3', 'B12'):
-        specs[cell].number_format='0.000'
-    image_path=(Path(base)/'static'/str(p.get('image',''))).resolve();allowed=(Path(base)/'static/models').resolve()
-    if image_path.is_relative_to(allowed) and image_path.is_file():
-        img=Image(str(image_path));img.width=260;img.height=180;specs.add_image(img,'D2')
-    specs.sheet_view.showGridLines=True
-    specs.sheet_view.showRowColHeaders=True
-    specs.print_options.gridLines=True
-    specs.print_options.gridLinesSet=True
-    for row in specs.iter_rows(min_row=1,max_row=specs.max_row,max_col=2):
-        for cell in row:cell.border=Border(left=thin,right=thin,top=thin,bottom=thin)
-    specs.freeze_panes='B2'
     output=BytesIO();wb.save(output)
     # Store formula results for viewers that do not recalculate on opening.
     def money(value):return float(Decimal(str(value)).quantize(Decimal('0.01'),rounding='ROUND_HALF_UP'))
@@ -382,7 +332,7 @@ def build_quotation(data,base):
             for col in ('F','H','I','J'):
                 if ws[f'{col}{row}'].data_type=='f':cached[f'{col}{row}']=''
             continue
-        full=money(Decimal(str(rate))*sqft_decimal) if row==10 else money(rate)
+        full=money(rate)
         cached[f'F{row}']=full
         tax=money(full*gst);gross=money(full+tax)
         cached[f'H{row}']=tax;cached[f'I{row}']=gross;cached[f'J{row}']=money(float(ws.cell(row,4).value)*gross)

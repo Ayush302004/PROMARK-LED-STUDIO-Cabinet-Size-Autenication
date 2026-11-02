@@ -3,7 +3,7 @@
 const referenceOriginalRender = render;
 render = function () { referenceOriginalRender(); updateReferencePanels(); };
 const referenceOriginalProducts = renderProducts;
-renderProducts = function () { referenceOriginalProducts(); if (product?.width_mm === 600 && product?.height_mm === 337.5) { $('product-image').src = '/static/showroom-cabinet.png'; $('product-image').alt = product.name + ' · representative cabinet illustration'; $('product-figure').title = 'Representative cabinet illustration. Supplied model photos remain in the catalogue and Excel quotation.'; } syncReferenceControls(); };
+renderProducts = function () { referenceOriginalProducts(); if (product?.width_mm === 600 && product?.height_mm === 337.5) { $('product-image').src = '/static/showroom-cabinet.png'; $('product-image').alt = product.name + ' · representative cabinet illustration'; $('product-figure').title = 'Representative cabinet illustration. Supplied model photos remain in the catalogue.'; } syncReferenceControls(); };
 const referenceOriginalUnits = changeUnits;
 changeUnits = function (next) { referenceOriginalUnits(next); syncReferenceControls(); };
 const referenceOriginalRestore = restore;

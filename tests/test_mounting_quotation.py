@@ -44,6 +44,7 @@ class MountingQuotationTests(unittest.TestCase):
     def check_exports(self, data, expected_name, expected_price):
         output = build_quotation(data, BASE)
         workbook = load_workbook(output, data_only=True)
+        self.assertEqual(workbook.sheetnames, ['Quotation'])
         sheet = workbook['Quotation']
         _, rows, _, total, _ = read_excel_quotation(sheet)
         mounting = [row for row in rows if row[1] in ('Uni-pole', 'Mounting structure')]
@@ -51,7 +52,6 @@ class MountingQuotationTests(unittest.TestCase):
             self.assertEqual(mounting, [])
             self.assertEqual(sheet['B12'].value, 'Installation')
             self.assertEqual(sheet['J13'].value, float(total))
-            self.assertIn('F12', workbook['Design & Specifications']['A5'].value)
         else:
             self.assertEqual(len(mounting), 1)
             self.assertEqual(mounting[0][1], expected_name)
@@ -87,12 +87,12 @@ class MountingQuotationTests(unittest.TestCase):
     def test_unipole_has_one_fixed_unit_price(self):
         self.check_exports(self.data(mount_type='unipole', mount_qty=100), 'Uni-pole', Decimal('175000'))
 
-    def test_structure_uses_screen_area_and_editable_excel_formula(self):
+    def test_structure_uses_screen_area_and_editable_quotation_rate(self):
         output = self.check_exports(self.data(mount_type='structure', mount_qty=999), 'Mounting structure', Decimal('80000'))
         output.seek(0)
         workbook = load_workbook(output)
-        self.assertEqual(workbook['Quotation']['F12'].value, "=ROUND('Design & Specifications'!B4*'Design & Specifications'!B3,2)")
-        self.assertEqual(workbook['Design & Specifications']['B4'].value, 800)
+        self.assertEqual(workbook['Quotation']['F12'].value, 80000)
+        self.assertEqual(workbook['Quotation']['H12'].value, '=IF(F12="","",ROUND(F12*G12,2))')
         workbook.close()
 
     def test_custom_rate_and_description(self):
