@@ -489,10 +489,7 @@
           "Cabinet Dimensions (W×H×D)": "600 × 337.5 × 38.1 mm"
         },
         "note": "Alternate cabinet dimensions supplied by user, 13 October 2026. Calculated from 600 × 337.5 mm at 1.25 mm pitch; confirm native resolution.",
-        "specification_order": [
-          "Technology",
-          "Cabinet Dimensions (W×H×D)"
-        ],
+        "specification_order": ["Technology", "Cabinet Dimensions (W×H×D)"],
         "technology": "SMD"
       }
     ],
@@ -554,10 +551,7 @@
               "Cabinet Dimensions (W×H×D)": "600 × 337.5 × 38.1 mm"
             },
             "note": "Alternate cabinet dimensions supplied by user, 13 October 2026. Calculated from 600 × 337.5 mm at 1.25 mm pitch; confirm native resolution.",
-            "specification_order": [
-              "Technology",
-              "Cabinet Dimensions (W×H×D)"
-            ],
+            "specification_order": ["Technology", "Cabinet Dimensions (W×H×D)"],
             "technology": "SMD"
           }
         ],
@@ -618,10 +612,7 @@
               "Technology": "SMD",
               "Cabinet Dimensions (W×H×D)": "640 × 480 × 70 mm"
             },
-            "specification_order": [
-              "Technology",
-              "Cabinet Dimensions (W×H×D)"
-            ],
+            "specification_order": ["Technology", "Cabinet Dimensions (W×H×D)"],
             "technology": "SMD"
           }
         ],
@@ -802,10 +793,7 @@
               "Cabinet Dimensions (W×H×D)": "600 × 337.5 × 39.75 mm"
             },
             "note": "Alternate cabinet dimensions supplied by user, 13 October 2026. Native resolution for the alternate cabinet has not been supplied.",
-            "specification_order": [
-              "Technology",
-              "Cabinet Dimensions (W×H×D)"
-            ],
+            "specification_order": ["Technology", "Cabinet Dimensions (W×H×D)"],
             "technology": "SMD"
           }
         ],
@@ -1128,10 +1116,7 @@
               "Cabinet Dimensions (W×H×D)": "600 × 337.5 × 39.75 mm"
             },
             "note": "Alternate cabinet dimensions supplied by user, 13 October 2026. Native resolution for the alternate cabinet has not been supplied.",
-            "specification_order": [
-              "Technology",
-              "Cabinet Dimensions (W×H×D)"
-            ],
+            "specification_order": ["Technology", "Cabinet Dimensions (W×H×D)"],
             "technology": "COB"
           }
         ],
@@ -2035,11 +2020,7 @@
           "Maintenance": "Rear (back service)"
         },
         "note": "Outdoor settings supplied by the user on 12 October 2026. The indoor reference below is retained for reference and does not define these outdoor ratings.",
-        "specification_order": [
-          "Brightness",
-          "IP Rating",
-          "Maintenance"
-        ],
+        "specification_order": ["Brightness", "IP Rating", "Maintenance"],
         "technology": "SMD"
       },
       {
