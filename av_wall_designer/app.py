@@ -1,6 +1,7 @@
 """LED Wall Designer with MongoDB Authentication."""
 import json
 import re
+from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request, send_file, g
@@ -17,6 +18,14 @@ from auth.models import initialize_database, Project, User, Session, get_db
 BASE = Path(__file__).resolve().parent
 app = Flask(__name__)
 
+# Support deployment under /av/ reverse proxy prefix
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,
+    x_proto=1,
+    x_host=1,
+    x_prefix=1
+)
 # Load configuration
 Config.validate()
 app.config.from_object(Config)

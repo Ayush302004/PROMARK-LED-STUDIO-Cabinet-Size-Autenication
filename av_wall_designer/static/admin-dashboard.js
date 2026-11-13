@@ -83,7 +83,7 @@ const AdminDashboard = {
             throw new Error('AUTH not initialized');
         }
         
-        const response = await fetch('/api/admin/dashboard', {
+        const response = await fetch('/av/api/admin/dashboard', {
             headers: window.AUTH.getAuthHeaders()
         });
         
@@ -100,7 +100,7 @@ const AdminDashboard = {
             throw new Error('AUTH not initialized');
         }
         
-        const response = await fetch('/api/admin/users?limit=100', {
+        const response = await fetch('/av/api/admin/users?limit=100', {
             headers: window.AUTH.getAuthHeaders()
         });
         
@@ -117,7 +117,7 @@ const AdminDashboard = {
             throw new Error('AUTH not initialized');
         }
         
-        const response = await fetch('/api/admin/projects?limit=100', {
+        const response = await fetch('/av/api/admin/projects?limit=100', {
             headers: window.AUTH.getAuthHeaders()
         });
         
@@ -294,7 +294,7 @@ const AdminDashboard = {
             console.log('Opening project:', projectId);
             
             // Fetch project data
-            const response = await fetch(`/api/admin/projects/${projectId}`, {
+            const response = await fetch(`/av/api/admin/projects/${projectId}`, {
                 headers: window.AUTH.getAuthHeaders()
             });
             

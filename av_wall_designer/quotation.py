@@ -215,7 +215,17 @@ def mounting_item(quotation, area_sqft):
         'name': name, 'description': str(quotation.get('mount_description') or description),
         'unit_rate': unit_rate, 'price': price, 'type': mount_type,
     }
+# helper date Formate in excel
+def format_quotation_date(value):
+    if isinstance(value, date):
+        return value.strftime('%d-%m-%Y')
 
+    value = str(value or date.today().isoformat()).strip()
+
+    try:
+        return date.fromisoformat(value).strftime('%d-%m-%Y')
+    except ValueError:
+        return value
 
 def build_quotation(data,base):
     result=calculate(data);p=data['product'];q=data.get('quotation') or {}
@@ -241,7 +251,139 @@ def build_quotation(data,base):
         ws.merge_cells(start_row=row,start_column=start,end_row=row,end_column=end)
         cell=ws.cell(row,start,text(value));cell.font=Font(name='Calibri',size=11,bold=bold);cell.alignment=Alignment(vertical='center',wrap_text=True)
     merged(1,1,7,'Client Name: '+str(q.get('client','')))
-    merged(1,8,10,'Date: '+str(q.get('date') or date.today().isoformat()))
+    merged(1,8,10,'Date: '+format_quotation_date(q.get('date')))
+    merged(2,1,7,'Project Detail: '+str(q.get('project') or 'Quotation of Video Wall'))
+    merged(2,8,10,'Sales Person: '+str(q.get('salesperson','')))
+    merged(3,1,7,'Location: '+str(q.get('location','')));merged(3,8,10,'Version: '+str(q.get('version','1')))
+    merged(4,1,10,'Contact Details: '+str(q.get('contact','')))
+    merged(6,1,10,'Sub: '+str(q.get('subject') or q.get('project') or 'Quotation of Video Wall'))
+    headers=['Sr. No.','Item','Description','Qty','Unit','Rate','GST','GST amount','Rate incl. taxes','Amount']
+    for i,h in enumerate(headers,1):ws.cell(8,i,h)
+    merged(9,1,10,'LED Video Wall System',True)
+    sw=result['width_m'];sh=result['height_m']
+    unit=data.get('unit','m')
+    width,height=quotation_dimensions(data,result)
+    area=width*height
+    sqft_decimal=area if unit=='ft' else area/Decimal('0.09290304')
+    sqft=float(sqft_decimal)
+    resolution=lambda item: f"{item['pixels_w']} × {item['pixels_h']}" if item.get('pixels_w') is not None and item.get('pixels_h') is not None else 'Not provided'
+    dimensions=f"{p['width_mm']} × {p['height_mm']}" + (f" × {p['depth_mm']}" if p.get('depth_mm') is not None else '')
+    description = quotation_description(p, width, height, unit, sqft_decimal)
+    actual_price='As per the company actual price.'
+    def manual_description(value, fallback):
+        description=str(value or fallback).strip()
+        return description if actual_price.lower() in description.lower() else description.rstrip('. ') + '. ' + actual_price
+    mount=mounting_item(q,sqft_decimal)
+    lines=[('Videowall',description,1,'Nos',q.get('wall_rate')),
+      ((controller or {}).get('kind','LED Wall Controller'),controller_desc,numeric(q.get('controller_qty'),'Controller quantity',1,100000),'Nos',(controller or {}).get('rate_inr'))]
+    if mount:
+        lines.append((mount['name'],mount['description'],1,'Nos',mount['price']))
+    lines.append(('Installation',manual_description(q.get('installation_description'),'Installation charges'),1,'Nos',None))
+    last_item_row=9+len(lines)
+    total_row=last_item_row+1
+    for rn,(item,desc,qty,unit,rate) in enumerate(lines,10):
+        for col,value in enumerate([rn-9,item,desc,qty,unit,numeric(rate,item+' rate'),gst],1):ws.cell(rn,col,text(value) if isinstance(value,str) else value)
+        ws.cell(rn,8,f'=IF(F{rn}="","",ROUND(F{rn}*G{rn},2))')
+        ws.cell(rn,9,f'=IF(F{rn}="","",ROUND(F{rn}+H{rn},2))')
+        ws.cell(rn,10,f'=IF(F{rn}="","",ROUND(D{rn}*I{rn},2))')
+        ws.row_dimensions[rn].height=max(180, 15 * (len(desc) // 75 + desc.count('\n') + 2)) if rn==10 else (max(100, 15 * (math.ceil(len(desc) / 70) + 2)) if rn==11 else 35)
+        for col in [1,2,3,4,5,6,7,8,9,10]:
+            ws.cell(rn,col).fill=PatternFill('solid',fgColor='FFFFFFFF')
+        ws.cell(rn,7).number_format='0%'
+        for col in [6,8,9,10]:ws.cell(rn,col).number_format='#,##0.00'
+    wall_rate=numeric(lines[0][4],'Videowall rate')
+    if wall_rate is not None:
+        ws.cell(10,6,float(Decimal(str(wall_rate))*sqft_decimal))
+    ws.cell(10,4).number_format='0'
+    if mount:
+        mount_amount=Decimal(str(mount['unit_rate']))
+        if mount['type']=='structure':
+            mount_amount*=sqft_decimal
+        ws.cell(12,6,float(mount_amount))
+    merged(total_row,1,9,'Total Amount',True)
+    ws.cell(total_row,10,f'=IFERROR(ROUND(SUM(J10:J{last_item_row}),2),0)')
+    ws.cell(total_row,10).number_format='#,##0.00'
+    merged(18,1,10,'Terms and conditions:',True)
+    for row,term in enumerate(TERMS,19):merged(row,1,10,f'{row-18}.) {term}');ws.row_dimensions[row].height=22
+    merged(29,1,10,'Corporate Office: '+COMPANY_FOOTER['corporate'])
+    merged(30,1,10,'Factory: '+COMPANY_FOOTER['factory'])
+    merged(31,1,10,'Sales Office: '+COMPANY_FOOTER['sales'],True)
+    merged(32,1,10,f"CIN: {COMPANY_FOOTER['cin']}    GSTIN: {COMPANY_FOOTER['gstin']}    PAN: {COMPANY_FOOTER['pan']}",True)
+    merged(33,1,10,'We hope the estimate is in line with your requirements. For any clarifications, please get back to us.')
+    merged(34,1,10,'Thanks & Regards')
+    thin=Side(style='thin',color='000000')
+    white_fill=PatternFill('solid',fgColor='FFFFFFFF')
+    for row in ws.iter_rows(min_row=1,max_row=max(34,ws.max_row),max_col=max(10,ws.max_column)):
+        for cell in row:
+            cell.fill=white_fill
+    for row in ws.iter_rows(min_row=8,max_row=total_row,max_col=10):
+        for cell in row:
+            cell.border=Border(left=thin,right=thin,top=thin,bottom=thin)
+            cell.font=Font(name='Calibri',size=11,bold=cell.row in (8,9,total_row))
+            cell.alignment=Alignment(wrap_text=True,vertical='center',horizontal='left' if cell.column==3 else 'center')
+    ws.row_dimensions[8].height=34
+    for cells,maxval in [(f'F10:F{last_item_row}',1e12),(f'D10:D{last_item_row}',100000),(f'G10:G{last_item_row}',1)]:
+        dv=DataValidation(type='decimal',operator='between',formula1=0,formula2=maxval,allow_blank=True);dv.showErrorMessage=True;dv.error='Enter a non-negative number within the allowed range.';ws.add_data_validation(dv);dv.add(cells)
+    ws.freeze_panes='D10';ws.print_options.horizontalCentered=True;ws.print_area='A1:J34'
+    ws.page_setup.orientation='landscape';ws.page_setup.paperSize=ws.PAPERSIZE_A4;ws.page_setup.fitToWidth=1;ws.page_setup.fitToHeight=1;ws.sheet_properties.pageSetUpPr.fitToPage=True
+    output=BytesIO();wb.save(output)
+    # Store formula results for viewers that do not recalculate on opening.
+    def money(value):return float(Decimal(str(value)).quantize(Decimal('0.01'),rounding='ROUND_HALF_UP'))
+    cached={}
+    unit_rates=[numeric(line[4],line[0]+' rate') for line in lines]
+    for row,rate in zip(range(10,last_item_row+1),unit_rates):
+        if rate is None:
+            for col in ('F','H','I','J'):
+                if ws[f'{col}{row}'].data_type=='f':cached[f'{col}{row}']=''
+            continue
+        full=money(Decimal(str(rate))*sqft_decimal) if row==10 else money(rate)
+        cached[f'F{row}']=full
+        tax=money(full*gst);gross=money(full+tax)
+        cached[f'H{row}']=tax;cached[f'I{row}']=gross;cached[f'J{row}']=money(float(ws.cell(row,4).value)*gross)
+    cached[f'J{total_row}']=money(sum(cached[f'J{r}'] for r in range(10,last_item_row+1) if isinstance(cached.get(f'J{r}'), (int,float))))
+    ns={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+    final=BytesIO()
+    with ZipFile(output) as src, ZipFile(final,'w',ZIP_DEFLATED) as dst:
+        for item in src.infolist():
+            content=src.read(item.filename)
+            if item.filename=='xl/worksheets/sheet1.xml':
+                tree=ET.fromstring(content)
+                for cell in tree.findall('.//s:c',ns):
+                    key=cell.get('r')
+                    if key not in cached:continue
+                    value=cached[key];v=cell.find('s:v',ns)
+                    if v is None:v=ET.SubElement(cell,'{'+ns['s']+'}v')
+                    if isinstance(value,str):cell.set('t','str')
+                    else:cell.attrib.pop('t',None)
+                    v.text=str(value)
+                content=ET.tostring(tree,encoding='utf-8')
+            dst.writestr(item,content)
+    final.seek(0);return final
+
+    result=calculate(data);p=data['product'];q=data.get('quotation') or {}
+    if not isinstance(q,dict):raise ValueError('Invalid quotation details')
+    q=dict(q)
+    controllers=json.loads((Path(base)/'controllers.json').read_text(encoding='utf-8'))
+    controller=next((c for c in controllers if c['id']==data.get('controller')),None)
+    if data.get('controller') and not controller:
+        raise ValueError('This controller is no longer available. Select a current PROMARK controller before downloading.')
+    controller_desc=' '.join(str((controller or {}).get('description') or q.get('controller_description') or 'Supply of LED Wall Controller. Capacity and compatibility to be confirmed.').split())
+    controller_desc=strip_controller_names(controller_desc, controllers)
+    q.pop('controller_rate', None)
+    if 'wall_rate' not in q:q['wall_rate']=p.get('base_rate_sqft')
+    gst=numeric(q.get('gst'),'GST',18,100)/100
+    wb=Workbook();ws=wb.active;ws.title='Quotation';wb.calculation=CalcProperties(calcId=191029,fullCalcOnLoad=True)
+    widths=[6,22,80,7,9,16,9,16,17,18]
+    for i,width in enumerate(widths,1):ws.column_dimensions[chr(64+i)].width=width
+    ws.sheet_view.showGridLines=True
+    ws.sheet_view.showRowColHeaders=True
+    ws.print_options.gridLines=True
+    ws.print_options.gridLinesSet=True
+    def merged(row,start,end,value,bold=False):
+        ws.merge_cells(start_row=row,start_column=start,end_row=row,end_column=end)
+        cell=ws.cell(row,start,text(value));cell.font=Font(name='Calibri',size=11,bold=bold);cell.alignment=Alignment(vertical='center',wrap_text=True)
+    merged(1,1,7,'Client Name: '+str(q.get('client','')))
+    merged(1,8,10,'Date: '+format_quotation_date(q.get('date')))
     merged(2,1,7,'Project Detail: '+str(q.get('project') or 'Quotation of Video Wall'))
     merged(2,8,10,'Sales Person: '+str(q.get('salesperson','')))
     merged(3,1,7,'Location: '+str(q.get('location','')));merged(3,8,10,'Version: '+str(q.get('version','1')))
@@ -767,8 +909,7 @@ def build_pdf_from_excel(file_stream, filename='Quotation-edited'):
     right_rows = [[field(name, key)] for name, key in [
         ('Date', 'date'), ('Sales Person', 'salesperson'), ('Version', 'version'),
     ]]
-    if metadata.get('contactdetails'):
-        right_rows.append([field('Contact Details', 'contactdetails')])
+   
     info = Table([[Table(left_rows, colWidths=[112*mm]),
                    Table(right_rows, colWidths=[112*mm])]], colWidths=[112*mm, 112*mm],
                  minRowHeights=[24*mm])

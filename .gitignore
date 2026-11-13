@@ -50,3 +50,7 @@ data/
 .DS_Store
 Thumbs.db
 Desktop.ini
+# Backup files
+*.backup
+*.save
+static_backup_before_av_fix/

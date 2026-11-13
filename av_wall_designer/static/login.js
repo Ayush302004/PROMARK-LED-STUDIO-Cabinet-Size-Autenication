@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearMessages();
         
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch('/av/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Redirect to dashboard
                 setTimeout(() => {
-                    window.location.href = '/';
+                    window.location.href = '/av/';
                 }, 500);
             } else {
                 showMessage('login-message', data.error || 'Login failed', true);
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearMessages();
         
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch('/av/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Auto-login after successful registration
                 setTimeout(async () => {
-                    const loginResponse = await fetch('/api/auth/login', {
+                    const loginResponse = await fetch('/av/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password }),
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (loginResponse.ok) {
                         localStorage.setItem('access_token', loginData.access_token);
                         localStorage.setItem('user', JSON.stringify(loginData.user));
-                        window.location.href = '/';
+                        window.location.href = '/av/';
                     } else {
                         // Switch to login tab if auto-login fails
                         switchTab('login');

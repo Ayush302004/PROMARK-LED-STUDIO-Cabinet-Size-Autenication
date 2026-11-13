@@ -25,7 +25,7 @@ const AUTH = {
         // Check authentication - redirect to login if not authenticated
         if (!this.isAuthenticated()) {
             console.log('AUTH: Not authenticated, redirecting to login');
-            window.location.href = '/login';
+            window.location.href = '/av/login';
             return;
         }
         
@@ -119,7 +119,7 @@ const AUTH = {
     logout() {
         // Call logout API
         if (this.token) {
-            fetch('/api/auth/logout', {
+            fetch('/av/api/auth/logout', {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 credentials: 'include'
@@ -135,12 +135,12 @@ const AUTH = {
         localStorage.removeItem('user');
         
         // Redirect to login page
-        window.location.href = '/login';
+        window.location.href = '/av/login';
     },
     
     async verifyToken() {
         try {
-            const response = await fetch('/api/auth/me', {
+            const response = await fetch('/av/api/auth/me', {
                 headers: this.getAuthHeaders()
             });
             
@@ -160,7 +160,7 @@ const AUTH = {
     
     async refreshToken() {
         try {
-            const response = await fetch('/api/auth/refresh', {
+            const response = await fetch('/av/api/auth/refresh', {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -189,7 +189,7 @@ const AUTH = {
         this.user = null;
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/av/login';
     },
     
     getAuthHeaders() {
